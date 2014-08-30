@@ -162,6 +162,9 @@
 	var list = function(id, name, def, options){
 		return {type:"list", id:id, name:name, def:def, options:options};
 	}
+	var sublist = function(name, def, options){
+		return {type:"list", id:"", name:name, def:def, options:options};
+	}
 	var opt = function(key, name){
 		return {key:key, name:name};
 	}
