@@ -7,18 +7,18 @@
 			var prop = props[i];
 			var value = values[prop.id];
 			if(value==null)value = prop.def;
-			if(prop.type=="list"){
-				value = value==-1 ? null : prop.options[value].key;
-			}else if(prop.type=="color"){
-				if(value==null){
-					if(prop.optional && prop.optionalProp){
-						options[prop.optionalProp] = false;
-					}
-					continue;
-				}else{
-					if(prop.optional && prop.optionalProp){
-						options[prop.optionalProp] = true;
-					}
+			if(value==null){
+				if(prop.optionalProp){
+					options[prop.optionalProp] = false;
+				}
+				continue;
+			}else{
+				if(prop.optionalProp){
+					options[prop.optionalProp] = true;
+				}
+				if(prop.type=="list"){
+					value = value==-1 ? null : prop.options[value].key;
+				}else if(prop.type=="color"){
 					if(typeof(value)=="string"){
 						value = value.split("#").join("");
 						if(value.length>6)value = value.substr(value.length - 6, value.length);
@@ -153,6 +153,9 @@
 	var range = function(id, name, min, max, def){
 		return {type:"range", id:id, name:name, min:min, max:max, def:def};
 	}
+	var num = function(id, name, def, unit){
+		return {type:"number", id:id, name:name, def:def, unit:unit};
+	}
 	var bool = function(id, name, def){
 		return {type:"boolean", id:id, name:name, def:def};
 	}
@@ -170,6 +173,9 @@
 	}
 	var margin = function(id, name, def, optional, linkedProp){
 		return {type:"margin", id:id, name:name, def:def, optional:optional, linkedProp:linkedProp};
+	}
+	var string = function(id, name, def, optionalProp){
+		return {type:"string", id:id, name:name, def:def, optionalProp:optionalProp};
 	}
 
 	var antiAliasing = bool("antiAliasing", "Anti-aliasing", true);
@@ -222,10 +228,46 @@
 	var epsPreview = list("preview", "Preview Format", 3, [opt(EPSPreview.BWTIFF, "TIFF (B&W)"), opt(EPSPreview.COLORTIFF, "TIFF (Color)"), opt(EPSPreview.TRANSPARENTCOLORTIFF, "TIFF (Color w/ Transparency)"), opt(EPSPreview.None, "None")]);
 	
 	// PDF
+	var compatibility = list("compatibility", "Version Compatibility", 1, [opt(PDFCompatibility.ACROBAT4, "Acrobat 4"), opt(PDFCompatibility.ACROBAT4, "Acrobat 5"), opt(PDFCompatibility.ACROBAT4, "Acrobat 6"), opt(PDFCompatibility.ACROBAT4, "Acrobat 7"), opt(PDFCompatibility.ACROBAT4, "Acrobat 8")]);
 	var acrobatLayers = bool("acrobatLayers", "Acrobat Layers", false);
-	var bleedOffsetRect = margin("bleedOffsetRect", "Bleed Offset", null, true, "bleedLink");
-	var colorBars = bool("colorBars", "Color Bars", false);
-	var colorCompression = list("colorCompression", "Color Compression", 0, [		opt(CompressionQuality.None, "None"),
+	//var bleedOffsetRect = margin("bleedOffsetRect", "Bleed Offset", null, true, "bleedLink");
+	//var colorBars = bool("colorBars", "Color Bars", false);
+	var documentPassword = string("documentPassword", "Open Password", null, "requireDocumentPassword");
+	var permissionPassword = string("permissionPassword", "Permission Password", null, "requirePermissionPassword");
+	/*var enableAccess = bool("enableAccess", "Enable 128bit Access", true);
+	var enableCopy = bool("enableCopy", "Enable 128bit Copy", true);
+	var enablePlainText = bool("enableCopy", "Enable 128bit Plaintext Metadata", false);
+	var enableCopyAccess = bool("enableCopyAccess", "Enable 40bit Copy and Access", true);*/
+	var fontSubsetThreshold = percent("fontSubsetThreshold", "Font Subset Threshold", 100);
+	var compressArt = bool("compressArt", "Compress Art", true);
+	var generateThumbnails = bool("generateThumbnails", "Generate Thumbnails", true);
+	//var offset = num("offset", "Custom Paper Offset", 0, "pts");
+	var optimization = bool("optimization", "Optimization", false);
+	var pageInformation = bool("pageInformation", "Include Page Information", false);
+	/*var pDFAllowPrinting = list("pDFAllowPrinting", "Allow Printing", 0, [	opt(PDFPrintAllowedEnum.PRINT128HIGHRESOLUTION, "High Resolution (128bit)"),
+																			opt(PDFPrintAllowedEnum.PRINT128LOWRESOLUTION, "Low Resolution (128bit)"),
+																			opt(PDFPrintAllowedEnum.PRINT128NONE, "None (128bit)"),
+																			opt(PDFPrintAllowedEnum.PRINT40HIGHRESOLUTION, "High Resolution (40bit)"),
+																			opt(PDFPrintAllowedEnum.PRINT40NONE, "None (40bit)")]);
+	var pDFChangesAllowed = list("pDFChangesAllowed", "Changes Allowed", 0, [	opt(PDFChangesAllowedEnum.CHANGE128ANYCHANGES, "Any Changes (128bit)"),
+																				opt(PDFChangesAllowedEnum.CHANGE128COMMENTING, "Commenting (128bit)"),
+																				opt(PDFChangesAllowedEnum.CHANGE128EDITPAGE, "Edit Page (128bit)"),
+																				opt(PDFChangesAllowedEnum.CHANGE128FILLFORM, "Fill Form (128bit)"),
+																				opt(PDFChangesAllowedEnum.CHANGE128NONE, "None (128bit)"),
+																				opt(PDFChangesAllowedEnum.CHANGE40ANYCHANGES, "Any Changes (40bit)"),
+																				opt(PDFChangesAllowedEnum.CHANGE40COMMENTING, "Commenting (40bit)"),
+																				opt(PDFChangesAllowedEnum.CHANGE40PAGELAYOUT, "Page Layout (40bit)"),
+																				opt(PDFChangesAllowedEnum.CHANGE40NONE, "None (40bit)")]);*/
+	var preserveEditability = bool("preserveEditability", "Preserve Editability", true);
+	var printerResolution = num("printerResolution", "Printer Resolution", 800, "dpi");
+	//var trapped = bool("trapped", "Manual Trapping Prepared", true);
+
+	//var pageMarksType = list("pageMarksType", "Page Marks", 0, [opt(PageMarksTypes.Roman, "Roman"), opt(PageMarksTypes.Japanese, "Japanese")]);
+	var registrationMarks = bool("registrationMarks", "Registration Marks", false);
+	var trimMarks = bool("trimMarks", "Trim Marks", false);
+	var trimMarkWeight = list("trimMarkWeight", "Trim Mark Weight", 0, [opt(PDFTrimMarkWeight.TRIMMARKWEIGHT0125, "0.125"), opt(PDFTrimMarkWeight.TRIMMARKWEIGHT025, "0.25"), opt(PDFTrimMarkWeight.TRIMMARKWEIGHT05, "0.5")]);
+	
+	/*var colorCompression = list("colorCompression", "Color Compression", 0, [		opt(CompressionQuality.None, "None"),
 																					sublist("Automatic (JPEG)", 0,     [opt(CompressionQuality.AUTOMATICJPEGMINIMUM, "Minimum"),
 																														opt(CompressionQuality.AUTOMATICJPEGLOW, "Low"),
 																														opt(CompressionQuality.AUTOMATICJPEGMEDIUM, "Medium"),
@@ -252,7 +294,19 @@
 																														opt(CompressionQuality.JPEG2000MAXIMUM, "Maximum"),
 																														opt(CompressionQuality.JPEG2000LOSSLESS, "Lossless")])
 																					]);
-	
+	var colorConversionID = list("colorConversionID", "Color Conversion", 0, [opt(ColorConversion.None, "None"), opt(ColorConversion.COLORCONVERSIONREPURPOSE, "Convert to Destination, Preserve Numbers (Select Below)"), opt(ColorConversion.COLORCONVERSIONTODEST, "Convert to Destination (Select Below)")]);
+	var colorDestinationID = list("colorDestinationID", "Color Destination", 0, [	opt(ColorDestination.None, "None"),
+																					opt(ColorDestination.COLORDESTINATIONDOCCMYK, "Document CMYK"), 
+																					opt(ColorDestination.COLORDESTINATIONDOCRGB, "Document RGB"), 
+																					opt(ColorDestination.COLORDESTINATIONWORKINGCMYK, "Working CMYK"), 
+																					opt(ColorDestination.COLORDESTINATIONWORKINGRGB, "Working RGB"), 
+																					opt(ColorDestination.COLORDESTINATIONPROFILE, "Profile (Select Below)")]);
+	var colorDownsampling = num("colorDownsampling", "Color Downsampling", 150, "dpi");
+	var colorDownsamplingImageThreshold = num("colorDownsamplingImageThreshold", "Color Downsampling Threshold", 225, "dpi");
+	var colorDownsamplingMethod = list("colorDownsamplingMethod", "Color Downsample Method", 0, [opt(DownsampleMethod.NODOWNSAMPLE, "None"), opt(DownsampleMethod.AVERAGEDOWNSAMPLE, "Average"), opt(DownsampleMethod.BICUBICDOWNSAMPLE, "Bicubic"), opt(DownsampleMethod.SUBSAMPLE, "Subpixel")]);
+	*/
+
+
 	// copyBehaviour - for vector outputs the output must be done from a copy of the document (to avoid hidden layers being included in output)
 	pack.formats =  [   {name:"PNG 8", ext:'png', defaultDir:'png8', copyBehaviour:false, getOptions:getPng8Options, saveFile:savePng8, props:["scaling","transparency","trimEdges","innerPadding"],
 							more:[	antiAliasing, colorCount, colorDither, colorReduction, ditherPercent, interlaced, matteColor, saveAsHTML, webSnap]},
@@ -260,7 +314,11 @@
 						{name:"PNG 24", ext:'png', defaultDir:'png24', copyBehaviour:false, getOptions:getPng24Options, saveFile:savePng24, props:["scaling","transparency","trimEdges","innerPadding"],
 							more:[	antiAliasing, matteColor, saveAsHTML]},
 
-						{name:"PDF", ext:'pdf', defaultDir:'pdf', copyBehaviour:false, getOptions:getPdfOptions, saveFile:savePdf, props:["trimEdges"]},
+						{name:"PDF", ext:'pdf', defaultDir:'pdf', copyBehaviour:false, getOptions:getPdfOptions, saveFile:savePdf, props:["trimEdges"],
+							more:[	compatibility, acrobatLayers, documentPassword, permissionPassword,
+							fontSubsetThreshold, compressArt, generateThumbnails, optimization, pageInformation, preserveEditability, printerResolution,
+							registrationMarks, trimMarks, trimMarkWeight ]},
+
 						{name:"JPG", ext:'jpg', defaultDir:'jpg', copyBehaviour:false, getOptions:getJpgOptions, saveFile:saveJpg, props:["scaling","trimEdges","innerPadding"],
 							more:[	antiAliasing, blurAmount, matteColor, optimization, qualitySetting, saveAsHTML]},
 

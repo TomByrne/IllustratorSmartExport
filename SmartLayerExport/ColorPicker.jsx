@@ -66,10 +66,12 @@
 
 			var row = container.add("group");
 			row.orientation = "row";
+			row.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.CENTER];
 
 			if(optional){
 				this.checkbox = row.add('checkbox');
 				this.checkbox.value = (color!=null);
+				this.checkbox.size = [16, 16];
 				/*this.checkbox.onClick = function(){
 					scopedThis.input.enabled = scopedThis.checkbox.value;
 					scopedThis.button.enabled = scopedThis.checkbox.value;

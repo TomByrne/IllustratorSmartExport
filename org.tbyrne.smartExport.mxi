@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <macromedia-extension id="org.tbyrne.smartExport" name="Smart Layer Export" version="1.0.0">
-  <description><![CDATA[Features:
+  <description><![CDATA[<h2>Features:</h2>
 - Ability to scale output files for HiDPI (Retina) displays, or any other scale factor.
 - Can set up multiple export formats for a single file for easy regeneration of multiple asset sizes/types.
 - Settings are saved within Illustrator file so that settings are remembered next time you open the panel.
@@ -9,15 +9,26 @@
 - Can optionally export full Artboard images as well as individual layer images.
 
 
-Current Formats:
+<h2>Current Formats:</h2>
+<ul>
 - PNG 8
 - PNG 24
 - PDF
 - JPG
+- GIF
 - EPS
 - SVG 1.1
-- FXG 1.0
-- FXG 2.0]]></description>
+- FXG
+</ul>
+
+
+<h2>Change Log:</h2>
+
+<h3>30/08/2014 - v1.0.1</h3>
+- Added GIF export format
+- Added tons of export options to most export formats (use the More Options button)
+
+]]></description>
   <license-agreement><![CDATA[1. Your Agreement With Thomas Byrne.
 
 1.1 This agreement is with Thomas Byrne (“Developer”), and you agree, that your relationship with Developer will be governed by the laws of the state of New South Wales, Australia, as set forth in section 10.
@@ -67,10 +78,10 @@ This Agreement shall be governed by the laws of the State of New South Wales, an
     <product version="16.0" primary="true" name="Illustrator64"/>
   </products>
   <files>
-    <file source="EntryScripts/Smart Layer Export.jsx" destination="$presets/$locale/Scripts" products="Illustrator,Illustrator32,Illustrator64" minVersion="17.0"/>
+    <file source="Smart Layer Export.jsx" destination="$presets/$locale/Scripts" products="Illustrator,Illustrator32,Illustrator64" minVersion="17.0"/>
     <file source="SmartLayerExport" destination="$presets/$locale" products="Illustrator,Illustrator32,Illustrator64" minVersion="17.0"/>
 
-    <file source="EntryScripts/Smart Layer Export.jsx" destination="$presets/en_US/Scripts" products="Illustrator,Illustrator32,Illustrator64" maxVersion="16.9"/>
+    <file source="Smart Layer Export.jsx" destination="$presets/en_US/Scripts" products="Illustrator,Illustrator32,Illustrator64" maxVersion="16.9"/>
     <file source="SmartLayerExport" destination="$presets/en_US" products="Illustrator,Illustrator32,Illustrator64" maxVersion="16.9"/>
   </files>
 </macromedia-extension>

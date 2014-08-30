@@ -17,6 +17,8 @@
 			this.dialog.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
 			this.controls = [];
 
+			var labelColumnW = 130;
+
 			var settings = this.formatSettings.options;
 			var properties = formatSettings.formatRef.more;
 			var control;
@@ -30,14 +32,26 @@
 				var value = (settings[prop.id]!=null ? settings[prop.id] : prop.def);
 				switch(prop.type){
 					case "boolean":
-						row.add("statictext", [0,0,110, 20], "");
+						row.add("statictext", [0,0,labelColumnW, 20], "");
 						control = row.add('checkbox', undefined, prop.name);
 						if(value!=null)control.value = value;
 						this.controls.push(control);
 						break;
 
+					case "number":
+						row.add("statictext", [0,0,labelColumnW, 20], prop.name+":");
+						control = new pack.NumberControl(row, value, prop.optionalProp!=null, prop.unit);
+						this.controls.push(control);
+						break;
+
+					case "string":
+						row.add("statictext", [0,0,labelColumnW, 20], prop.name+":");
+						control = new pack.StringControl(row, value, prop.optionalProp!=null);
+						this.controls.push(control);
+						break;
+
 					case "list":
-						row.add("statictext", [0,0,110, 20], prop.name+":");
+						row.add("statictext", [0,0,labelColumnW, 20], prop.name+":");
 						var names = [];
 						for(var j=0; j<prop.options.length; j++){
 							names.push(prop.options[j].name);
@@ -49,19 +63,19 @@
 						break;
 
 					case "range":
-						row.add("statictext", [0,0,110, 20], prop.name+":");
+						row.add("statictext", [0,0,labelColumnW, 20], prop.name+":");
 						control = new pack.RangeControl(row, prop.min, prop.max, value);
 						this.controls.push(control);
 						break;
 
 					case "percent":
-						row.add("statictext", [0,0,110, 20], prop.name+":");
+						row.add("statictext", [0,0,labelColumnW, 20], prop.name+":");
 						control = new pack.RangeControl(row, 0, 100, value, "%");
 						this.controls.push(control);
 						break;
 
 					case "color":
-						row.add("statictext", [0,0,110, 20], prop.name+":");
+						row.add("statictext", [0,0,labelColumnW, 20], prop.name+":");
 						control = new pack.ColorPicker(row, value, prop.optional);
 						this.controls.push(control);
 						break;
@@ -108,6 +122,8 @@
 
 					case "range":
 					case "percent":
+					case "string":
+					case "number":
 						value = control.getValue();
 						break;
 

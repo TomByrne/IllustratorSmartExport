@@ -1,23 +1,25 @@
 // Copyright 2014 Tom Byrne
 
 
+try{
+	smartExport = {};
 
-smartExport = {};
+	smartExport.directory =  decodeURI(app.path + '/Presets/' + app.locale + "/SmartLayerExport");
+	var geo_dynamic = new Folder(smartExport.directory);
+	var scripts = geo_dynamic.getFiles();
 
-smartExport.directory =  decodeURI(app.path + '/Presets/' + app.locale + "/SmartLayerExport");
-var geo_dynamic = new Folder(smartExport.directory);
-var scripts = geo_dynamic.getFiles();
-
-for(var i=0; i<scripts.length; ++i){
-	var file = scripts[i];
-	if(file instanceof File && file.toString().indexOf(".jsx")!=-1){
-		$.evalFile (file);
+	for(var i=0; i<scripts.length; ++i){
+		var file = scripts[i];
+		if(file instanceof File && file.toString().indexOf(".jsx")!=-1){
+			$.evalFile (file);
+		}
 	}
+
+	var docRef;
+	var pack = smartExport;
+}catch(e){
+	alert(e);
 }
-
-var docRef;
-var pack = smartExport;
-
 
 var smartExportPanel = {
 
@@ -38,11 +40,7 @@ var smartExportPanel = {
 		this.TOKENS = ["--Tokens--", this.ARTBOARD_NUM_TOKEN, this.ARTBOARD_NAME_TOKEN, this.LAYER_NUM_TOKEN, this.LAYER_NAME_TOKEN, this.FILE_EXT_TOKEN];
 		
 		if (parse_success) {
-			try{
-				this.showDialog();
-			}catch(e){
-				alert(e);
-			}
+			this.showDialog();
 		}
 	},
 
@@ -295,9 +293,13 @@ var smartExportPanel = {
 	}
 };
 
-if(!app.documents.length){
-	alert("Please open a document before running this command");
-}else{
-	docRef = app.activeDocument;
-	smartExportPanel.init();
+try{
+	if(!app.documents.length){
+		alert("Please open a document before running this command");
+	}else{
+		docRef = app.activeDocument;
+		smartExportPanel.init();
+	}
+}catch(e){
+	alert(e);
 }
