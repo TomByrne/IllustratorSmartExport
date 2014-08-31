@@ -1,6 +1,6 @@
 (function(pack){
-	function FormatPanel(container, formats, formatSettings){
-		this.init(container, formats, formatSettings);
+	function FormatPanel(container, formats, exportSettings){
+		this.init(container, formats, exportSettings);
 		return this;
 	}
 
@@ -10,12 +10,12 @@
 	    formatTabs:null,
 	    formatPanels:null,
 
-		init:function(container, formats, formatSettings){
+		init:function(container, formats, exportSettings){
 			var scopedThis = this;
 
 			this.formatPanels = [];
 			this.formats = formats;
-			this.formatSettings = formatSettings;
+			this.exportSettings = exportSettings;
 
 
 			var row = container.add("group");
@@ -183,13 +183,19 @@
 				if(scopedThis.onFormatsChanged)scopedThis.onFormatsChanged();
 			}
 
-
-
-			for(var i=0; i<formatSettings.length; i++){
-				var settings = formatSettings[i];
+			this.updateFormats();
+		},
+		updateSettings:function(){
+			this.updateFormats();
+			this.setCurrentFormat(this.currentIndex);
+		},
+		updateFormats:function(){
+			this.formatList.removeAll();
+			for(var i=0; i<this.exportSettings.formats.length; i++){
+				var settings = this.exportSettings.formats[i];
 				this.addFormatItem(pack.getFormat(settings.format), settings);
 			}
-			if(formatSettings.length){
+			if(this.exportSettings.formats.length){
 				this.formatList.selection = 0;
 			}
 		},
@@ -201,9 +207,9 @@
 			}
 		},
 		removeCurrent:function(){
-			this.formatSettings.splice(this.currentIndex, 1);
+			this.exportSettings.formats.splice(this.currentIndex, 1);
 			this.formatList.remove(this.currentIndex);
-			if(this.currentIndex==this.formatSettings.length){
+			if(this.currentIndex==this.exportSettings.formats.length){
 				this.formatList.selection = this.currentIndex-1;
 				//this.setCurrentFormat(this.currentIndex-1);
 			}else{
@@ -213,7 +219,7 @@
 		},
 		setCurrentFormat:function(index){
 			this.currentIndex = index;
-			this.currentFormatSettings = this.formatSettings[index];
+			this.currentFormatSettings = this.exportSettings.formats[index];
 			this.currentFormat = this.currentFormatSettings.formatRef;
 
 			this.dirLabel.enabled = true;
@@ -283,7 +289,7 @@
 				formatSettings = new pack.FormatSettings(format.name);
 				formatSettings.formatRef = format;
 				formatSettings.directory = format.defaultDir;
-				this.formatSettings.push(formatSettings);
+				this.exportSettings.formats.push(formatSettings);
 			}
 			if(!formatSettings.name){
 				this.checkSettingsName(formatSettings);
@@ -299,7 +305,7 @@
 			formatSettings.name = name;
 			if(updateHeading)this.setPanelHeading();
 			if(updateList){
-				var index = this.indexOf(this.formatSettings, formatSettings);
+				var index = this.indexOf(this.exportSettings.formats, formatSettings);
 				var item = this.formatList.items[index];
 				item.text = name;
 			}

@@ -10,13 +10,12 @@
 		init:function(formatSettings){
 			var scopedThis = this;
 
-			this.dialog = new Window('dialog', formatSettings.formatRef.name+" Settings")
+			this.dialog = new Window('dialog', formatSettings.formatRef.name+" Settings");
+			this.dialog.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
 
 			this.formatSettings = formatSettings;
 
-			this.dialog.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
 			this.controls = [];
-
 			var labelColumnW = 130;
 
 			var settings = this.formatSettings.options;

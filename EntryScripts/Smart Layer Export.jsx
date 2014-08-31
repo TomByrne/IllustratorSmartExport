@@ -173,7 +173,7 @@ var smartExportPanel = {
 		this.artboardPanel.onWholeArtboardModeChanged = function(){
 			exSettings.exportArtboards = scopedThis.artboardPanel.wholeArtboardMode;
 			scopedThis.updatePreviewList();
-			scopedThis.settingsPanel.setArtboardsEnabled(scopedThis.exportArtboards);
+			scopedThis.settingsPanel.updateArtboardsEnabled();
 		}
 		this.artboardPanel.onSelectedChanged = function() {
 			exSettings.artboardAll  = scopedThis.artboardPanel.selectAll;
@@ -198,26 +198,25 @@ var smartExportPanel = {
 		var column;
 		var row;
 
-		this.settingsPanel = new pack.SettingsPanel(settingsCol, this.exportSettings.layerPattern, this.exportSettings.artboardPattern, this.TOKENS, this.exportSettings.exportArtboards, this.exportSettings.scaling, this.exportSettings.directory);
-		this.settingsPanel.onPatternChanged = function(){
-			exSettings.layerPattern = scopedThis.settingsPanel.layerPattern;
-			exSettings.artboardPattern = scopedThis.settingsPanel.artboardPattern;
-			scopedThis.updatePreviewList();
-		}
-		this.settingsPanel.onScalingChanged = function(){
-			exSettings.scaling = scopedThis.settingsPanel.scaling;
-		}
-		this.settingsPanel.onDirectoryChanged = function(){
-			exSettings.directory = scopedThis.settingsPanel.directory;
+		this.presetPanel = new pack.PresetPanel(settingsCol, this.exportSettings, decodeURI(app.path + '/Presets/' + app.locale + "/SmartLayerExport/presets"));
+		this.presetPanel.onSettingsChanged = function(){
+			scopedThis.settingsPanel.updateSettings();
+			scopedThis.formatPanel.updateSettings();
+			scopedThis.exportPanel.updateSettings();
 		}
 
-		this.formatPanel = new pack.FormatPanel(settingsCol, pack.formats, this.exportSettings.formats);
+		this.settingsPanel = new pack.SettingsPanel(settingsCol, this.exportSettings, this.TOKENS);
+		this.settingsPanel.onPatternChanged = function(){
+			scopedThis.updatePreviewList();
+		}
+
+		this.formatPanel = new pack.FormatPanel(settingsCol, pack.formats, this.exportSettings);
 		this.formatPanel.onFormatsChanged = function(){
 			scopedThis.updatePreviewList();
 		}
 
 
-		this.exportPanel = new pack.ExportPanel(settingsCol, this.exportSettings.ignoreWarnings);
+		this.exportPanel = new pack.ExportPanel(settingsCol, this.exportSettings);
 		this.exportPanel.onCancelClicked = function() {
 			scopedThis.dlg.close()
 		};
@@ -238,9 +237,6 @@ var smartExportPanel = {
 				alert(e);
 			}
 		};
-		this.exportPanel.onIgnoreWarningsChanged = function(){
-			exSettings.ignoreWarnings = scopedThis.exportPanel.ignoreWarnings;
-		}
 
 		
 

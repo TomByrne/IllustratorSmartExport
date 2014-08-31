@@ -1,6 +1,6 @@
 (function(pack){
-	function SettingsPanel(container, layerPattern, artboardPattern, tokens, artboardsEnbled, scaling, directory){
-		this.init(container, layerPattern, artboardPattern, tokens, artboardsEnbled, scaling, directory);
+	function SettingsPanel(container, exportSettings, tokens){
+		this.init(container, exportSettings, tokens);
 		return this;
 	}
 
@@ -9,13 +9,10 @@
 	    onScalingChanged:null,
 	    onDirectoryChanged:null,
 
-		init:function(container, layerPattern, artboardPattern, tokens, artboardsEnbled, scaling, directory){
+		init:function(container, exportSettings, tokens){
 			this.tokens = tokens;
 			var scopedThis = this;
-			this.layerPattern = layerPattern;
-			this.artboardPattern = artboardPattern;
-			this.scaling = scaling;
-			this.directory = directory;
+			this.exportSettings = exportSettings;
 
 			var row;
 			var column = container.add('panel', undefined, 'General Settings')
@@ -35,22 +32,22 @@
 				scopedThis.addToken(scopedThis.artboardTokenList, scopedThis.artboardPatternInput);
 			};
 			this.artboardTokenList.selection = 0;
-			this.artboardTokenList.enabled = artboardsEnbled;
+			this.artboardTokenList.enabled = exportSettings.exportArtboards;
 
 			// Artboard Pattern Input
 			row = column.add('group', undefined, '')
 			row.orientation = 'row';
 			row.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
 
-			this.artboardPatternInput = row.add('edittext', undefined, artboardPattern); 
+			this.artboardPatternInput = row.add('edittext', undefined, exportSettings.artboardPattern); 
 			this.artboardPatternInput.size = [ 400,20 ];
 
 			this.artboardPatternInput.onChange = function() {
-				scopedThis.artboardPattern = scopedThis.artboardPatternInput.text;
+				scopedThis.exportSettings.artboardPattern = scopedThis.artboardPatternInput.text;
 				if(scopedThis.onPatternChanged)scopedThis.onPatternChanged();
 			};
 			this.artboardPatternInput.addEventListener("keyup", this.artboardPatternInput.onChange);
-			this.artboardPatternInput.enabled = artboardsEnbled;
+			this.artboardPatternInput.enabled = exportSettings.exportArtboards;
 
 			// Layer Pattern Heading and tokens
 			row = column.add('group', undefined, '')
@@ -71,11 +68,11 @@
 			row.orientation = 'row';
 			row.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
 
-			this.layerPatternInput = row.add('edittext', undefined, layerPattern); 
+			this.layerPatternInput = row.add('edittext', undefined, exportSettings.layerPattern); 
 			this.layerPatternInput.size = [ 400,20 ];
 
 			this.layerPatternInput.onChange = function() {
-				scopedThis.layerPattern = scopedThis.layerPatternInput.text;
+				scopedThis.exportSettings.layerPattern = scopedThis.layerPatternInput.text;
 				if(scopedThis.onPatternChanged)scopedThis.onPatternChanged();
 			};
 			this.layerPatternInput.addEventListener("keyup", this.layerPatternInput.onChange);
@@ -87,24 +84,25 @@
 
 			var scalingLabel = row.add('statictext', undefined, 'Scaling:');
 
-			this.scalingInput = row.add('edittext', undefined, this.scaling+"%"); 
+			this.scalingInput = row.add('edittext', undefined, this.exportSettings.scaling+"%"); 
 			this.scalingInput.size = [ 50,20 ];
 			this.scalingInput.onChange = function(){
 				var scaling = parseFloat( scopedThis.scalingInput.text.replace( /\% /, '' ));
 
 				if(scaling){
-					scopedThis.scaling = scaling
+					scopedThis.exportSettings.scaling = scaling;
 					if(scopedThis.onScalingChanged)scopedThis.onScalingChanged();
 				}
-				scopedThis.scalingInput.text = scopedThis.scaling + "%";
+				scopedThis.scalingInput.text = scopedThis.exportSettings.scaling + "%";
 			}
 			this.scalingInput.addEventListener("keydown", function(e){
 				if(e.keyName=="Up"){
-					scopedThis.scaling += 10;
+					scopedThis.exportSettings.scaling += 10;
+					scopedThis.scalingInput.text = scopedThis.exportSettings.scaling + "%";
 				}else if(e.keyName=="Down"){
-					scopedThis.scaling = Math.max(10, scopedThis.scaling - 10);
+					scopedThis.exportSettings.scaling = Math.max(10, scopedThis.exportSettings.scaling - 10);
+					scopedThis.scalingInput.text = scopedThis.exportSettings.scaling + "%";
 				}
-				scopedThis.scalingInput.text = scopedThis.scaling + "%";
 			});
 
 			var scalingTip = row.add('statictext', undefined, 'Raster formats only, Use 200% for Retina');
@@ -116,16 +114,28 @@
 
 			var chooseBtn = row.add('button', undefined, 'Output Directory...' );
 			chooseBtn.onClick = function() {
-				scopedThis.directoryInput.text = Folder.selectDialog().fsName;
+				var file = new Folder(scopedThis.exportSettings.directory).selectDlg();
+				if(!file)return;
+
+				scopedThis.directoryInput.text = file.fsName;
 				scopedThis.directoryInput.onChange();
 			}
 
-			this.directoryInput = row.add('edittext', undefined, directory); 
+			this.directoryInput = row.add('edittext', undefined, exportSettings.directory); 
 			this.directoryInput.size = [ 256,20 ];
 			this.directoryInput.onChange = function(){
-				scopedThis.directory = scopedThis.directoryInput.text;
+				scopedThis.exportSettings.directory = scopedThis.directoryInput.text;
 				if(scopedThis.onDirectoryChanged)scopedThis.onDirectoryChanged();
 			}
+		},
+
+		updateSettings:function(){
+			this.artboardPatternInput.text = this.exportSettings.artboardPattern;
+			this.layerPatternInput.text = this.exportSettings.layerPattern;
+			this.directoryInput.text = this.exportSettings.directory;
+			this.scalingInput.text = this.exportSettings.scaling + "%";
+			this.artboardPatternInput.enabled = this.exportSettings.exportArtboards;
+			this.artboardTokenList.enabled = this.exportSettings.exportArtboards;
 		},
 
 		addToken:function(tokenList, input){
@@ -138,9 +148,9 @@
 			}
 		},
 
-		setArtboardsEnabled:function(value){
-			this.artboardPatternInput.enabled = value;
-			this.artboardTokenList.enabled = value;
+		updateArtboardsEnabled:function(){
+			this.artboardPatternInput.enabled = exportSettings.exportArtboards;
+			this.artboardTokenList.enabled = exportSettings.exportArtboards;
 		}
 	};
 	pack.SettingsPanel = SettingsPanel;

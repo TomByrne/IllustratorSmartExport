@@ -27,83 +27,104 @@
 		ignoreWarnings:false,
 
 
-		toXML:function(){
+		toXML:function(includePatterns, includeGeneralSettings, includeFormatSettings, includeArtboards, includeLayers){
+			if(includePatterns===undefined)includePatterns = true;
+			if(includeGeneralSettings===undefined)includeGeneralSettings = true;
+			if(includeFormatSettings===undefined)includeFormatSettings = true;
+			if(includeArtboards===undefined)includeArtboards = true;
+			if(includeLayers===undefined)includeLayers = true;
+
 			var ret = new XML( '<prefs></prefs>' );
-			ret.appendChild( new XML('<artboardPattern>'+this.xmlEncode(this.artboardPattern)+'</artboardPattern>') );
-			ret.appendChild( new XML('<layerPattern>'+this.xmlEncode(this.layerPattern)+'</layerPattern>') );
-			ret.appendChild( new XML('<directory>'+this.directory+'</directory>') );
-			ret.appendChild( new XML('<scaling>'+this.scaling+'</scaling>') );
 
-			var formats = new XML('<formats/>');
-			for(var i=0; i<this.formats.length; ++i){
-				var format = this.formats[i];
-				formats.appendChild(format.toXML());
+			if(includePatterns){
+				ret.appendChild( new XML('<artboardPattern>'+this.xmlEncode(this.artboardPattern)+'</artboardPattern>') );
+				ret.appendChild( new XML('<layerPattern>'+this.xmlEncode(this.layerPattern)+'</layerPattern>') );
 			}
-			ret.appendChild( formats );
+			if(includeGeneralSettings){
+				ret.appendChild( new XML('<directory>'+this.directory+'</directory>') );
+				ret.appendChild( new XML('<scaling>'+this.scaling+'</scaling>') );
+				ret.appendChild( new XML('<exportArtboards>'+this.exportArtboards+'</exportArtboards>') );
+				ret.appendChild( new XML('<ignoreWarnings>'+this.ignoreWarnings+'</ignoreWarnings>') );
+			}
 
-			
-			if(!this.artboardAll && this.artboardInd.length)ret.appendChild( new XML('<artboardInd>'+this.artboardInd+'</artboardInd>') );
-			else ret.appendChild( new XML('<artboardAll>'+this.artboardAll+'</artboardAll>') );
-			
-			if(!this.layerAll && this.layerInd.length)ret.appendChild( new XML('<layerInd>'+this.layerInd+'</layerInd>') );
-			else ret.appendChild( new XML('<layerAll>'+this.layerAll+'</layerAll>') );
+			if(includeFormatSettings){
+				var formats = new XML('<formats/>');
+				for(var i=0; i<this.formats.length; ++i){
+					var format = this.formats[i];
+					formats.appendChild(format.toXML());
+				}
+				ret.appendChild( formats );
+			}
 
-			ret.appendChild( new XML('<exportArtboards>'+this.exportArtboards+'</exportArtboards>') );
-			ret.appendChild( new XML('<ignoreWarnings>'+this.ignoreWarnings+'</ignoreWarnings>') );
+			if(includeArtboards){
+				if(!this.artboardAll && this.artboardInd.length)ret.appendChild( new XML('<artboardInd>'+this.artboardInd+'</artboardInd>') );
+				else ret.appendChild( new XML('<artboardAll>'+this.artboardAll+'</artboardAll>') );
+			}
+			
+			if(includeLayers){
+				if(!this.layerAll && this.layerInd.length)ret.appendChild( new XML('<layerInd>'+this.layerInd+'</layerInd>') );
+				else ret.appendChild( new XML('<layerAll>'+this.layerAll+'</layerAll>') );
+			}
+
 			return ret;
 		},
 
 		populateWithXML:function(xml){
 			this.migrateXML(xml);
-			//this.smartExportPrefs.textFrames[0].contents = xml.toXMLString();
 			
-			this.artboardPattern= xml.artboardPattern.toString() || this.DEFAULT_ARTBOARD_PATTERN;
-			this.layerPattern	= xml.layerPattern.toString() || this.DEFAULT_LAYER_PATTERN;
-			this.directory		= xml.directory.toString();
-			this.scaling 		= parseFloat( xml.scaling.toString().replace( /\% /, '' ));
+			if(xml.artboardPattern.length())this.artboardPattern = xml.artboardPattern.toString() || this.DEFAULT_ARTBOARD_PATTERN;
+			if(xml.layerPattern.length())this.layerPattern	= xml.layerPattern.toString() || this.DEFAULT_LAYER_PATTERN;
+			if(xml.directory.length())this.directory		= xml.directory.toString();
+			if(xml.scaling.length())this.scaling 		= parseFloat( xml.scaling.toString().replace( /\% /, '' ));
 
-			this.formats = [];
 			var formatNodes = xml.formats.format;
-			for(var i=0; i<formatNodes.length(); i++){
-				var format = pack.FormatSettings.fromXML(formatNodes[i]);
-				if(format.formatRef)this.formats.push(format);
+			if(formatNodes.length()){
+				this.formats = [];
+				for(var i=0; i<formatNodes.length(); i++){
+					var format = pack.FormatSettings.fromXML(formatNodes[i]);
+					if(format.formatRef)this.formats.push(format);
+				}
 			}
 			if(!this.formats.length){
 				this.formats.push(new pack.FormatSettings("PNG 24"));
 			}
 
-			this.artboardAll	= xml.artboardAll == "true";
-			this.artboardInd	= xml.artboardInd.toString();
-			this.layerAll		= xml.layerAll == "true";
-			this.layerInd		= xml.layerInd.toString();
-			this.exportArtboards = xml.exportArtboards == "true";
-			this.ignoreWarnings = xml.ignoreWarnings == "true";
+			if(xml.artboardAll.length())this.artboardAll	= xml.artboardAll == "true";
+			if(xml.layerAll.length())this.layerAll		= xml.layerAll == "true";
+			if(xml.exportArtboards.length())this.exportArtboards = xml.exportArtboards == "true";
+			if(xml.ignoreWarnings.length())this.ignoreWarnings = xml.ignoreWarnings == "true";
 
-			if(this.artboardInd.length){
-				this.artboardInd = this.artboardInd.split(",")
-				var array = [];
-				for(var i=0; i<this.artboardInd.length; ++i){
-					array[i] = parseInt(this.artboardInd[i]);
+			if(xml.artboardInd.length()){
+				this.artboardInd	= xml.artboardInd.toString();
+				if(this.artboardInd.length){
+					this.artboardInd = this.artboardInd.split(",")
+					var array = [];
+					for(var i=0; i<this.artboardInd.length; ++i){
+						array[i] = parseInt(this.artboardInd[i]);
+					}
+					this.artboardInd = array;
+				}else if(xml.artboardAll.length()==0){
+					this.artboardAll = true;
 				}
-				this.artboardInd = array;
-			}else if(xml.artboardAll.length()==0){
-				this.artboardAll = true;
 			}
 
-			if(this.layerInd.length){
-				this.layerInd = this.layerInd.split(",")
-				var array = [];
-				for(var i=0; i<this.layerInd.length; ++i){
-					array[i] = parseInt(this.layerInd[i]);
+			if(xml.layerInd.length()){
+				this.layerInd		= xml.layerInd.toString();
+				if(this.layerInd.length){
+					this.layerInd = this.layerInd.split(",")
+					var array = [];
+					for(var i=0; i<this.layerInd.length; ++i){
+						array[i] = parseInt(this.layerInd[i]);
+					}
+					this.layerInd = array;
+				}else if(xml.layerAll.length()==0){
+					this.layerAll = true;
 				}
-				this.layerInd = array;
-			}else if(xml.layerAll.length()==0){
-				this.layerAll = true;
 			}
 			
 			if ( ! xml.scaling || xml.scaling == '' ) {
 			   this.scaling = 100;
-			} 
+			}
 		},
 
 		updateXMLNames:function(node){

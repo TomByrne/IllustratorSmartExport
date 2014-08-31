@@ -52,9 +52,19 @@
 				this.doLayerSelect(true);
 			}
 
+			var key;
+			if($.os.toLowerCase().indexOf("mac")!=-1){
+				key = "CMD";
+			}else{
+				key = "CTRL";
+			}
+			var tip = column.add ('statictext', undefined, key+"+Click to select multiple from lists"); 
+			tip.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
+
 
 			var selectVis = row.add('iconbutton');
 			selectVis.image = File(pack.directory+"/icons/eye.png");
+			selectVis.helpTip = "Select Visible Layers";
 			selectVis.onClick = function() {
 				scopedThis.selectByVisible();
 			};
