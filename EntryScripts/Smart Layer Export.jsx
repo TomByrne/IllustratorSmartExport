@@ -4,7 +4,11 @@
 try{
 	smartExport = {};
 
-	smartExport.directory =  decodeURI(app.path + '/Presets/' + app.locale + "/SmartLayerExport");
+	if($.os.toLowerCase().indexOf("macintosh")!=-1){
+		smartExport.directory =  decodeURI(app.path + '/Presets.localized/' + app.locale + "/SmartLayerExport");
+	}else{
+		smartExport.directory =  decodeURI(app.path + '/Presets/' + app.locale + "/SmartLayerExport");
+	}
 	var geo_dynamic = new Folder(smartExport.directory);
 	var scripts = geo_dynamic.getFiles();
 
