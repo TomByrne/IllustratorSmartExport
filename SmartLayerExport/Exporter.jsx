@@ -572,8 +572,6 @@
 						this.copyItems(doc, item.pageItems, toLayer);
 					}else{
 						var copy = item.duplicate(toLayer, ElementPlacement.PLACEATEND);
-						if(item.clipping)copy.clipping = true;
-						if(item.clipped)copy.clipped = true;
 					}
 				}
 			}
