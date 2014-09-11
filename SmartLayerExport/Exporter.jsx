@@ -76,7 +76,7 @@
 							var base_filename = this.directory + (formatSettings.directory?"/"+formatSettings.directory:"") + "/" + exportInfo.fileName;
 							if(copyBehaviour){
 								var offset = {x:0, y:0};
-								copyDoc = this.copyDocument(docRef, artboard, rect, artW, artH, offset, formatSettings.innerPadding, function(layer){return (layer.name!=smartExportPanel.PREFS_LAYER_NAME && layer.visible)});
+								copyDoc = this.copyDocument(docRef, artboard, rect, artW, artH, offset, formatSettings.innerPadding, function(layer){return (layer.name!=smartExportPanel.PREFS_LAYER_NAME && layer.visible)}, null, formatSettings.fontHandling=="outline");
 								
 								formatInfo.saveFile(copyDoc, base_filename, options, artI, artboardName);
 
@@ -101,7 +101,7 @@
 							if(!formatSettings.trimEdges){
 								var layerDepths = [];
 								var offset = {x:0, y:0};
-								copyDoc = this.copyDocument(docRef, artboard, rect, docRef.width, docRef.height, offset, formatSettings.innerPadding, this.isAdditionalLayer, layerDepths);
+								copyDoc = this.copyDocument(docRef, artboard, rect, docRef.width, docRef.height, offset, formatSettings.innerPadding, this.isAdditionalLayer, layerDepths, formatSettings.fontHandling=="outline");
 								var hasAdditLayers = copyDoc.layers.length>0;
 							}
 						}else{
@@ -163,7 +163,7 @@
 
 												layOffset = {x:layerOffsetX, y:layerOffsetY};
 												var layerDepths = [];
-												var copyDoc = this.copyDocument(docRef, artboard, rect, docW, docH, layOffset, formatSettings.innerPadding, this.isAdditionalLayer, layerDepths);
+												var copyDoc = this.copyDocument(docRef, artboard, rect, docW, docH, layOffset, formatSettings.innerPadding, this.isAdditionalLayer, layerDepths, formatSettings.fontHandling=="outline");
 											
 												var hasAdditLayers = copyDoc.layers.length>1; // there will be one empty layer in the new file (which can be ignored)
 
@@ -176,7 +176,7 @@
 											}
 											if(isVis){
 												// only copy layer if it is visible (if not only visible '+' layers will be output)
-												var new_layer = this.copyLayer(layer, copyDoc.layers.add(), layOffset, copyDoc.width, copyDoc.height, formatSettings.innerPadding);
+												var new_layer = this.copyLayer(layer, copyDoc.layers.add(), layOffset, copyDoc.width, copyDoc.height, formatSettings.innerPadding, formatSettings.fontHandling=="outline");
 												if(!new_layer.pageItems.length && !newLayer.layers.length){
 													new_layer.remove();
 												}else{
@@ -285,7 +285,7 @@
 			return false;
 		},
 		
-		copyDocument: function(docRef, artboard, rect, w, h, offset, doInnerPadding, layerCheck, layerDepths) {
+		copyDocument: function(docRef, artboard, rect, w, h, offset, doInnerPadding, layerCheck, layerDepths, outlineText) {
 			var preset = new DocumentPreset();
 			preset.width = w;
 			preset.height = h;
@@ -304,7 +304,7 @@
 				if (layerCheck(layer)) {
 					var layerBounds = this.getLayerBounds(layer);
 					if(layerBounds && this.intersects(rect, layerBounds)){
-						var newLayer = this.copyLayer(layer, copyDoc.layers.add(), offset, w, h, doInnerPadding);
+						var newLayer = this.copyLayer(layer, copyDoc.layers.add(), offset, w, h, doInnerPadding, outlineText);
 
 						if(!newLayer.pageItems.length && !newLayer.layers.length){
 							newLayer.remove();
@@ -319,7 +319,7 @@
 			return copyDoc;
 		},
 		
-		copyLayer: function(fromLayer, toLayer, offset, docW, docH, doInnerPadding) {
+		copyLayer: function(fromLayer, toLayer, offset, docW, docH, doInnerPadding, outlineText) {
 			toLayer.artworkKnockout = fromLayer.artworkKnockout;
 			toLayer.blendingMode = fromLayer.blendingMode;
 			toLayer.color = fromLayer.color;
@@ -362,6 +362,7 @@
 				}
 			}
 			if(doInnerPadding)this.innerPadLayer(toLayer, docW, docH);
+			if(outlineText)this.doOutlineLayer(toLayer);
 
 			return toLayer;
 		},
@@ -380,7 +381,25 @@
 			for(var i=fromLayer.layers.length-1; i>=0; --i){
 				var child = fromLayer.layers[i];
 				if(child.visible && (child.pageItems.length || child.layers.length)){
-					this.copyIntoLayer(child, toLayer)
+					this.copyIntoLayer(child, toLayer, copyIntoLayer)
+				}
+			}
+		},
+		
+		doOutlineLayer: function(layer) {
+			this.doOutlineItems(layer.pageItems);
+			for(var i=0; i<layer.layers.length; i++){
+				this.doOutlineLayer(layer.layers[i]);
+			}
+		},
+		
+		doOutlineItems: function(items) {
+			for(var i=0; i<items.length; ++i){
+				var item = items[i];
+				if(item.typename == "TextFrame"){
+					item.createOutline();
+				}else if(item.typename == "GroupItem"){
+					item.doOutlineItems(item.pageItems);
 				}
 			}
 		},
@@ -522,7 +541,7 @@
 				if(item.typename == "GroupItem"){
 					this.copyItems(item.pageItems, toLayer);
 				}else{
-					item.duplicate(toLayer, ElementPlacement.PLACEATEND);
+					var copy = item.duplicate(toLayer, ElementPlacement.PLACEATEND);
 				}
 			}
 			toLayer.visible = visWas;

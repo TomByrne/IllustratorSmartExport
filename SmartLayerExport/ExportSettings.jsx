@@ -25,6 +25,7 @@
 		layerInd:[],
 		exportArtboards:false,
 		ignoreWarnings:false,
+		fontHandling:"none",
 
 
 		toXML:function(includePatterns, includeGeneralSettings, includeFormatSettings, includeArtboards, includeLayers){
@@ -103,11 +104,11 @@
 						array[i] = parseInt(this.artboardInd[i]);
 					}
 					this.artboardInd = array;
+					this.artboardAll = false;
 				}else if(xml.artboardAll.length()==0){
 					this.artboardAll = true;
 				}
 			}
-
 			if(xml.layerInd.length()){
 				this.layerInd		= xml.layerInd.toString();
 				if(this.layerInd.length){
@@ -117,6 +118,7 @@
 						array[i] = parseInt(this.layerInd[i]);
 					}
 					this.layerInd = array;
+					this.layerAll = false;
 				}else if(xml.layerAll.length()==0){
 					this.layerAll = true;
 				}
@@ -181,7 +183,7 @@
 				formatNode.format = node.format;
 				formatNode.transparency = node.transparency;
 				formatNode.embedImage = node.embedImage;
-				formatNode.embedFont = node.embedFont;
+				formatNode.fontHandling = (node.embedFont?"embed":"none");
 				formatNode.trimEdges = node.trimEdges;
 				formatNode.innerPadding = node.innerPadding;
 				formatNode.scaling = "";

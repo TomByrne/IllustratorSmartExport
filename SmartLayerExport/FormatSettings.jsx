@@ -17,7 +17,7 @@
 		format:null,
 		transparency:true,
 		embedImage:true,
-		embedFont:true,
+		fontHandling:"none",
 		trimEdges:true,
 		innerPadding:false,
 		scaling:null,
@@ -32,10 +32,10 @@
 			if(this.hasProp("scaling") && this.scaling)ret.appendChild( new XML('<scaling>'+this.scaling+'</scaling>') );
 			if(this.hasProp("transparency"))ret.appendChild( new XML('<transparency>'+this.transparency+'</transparency>') );
 			if(this.hasProp("embedImage"))ret.appendChild( new XML('<embedImage>'+this.embedImage+'</embedImage>') );
-			if(this.hasProp("embedFont"))ret.appendChild( new XML('<embedFont>'+this.embedFont+'</embedFont>') );
 			if(this.hasProp("trimEdges"))ret.appendChild( new XML('<trimEdges>'+this.trimEdges+'</trimEdges>') );
 			if(this.hasProp("innerPadding"))ret.appendChild( new XML('<innerPadding>'+this.innerPadding+'</innerPadding>') );
 			if(this.directory)ret.appendChild( new XML('<directory>'+this.directory+'</directory>') );
+			if(this.fontHandling && this.fontHandling!="none")ret.appendChild( new XML('<fontHandling>'+this.fontHandling+'</fontHandling>') );
 
 			var options = new XML('<options/>');
 			for(var i in this.options){
@@ -49,7 +49,7 @@
 			this.format		    = xml.format.toString();
 			this.transparency	= xml.transparency == "true";
 			this.embedImage	    = xml.embedImage == "true";
-			this.embedFont	    = xml.embedFont == "true";
+			this.fontHandling   = xml.fontHandling.toString() || "none";
 			this.trimEdges	    = xml.trimEdges == "true";
 			this.innerPadding   = xml.innerPadding == "true";
 			this.scaling 		= parseFloat( xml.scaling.toString().replace( /\% /, '' ));

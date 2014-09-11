@@ -91,7 +91,7 @@
 	var getEpsOptions = function ( formatSettings, scaling ) {
 		var options = new EPSSaveOptions();
 		options.embedLinkedFiles = formatSettings.embedImage;
-		options.embedAllFonts = formatSettings.embedFont;
+		options.embedAllFonts = (formatSettings.fontHandling=="embed");
 		options.includeDocumentThumbnails = true;
 		options.saveMultipleArtboards = false;
 		fillOptions(options, formatSettings);
@@ -106,6 +106,12 @@
 	}
 	var getFxgOptions = function ( formatSettings, scaling ) {
 		options = new FXGSaveOptions();
+		fillOptions(options, formatSettings);
+		return options;
+	}
+	var getAiOptions = function ( formatSettings, scaling ) {
+		options = new IllustratorSaveOptions();
+		options.embedLinkedFiles = formatSettings.embedImage;
 		fillOptions(options, formatSettings);
 		return options;
 	}
@@ -133,6 +139,11 @@
 		doc.exportFile(destFile, ExportType.GIF , options);
 	}
 	var saveEps = function ( doc, filePath, options, artboardIndex, artboardName ) {
+		var destFile = new File( filePath );
+		options.artboardRange = (artboardIndex+1).toString();
+		doc.saveAs( destFile, options, artboardIndex, artboardName )			
+	}
+	var saveAi = function ( doc, filePath, options, artboardIndex, artboardName ) {
 		var destFile = new File( filePath );
 		options.artboardRange = (artboardIndex+1).toString();
 		doc.saveAs( destFile, options, artboardIndex, artboardName )			
@@ -191,6 +202,13 @@
 	var optimization = bool("optimization", "Optimization", true);
 	var qualitySetting = percent("qualitySetting", "Quality", 30);
 	var infoLossPercent = percent("infoLossPercent", "Info Loss Percent", 0);
+	var compatibility = list("compatibility", "Compatibility", 9, [opt(Compatibility.ILLUSTRATOR8, "Illustrator 8"), opt(Compatibility.ILLUSTRATOR9, "Illustrator 9"), opt(Compatibility.ILLUSTRATOR10, "Illustrator 10"), opt(Compatibility.ILLUSTRATOR11, "Illustrator 11 (CS)"), opt(Compatibility.ILLUSTRATOR12, "Illustrator 12 (CS2)"), opt(Compatibility.ILLUSTRATOR13, "Illustrator 13 (CS3)"), opt(Compatibility.ILLUSTRATOR14, "Illustrator 14 (CS4)"), opt(Compatibility.ILLUSTRATOR15, "Illustrator 15 (CS5)"), opt(Compatibility.ILLUSTRATOR16, "Illustrator 16 (CS6)"), opt(Compatibility.ILLUSTRATOR17, "Illustrator 17 (CC)"), opt(Compatibility.JAPANESEVERSION3, "Japanese Version 3")]);
+	var fontSubsetThreshold = percent("fontSubsetThreshold", "Font Subset Threshold", 100);
+
+	// AI
+	var compressed = bool("compressed", "Compressed", true);
+	var embedICCProfile = bool("embedICCProfile", "Embed ICC Profile", false);
+	var pdfCompatible = bool("pdfCompatible", "PDF Compatible", true);
 
 	// SVG
 	var coordinatePrecision = range("coordinatePrecision", "Precision", 1, 7, 3);
@@ -219,7 +237,6 @@
 	
 	// EPS
 	var cmykPostScript = bool("cmykPostScript", "CMYK Postscript", false);
-	var epsCompatibility = list("compatibility", "Compatibility", 9, [opt(Compatibility.ILLUSTRATOR8, "Illustrator 8"), opt(Compatibility.ILLUSTRATOR9, "Illustrator 9"), opt(Compatibility.ILLUSTRATOR10, "Illustrator 10"), opt(Compatibility.ILLUSTRATOR11, "Illustrator 11"), opt(Compatibility.ILLUSTRATOR12, "Illustrator 12"), opt(Compatibility.ILLUSTRATOR13, "Illustrator 13"), opt(Compatibility.ILLUSTRATOR14, "Illustrator 14"), opt(Compatibility.ILLUSTRATOR15, "Illustrator 15"), opt(Compatibility.ILLUSTRATOR16, "Illustrator 16"), opt(Compatibility.ILLUSTRATOR17, "Illustrator 17"), opt(Compatibility.JAPANESEVERSION3, "Japanese Version 3")]);
 	var compatibleGradientPrinting = bool("compatibleGradientPrinting", "Compatibility Gradient Printing", false);
 	var flattenOuput = list("flattenOuput", "Flatten Output", 0, [opt(OutputFlattening.PRESERVEAPPEARANCE, "Preserve Appearance"), opt(OutputFlattening.PRESERVEPATHS, "Preserve Paths")]);
 	var includeDocumentThumbnails = bool("includeDocumentThumbnails", "Include Document Thumbnails", false);
@@ -228,7 +245,7 @@
 	var epsPreview = list("preview", "Preview Format", 3, [opt(EPSPreview.BWTIFF, "TIFF (B&W)"), opt(EPSPreview.COLORTIFF, "TIFF (Color)"), opt(EPSPreview.TRANSPARENTCOLORTIFF, "TIFF (Color w/ Transparency)"), opt(EPSPreview.None, "None")]);
 	
 	// PDF
-	var compatibility = list("compatibility", "Version Compatibility", 1, [opt(PDFCompatibility.ACROBAT4, "Acrobat 4"), opt(PDFCompatibility.ACROBAT4, "Acrobat 5"), opt(PDFCompatibility.ACROBAT4, "Acrobat 6"), opt(PDFCompatibility.ACROBAT4, "Acrobat 7"), opt(PDFCompatibility.ACROBAT4, "Acrobat 8")]);
+	var pdfCompatibility = list("compatibility", "Version Compatibility", 1, [opt(PDFCompatibility.ACROBAT4, "Acrobat 4"), opt(PDFCompatibility.ACROBAT4, "Acrobat 5"), opt(PDFCompatibility.ACROBAT4, "Acrobat 6"), opt(PDFCompatibility.ACROBAT4, "Acrobat 7"), opt(PDFCompatibility.ACROBAT4, "Acrobat 8")]);
 	var acrobatLayers = bool("acrobatLayers", "Acrobat Layers", false);
 	//var bleedOffsetRect = margin("bleedOffsetRect", "Bleed Offset", null, true, "bleedLink");
 	//var colorBars = bool("colorBars", "Color Bars", false);
@@ -238,7 +255,6 @@
 	var enableCopy = bool("enableCopy", "Enable 128bit Copy", true);
 	var enablePlainText = bool("enableCopy", "Enable 128bit Plaintext Metadata", false);
 	var enableCopyAccess = bool("enableCopyAccess", "Enable 40bit Copy and Access", true);*/
-	var fontSubsetThreshold = percent("fontSubsetThreshold", "Font Subset Threshold", 100);
 	var compressArt = bool("compressArt", "Compress Art", true);
 	var generateThumbnails = bool("generateThumbnails", "Generate Thumbnails", true);
 	//var offset = num("offset", "Custom Paper Offset", 0, "pts");
@@ -314,28 +330,31 @@
 						{name:"PNG 24", ext:'png', defaultDir:'png24', copyBehaviour:false, getOptions:getPng24Options, saveFile:savePng24, props:["scaling","transparency","trimEdges","innerPadding"],
 							more:[	antiAliasing, matteColor, saveAsHTML]},
 
-						{name:"PDF", ext:'pdf', defaultDir:'pdf', copyBehaviour:false, getOptions:getPdfOptions, saveFile:savePdf, props:["trimEdges"],
-							more:[	compatibility, acrobatLayers, documentPassword, permissionPassword,
-							fontSubsetThreshold, compressArt, generateThumbnails, optimization, pageInformation, preserveEditability, printerResolution,
-							registrationMarks, trimMarks, trimMarkWeight ]},
-
 						{name:"JPG", ext:'jpg', defaultDir:'jpg', copyBehaviour:false, getOptions:getJpgOptions, saveFile:saveJpg, props:["scaling","trimEdges","innerPadding"],
 							more:[	antiAliasing, blurAmount, matteColor, optimization, qualitySetting, saveAsHTML]},
 
 						{name:"GIF", ext:'gif', defaultDir:'gif', copyBehaviour:false, getOptions:getGifOptions, saveFile:saveGif, props:["scaling","transparency","trimEdges","innerPadding"],
 							more:[	antiAliasing, colorCount, colorDither, colorReduction, ditherPercent, infoLossPercent, interlaced, matteColor, saveAsHTML, webSnap]},
 
-						{name:"EPS", ext:'eps', defaultDir:'eps', copyBehaviour:true, getOptions:getEpsOptions, saveFile:saveEps, props:["embedImage","embedFont","trimEdges"],
-							more:[	cmykPostScript, epsCompatibility, flattenOuput, includeDocumentThumbnails, overprint, epsVersion, epsPreview ]},
+						{name:"EPS", ext:'eps', defaultDir:'eps', copyBehaviour:true, getOptions:getEpsOptions, saveFile:saveEps, props:["embedImage","fontEmbed","fontOutline","trimEdges"],
+							more:[	cmykPostScript, compatibility, flattenOuput, includeDocumentThumbnails, overprint, epsVersion, epsPreview ]},
 
-						{name:"SVG", ext:'svg', defaultDir:'svg', copyBehaviour:true, getOptions:getSvgOptions, saveFile:saveSvg, props:["embedImage","trimEdges"],
+						{name:"SVG", ext:'svg', defaultDir:'svg', copyBehaviour:true, getOptions:getSvgOptions, saveFile:saveSvg, props:["embedImage","fontOutline","trimEdges"],
 							more:[	coordinatePrecision, cssProperties, documentEncoding, DTD, fontSubsetting, fontType, includeFileInfo, includeUnusedStyles, preserveEditability, slices, sVGAutoKerning, sVGTextOnPath ]},
 
-						{name:"SVGZ", ext:'svgz', defaultDir:'svgz', copyBehaviour:true, getOptions:getSvgOptions, saveFile:saveSvg, props:["embedImage","trimEdges"],
+						{name:"AI", ext:'ai', defaultDir:'ai', copyBehaviour:true, getOptions:getAiOptions, saveFile:saveAi, props:["embedImage","fontOutline","trimEdges"],
+							more:[	compatibility, compressed, embedICCProfile, fontSubsetThreshold, pdfCompatible ]},
+
+						{name:"SVGZ", ext:'svgz', defaultDir:'svgz', copyBehaviour:true, getOptions:getSvgOptions, saveFile:saveSvg, props:["embedImage","fontOutline","trimEdges"],
 							more:[	coordinatePrecision, cssProperties, documentEncoding, DTD, fontSubsetting, fontType, includeFileInfo, includeUnusedStyles, preserveEditability, slices, sVGAutoKerning, sVGTextOnPath ],
 							extra:{ compressed:true }},
 
-						{name:"FXG", ext:'fxg', defaultDir:'fxg', copyBehaviour:true, getOptions:getFxgOptions, saveFile:saveFxg, props:["trimEdges"],
+						{name:"PDF", ext:'pdf', defaultDir:'pdf', copyBehaviour:false, getOptions:getPdfOptions, saveFile:savePdf, props:["trimEdges","fontOutline"],
+							more:[	pdfCompatibility, acrobatLayers, documentPassword, permissionPassword,
+							fontSubsetThreshold, compressArt, generateThumbnails, optimization, pageInformation, preserveEditability, printerResolution,
+							registrationMarks, trimMarks, trimMarkWeight ]},
+
+						{name:"FXG", ext:'fxg', defaultDir:'fxg', copyBehaviour:true, getOptions:getFxgOptions, saveFile:saveFxg, props:["trimEdges","fontOutline"],
 							more:[	blendsPolicy, downsampleLinkedImages, filtersPolicy, gradientsPolicy, includeUnusedSymbols, textPolicy, fxgVersion ]}];
 
 	pack.getFormat = function(formatName){

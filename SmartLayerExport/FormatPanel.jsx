@@ -103,41 +103,44 @@
 			this.transCheckBox = transRow.add('checkbox', undefined, 'Transparency');
 			this.transCheckBox.value = false;
 			this.transCheckBox.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
-			this.transCheckBox.enabled = false;
-			this.transCheckBox.size = [120, 20];
+			this.transCheckBox.enabled = false; 
+			this.transCheckBox.size = [ 120,20 ];
 			this.transCheckBox.onClick = function(){
 				scopedThis.currentFormatSettings.transparency = scopedThis.transCheckBox.value;
 			}
+
+			this.embedImageCheckBox = transRow.add('checkbox', undefined, 'Embed Imagery');
+			this.embedImageCheckBox.value = false;
+			this.embedImageCheckBox.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
+			this.embedImageCheckBox.enabled = false;
+			this.embedImageCheckBox.onClick = function(){
+				scopedThis.currentFormatSettings.embedImage = scopedThis.embedImageCheckBox.value;
+			}
+
+			// font row
+			var embedRow = this.formatColumn.add('group', undefined, '')
+			embedRow.orientation = 'row';
+			embedRow.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.CENTER];
 		
-			this.trimEdgesCheckBox = transRow.add('checkbox', undefined, 'Trim Edges');
+			this.trimEdgesCheckBox = embedRow.add('checkbox', undefined, 'Trim Edges');
 			this.trimEdgesCheckBox.value = false;
-			this.trimEdgesCheckBox.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
+			this.trimEdgesCheckBox.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.CENTER];
 			this.trimEdgesCheckBox.enabled = false;
+			this.trimEdgesCheckBox.size = [ 120,20 ];
 			this.trimEdgesCheckBox.onClick = function(){
 				scopedThis.currentFormatSettings.trimEdges = scopedThis.trimEdgesCheckBox.value;
 			}
 
-			// embed row
-			var embedRow = this.formatColumn.add('group', undefined, '')
-			embedRow.orientation = 'row';
-			embedRow.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP]
-		
-			this.embedImageCheckBox = embedRow.add('checkbox', undefined, 'Embed Imagery');
-			this.embedImageCheckBox.value = false;
-			this.embedImageCheckBox.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
-			this.embedImageCheckBox.enabled = false;
-			this.embedImageCheckBox.size = [120, 20];
-			this.embedImageCheckBox.onClick = function(){
-				scopedThis.currentFormatSettings.embedImage = scopedThis.embedImageCheckBox.value;
-			}
-		
-			this.embedFontCheckBox = embedRow.add('checkbox', undefined, 'Embed Fonts');
-			this.embedFontCheckBox.value = false;
-			this.embedFontCheckBox.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
-			this.embedFontCheckBox.enabled = false;
-			this.embedFontCheckBox.onClick = function(){
-				scopedThis.currentFormatSettings.embedFont = scopedThis.embedFontCheckBox.value;
-			}
+			this.fontHandlingLabel = embedRow.add('statictext', undefined, 'Fonts:');
+			this.fontHandlingLabel.enabled = false;
+			this.fontHandlingLabel.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.CENTER];
+
+			this.fontHandlingList = embedRow.add('dropdownlist', undefined);
+			this.fontHandlingList.enabled = false;
+			this.fontHandlingList.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.CENTER];
+			this.fontHandlingList.onChange = function() {
+				scopedThis.currentFormatSettings.fontHandling = scopedThis.fontHandlingOptions[scopedThis.fontHandlingList.selection.index].key;
+			};
 		
 			this.innerPaddingCheckBox = this.formatColumn.add('checkbox', undefined, 'Inner Padding (prevents curved edge clipping)');
 			this.innerPaddingCheckBox.value = false;
@@ -260,11 +263,32 @@
 				this.embedImageCheckBox.value = false;
 			}
 
-			this.embedFontCheckBox.enabled = this.currentFormatSettings.hasProp("embedFont");
-			if(this.embedFontCheckBox.enabled){
-				this.embedFontCheckBox.value = this.currentFormatSettings.embedFont;
+			if(this.currentFormatSettings.hasProp("fontEmbed")){
+				this.fontHandlingOptions = [{name:"No Embed", key:"none"}, {name:"Embed", key:"embed"}];
+				if(this.currentFormatSettings.hasProp("fontOutline")){
+					this.fontHandlingOptions.push({name:"Outlines", key:"outline"});
+				}
+			}else if(this.currentFormatSettings.hasProp("fontOutline")){
+				this.fontHandlingOptions = [{name:"No Outlines", key:"none"}, {name:"Outlines", key:"outline"}];
 			}else{
-				this.embedFontCheckBox.value = false;
+				this.fontHandlingOptions = []
+			}
+			this.fontHandlingList.removeAll();
+			if(this.fontHandlingOptions.length){
+				var selection = 0;
+				for(var i=0; i<this.fontHandlingOptions.length; i++){
+					var item = this.fontHandlingOptions[i];
+					this.fontHandlingList.add("item", item.name);
+					if(item.key==this.currentFormatSettings.fontHandling){
+						selection = i;
+					}
+				}
+				this.fontHandlingList.selection = selection;
+				this.fontHandlingLabel.enabled = true;
+				this.fontHandlingList.enabled = true;
+			}else{
+				this.fontHandlingLabel.enabled = false;
+				this.fontHandlingList.enabled = false;
 			}
 
 			this.innerPaddingCheckBox.enabled = this.currentFormatSettings.hasProp("innerPadding");
