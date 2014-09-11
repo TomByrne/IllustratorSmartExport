@@ -97,7 +97,6 @@
 					if(this.export_layers.length){
 							
 						if(copyBehaviour){
-
 							if(!formatSettings.trimEdges){
 								var layerDepths = [];
 								var offset = {x:0, y:0};
@@ -176,18 +175,13 @@
 											}
 											if(isVis){
 												// only copy layer if it is visible (if not only visible '+' layers will be output)
-												var new_layer = this.copyLayer(layer, copyDoc.layers.add(), layOffset, copyDoc.width, copyDoc.height, formatSettings.innerPadding, formatSettings.fontHandling=="outline");
-												if(!new_layer.pageItems.length && !newLayer.layers.length){
+												var new_layer = this.copyLayer(docRef, layer, copyDoc.layers.add(), layOffset, copyDoc.width, copyDoc.height, formatSettings.innerPadding, formatSettings.fontHandling=="outline");
+												if(!new_layer.pageItems.length && !new_layer.layers.length){
 													new_layer.remove();
 												}else{
 													new_layer.visible = true;
 													var depth = layerDepths[this.export_layers[j]];
-													while(new_layer.zOrderPosition<depth){
-														new_layer.zOrder(ZOrderMethod.BRINGFORWARD);
-													}
-													while(new_layer.zOrderPosition>depth){
-														new_layer.zOrder(ZOrderMethod.SENDBACKWARD);
-													}
+													this.setLayerDepth(new_layer, depth);
 												}
 											}
 											formatInfo.saveFile(copyDoc, base_filename, options, artI, artboardName);
@@ -232,6 +226,15 @@
 			this.hasFailed = (this.failed_layers.length || this.failed_artboards.length);
 			if((!this.failed_layers.length && !this.failed_artboards.length) || !this.redoFailed(this.failed_layers, this.failed_artboards)){
 				if(this.onExportFinished)this.onExportFinished();
+			}
+		},
+
+		setLayerDepth:function(layer, depth){
+			while(layer.zOrderPosition<depth){
+				layer.zOrder(ZOrderMethod.BRINGFORWARD);
+			}
+			while(layer.zOrderPosition>depth){
+				layer.zOrder(ZOrderMethod.SENDBACKWARD);
 			}
 		},
 
@@ -293,23 +296,28 @@
 			preset.units = docRef.rulerUnits;
 
 			var copyDoc = app.documents.addDocument(docRef.documentColorSpace, preset);
+			//app.activeDocument = docRef; // this allows us to do the selection trick when copying layers
+			var emptyLayer = copyDoc.layers[0];
 			copyDoc.pageOrigin = docRef.pageOrigin;
 			copyDoc.rulerOrigin = docRef.rulerOrigin;
 			var count = 1; // indices are 1 based!
 			var n = docRef.layers.length;
-			for ( var j=docRef.layers.length-1; j >=0; j-- ) {
-				
+			for ( var j=docRef.layers.length-1; j >= 0; j-- ) {
 				layer = docRef.layers[j];
 				
 				if (layerCheck(layer)) {
 					var layerBounds = this.getLayerBounds(layer);
 					if(layerBounds && this.intersects(rect, layerBounds)){
-						var newLayer = this.copyLayer(layer, copyDoc.layers.add(), offset, w, h, doInnerPadding, outlineText);
-
+						var newLayer = this.copyLayer(docRef, layer, copyDoc.layers.add(), offset, w, h, doInnerPadding, outlineText);
+						this.setLayerDepth(newLayer, count);
 						if(!newLayer.pageItems.length && !newLayer.layers.length){
 							newLayer.remove();
 						}else{
 							++count;
+							if(emptyLayer){
+								emptyLayer.remove();
+								emptyLayer = null;
+							}
 						}
 					}
 				}else if(layerDepths){
@@ -319,7 +327,7 @@
 			return copyDoc;
 		},
 		
-		copyLayer: function(fromLayer, toLayer, offset, docW, docH, doInnerPadding, outlineText) {
+		copyLayer: function(doc, fromLayer, toLayer, offset, docW, docH, doInnerPadding, outlineText) {
 			toLayer.artworkKnockout = fromLayer.artworkKnockout;
 			toLayer.blendingMode = fromLayer.blendingMode;
 			toLayer.color = fromLayer.color;
@@ -336,10 +344,9 @@
 				var oldBounds = this.getLayerBounds(fromLayer);
 				 //for mystery reasons, this only works if done before copying items across
 			}
+			this.copyIntoLayer(doc, fromLayer, toLayer);
 
-			this.copyIntoLayer(fromLayer, toLayer);
-
-			if(!offset.norm){
+			if(toLayer.pageItems.length && !offset.norm){
 
 				var newBounds = this.getLayerBounds(toLayer);
 				if(this.rectEqual(oldBounds, newBounds)){
@@ -366,23 +373,40 @@
 
 			return toLayer;
 		},
+		toArray:function(coll) {  
+		    var arr = [];  
+		    for (var i = 0; i < coll.length; ++i) {  
+		        arr.push(coll[i]);  
+		    }  
+		    return arr;  
+		},
+		getAllPageItems:function(doc, layer) {
+			if(layer.layers.length==0){
+				return layer.pageItems;
+			}
+			if(layer.pageItems.length==0){
+				return layer.layers;
+			}
+			var items = [];
+			var layers = layer.layers;
+		    for(var i=0; i<doc.pageItems.length; i++){
+		    	var pageItem = doc.pageItems[i];
+		    	if(pageItem.parent == layer){
+		    		items.push(pageItem);
+		    	}else if(pageItem.parent.typename=="Layer" && pageItem.parent.parent==layer && this.indexOf(items, pageItem.parent)==-1){
+		    		items.push(pageItem.parent);
+		    	}
+		    }
+		    return items;
+		},
 		
-		copyIntoLayer: function(fromLayer, toLayer) {
-
-			var items = fromLayer.pageItems;
+		copyIntoLayer: function(doc, fromLayer, toLayer) {
+			var items = this.getAllPageItems(doc, fromLayer);
 			try{
-				this.copyItems(items, toLayer);
+				this.copyItems(doc, items, toLayer);
 			}catch(e){
 				alert(e);
 				alert("copy items failed");
-			}
-
-			// copy backwards for correct z-ordering
-			for(var i=fromLayer.layers.length-1; i>=0; --i){
-				var child = fromLayer.layers[i];
-				if(child.visible && (child.pageItems.length || child.layers.length)){
-					this.copyIntoLayer(child, toLayer, copyIntoLayer)
-				}
 			}
 		},
 		
@@ -399,7 +423,7 @@
 				if(item.typename == "TextFrame"){
 					item.createOutline();
 				}else if(item.typename == "GroupItem"){
-					item.doOutlineItems(item.pageItems);
+					this.doOutlineItems(item.pageItems);
 				}
 			}
 		},
@@ -471,10 +495,9 @@
 			return shown;
 		},
 	
-		getLayerBounds: function(layer, verbose) {
+		getLayerBounds: function(layer) {
 			var rect;
 			var items = layer.pageItems;
-			if(verbose)alert(layer.name+" "+items.length);
 			for(var i=0; i<items.length; ++i){
 				var item = items[i];
 
@@ -502,9 +525,11 @@
 				}
 			}
 			for(var i=0; i<layer.layers.length; ++i){
-				if(!layer.visible)continue;
+				var childLayer = layer.layers[i];
 
-				var childRect = this.getLayerBounds(layer.layers[i]);
+				if(!childLayer.visible)continue;
+
+				var childRect = this.getLayerBounds(childLayer);
 				if(childRect==null)continue;
 
 				if(rect==null){
@@ -531,17 +556,25 @@
 			return rect1[0]==rect2[0] && rect1[1]==rect2[1] && rect1[2]==rect2[2] && rect1[3]==rect2[3] ;
 		},
 		
-		copyItems: function(fromList, toLayer) {
+		copyItems: function(doc, fromList, toLayer) {
 			var visWas = toLayer.visible;
 			toLayer.visible = true;
 			for(var i=0; i<fromList.length; ++i){
 				var item = fromList[i];
-				if(item.hidden)continue;
-
-				if(item.typename == "GroupItem"){
-					this.copyItems(item.pageItems, toLayer);
+				if(item.typename=="Layer"){
+					if(item.visible && (item.pageItems.length || item.layers.length)){
+						this.copyIntoLayer(doc, item, toLayer)
+					}
 				}else{
-					var copy = item.duplicate(toLayer, ElementPlacement.PLACEATEND);
+					if(item.hidden)continue;
+
+					if(item.typename == "GroupItem" && !item.clipped){
+						this.copyItems(doc, item.pageItems, toLayer);
+					}else{
+						var copy = item.duplicate(toLayer, ElementPlacement.PLACEATEND);
+						if(item.clipping)copy.clipping = true;
+						if(item.clipped)copy.clipped = true;
+					}
 				}
 			}
 			toLayer.visible = visWas;
