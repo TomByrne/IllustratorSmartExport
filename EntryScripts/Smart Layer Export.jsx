@@ -75,7 +75,6 @@ var smartExportPanel = {
 			}
 		}
 		
-		
 		// get xml out of the 1 text item on that layer and parse it
 		if ( this.smartExportPrefs.textFrames.length != 1 ) {
 			Window.alert( 'Please delete the '+this.PREFS_LAYER_NAME+' layer and try again.' );
@@ -249,8 +248,8 @@ var smartExportPanel = {
 			function(prog, total){scopedThis.exportPanel.setProgress(prog, total)},
 			function(item){scopedThis.previewPanel.updatedExportItem(item)});
 
-		this.exporter.onExportFinished = function(){
-			if(!scopedThis.exporter.hasFailed){
+		this.exporter.onExportFinished = function(success, fail){
+			if(success){
 				scopedThis.dlg.close();
 			}
 		}

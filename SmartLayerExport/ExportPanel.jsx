@@ -46,7 +46,7 @@
 			this.ignoreCheckBox.value = exportSettings.ignoreWarnings;
 			this.ignoreCheckBox.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.BOTTOM];
 			this.ignoreCheckBox.onClick = function() {
-				this.exportSettings.ignoreWarnings = scopedThis.ignoreCheckBox.value;
+				scopedThis.exportSettings.ignoreWarnings = scopedThis.ignoreCheckBox.value;
 				if(scopedThis.onIgnoreWarningsChanged)scopedThis.onIgnoreWarningsChanged();
 			};
 		},

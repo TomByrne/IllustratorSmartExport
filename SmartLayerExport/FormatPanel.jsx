@@ -138,6 +138,7 @@
 			this.fontHandlingList = embedRow.add('dropdownlist', undefined);
 			this.fontHandlingList.enabled = false;
 			this.fontHandlingList.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.CENTER];
+			this.fontHandlingList.size = [ 95,20 ];
 			this.fontHandlingList.onChange = function() {
 				scopedThis.currentFormatSettings.fontHandling = scopedThis.fontHandlingOptions[scopedThis.fontHandlingList.selection.index].key;
 			};

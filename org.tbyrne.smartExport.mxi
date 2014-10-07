@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<macromedia-extension id="org.tbyrne.smartExport" name="Smart Layer Export" version="1.3.0">
+<macromedia-extension id="org.tbyrne.smartExport" name="Smart Layer Export" version="1.5.0">
   <description><![CDATA[<h3>Features:</h3>
 - Ability to scale output files for HiDPI (Retina) displays, or any other scale factor.
 - Can set up multiple export formats for a single file for easy regeneration of multiple asset sizes/types.
@@ -25,6 +25,14 @@
 
 
 <h3>Change Log:</h3>
+
+<h3>23/09/2014 - v1.5</h3>
+- Fixed inner padding rounding issue
+- Trimmed image bounds now take clipping maks into account
+- Ignore Warnings option fixed
+
+<h3>12/09/2014 - v1.4</h3>
+- Fixed layering issues in vector formats
 
 <h3>06/09/2014 - v1.3</h3>
 - Added AI export format

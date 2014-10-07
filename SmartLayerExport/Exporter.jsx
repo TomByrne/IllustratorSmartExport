@@ -12,7 +12,6 @@
 		
 		// run_export function. does the dirty work
 		run_export: function(exportList, directory) {
-
 			this.exportList = exportList;
 			this.directory = directory;
 
@@ -20,6 +19,7 @@
 			this.export_layers = this.exportSettings.layerInd;
 			this.num_to_export = exportList.length;
 			this.num_exported = 0;
+			this.layerItemWarned = false;
 
 			if(!this.exportList.length){
 				alert('Please select valid artboards / layers');
@@ -30,6 +30,16 @@
 				alert('Please select select a destination');
 				return;
 			}
+
+			if(!Folder(directory).exists){
+				if(confirm("Output directory doesn't exist.\nCreate it now?")){
+					Folder(directory).create();
+				}else{
+					if(this.onExportFinished)this.onExportFinished(null, true);
+					return;
+				}
+			}
+
 
 			//this.que = new pack.Queue(100, );
 
@@ -48,6 +58,7 @@
 
 			for (var x = 0; x < this.exportSettings.formats.length; x++ ) {
 				var formatSettings = this.exportSettings.formats[x];
+				var doOutline = formatSettings.fontHandling=="outline";
 				var formatInfo = formatSettings.formatRef;
 				var scaling = (formatSettings.scaling?formatSettings.scaling:this.exportSettings.scaling);
 
@@ -76,8 +87,9 @@
 							var base_filename = this.directory + (formatSettings.directory?"/"+formatSettings.directory:"") + "/" + exportInfo.fileName;
 							if(copyBehaviour){
 								var offset = {x:0, y:0};
-								copyDoc = this.copyDocument(docRef, artboard, rect, artW, artH, offset, formatSettings.innerPadding, function(layer){return (layer.name!=smartExportPanel.PREFS_LAYER_NAME && layer.visible)}, null, formatSettings.fontHandling=="outline");
+								copyDoc = this.copyDocument(docRef, artboard, rect, artW, artH, offset, formatSettings.innerPadding, function(layer){return (layer.name!=smartExportPanel.PREFS_LAYER_NAME && layer.visible)}, null, doOutline);
 								
+								//if(doOutline)this.outlineSymbols(copyDoc);
 								formatInfo.saveFile(copyDoc, base_filename, options, artI, artboardName);
 
 								copyDoc.close(SaveOptions.DONOTSAVECHANGES);
@@ -175,7 +187,7 @@
 											}
 											if(isVis){
 												// only copy layer if it is visible (if not only visible '+' layers will be output)
-												var new_layer = this.copyLayer(docRef, layer, copyDoc.layers.add(), layOffset, copyDoc.width, copyDoc.height, formatSettings.innerPadding, formatSettings.fontHandling=="outline");
+												var new_layer = this.copyLayer(docRef, copyDoc.artboards[0], layer, copyDoc.layers.add(), layOffset, formatSettings.innerPadding, formatSettings.fontHandling=="outline", docRef.rulerOrigin);
 												if(!new_layer.pageItems.length && !new_layer.layers.length){
 													new_layer.remove();
 												}else{
@@ -184,6 +196,7 @@
 													this.setLayerDepth(new_layer, depth);
 												}
 											}
+											//if(doOutline)this.outlineSymbols(copyDoc);
 											formatInfo.saveFile(copyDoc, base_filename, options, artI, artboardName);
 											if(new_layer && !formatSettings.trimEdges){
 												new_layer.remove();
@@ -224,10 +237,21 @@
 				this.showLayers(were_shown);
 			}
 			this.hasFailed = (this.failed_layers.length || this.failed_artboards.length);
-			if((!this.failed_layers.length && !this.failed_artboards.length) || !this.redoFailed(this.failed_layers, this.failed_artboards)){
-				if(this.onExportFinished)this.onExportFinished();
+			var hasErrors = (this.failed_layers.length || this.failed_artboards.length);
+			if(!hasErrors || !this.redoFailed(this.failed_layers, this.failed_artboards)){
+				if(this.onExportFinished){
+					if(hasErrors)this.onExportFinished(null, true);
+					else this.onExportFinished(true, null);
+				}
 			}
 		},
+
+		/*outlineSymbols:function(doc){
+			for(var i=0; i<doc.symbols.length; ++i){
+				var symbol = doc.symbols[i];
+
+			}
+		},*/
 
 		setLayerDepth:function(layer, depth){
 			while(layer.zOrderPosition<depth){
@@ -298,8 +322,11 @@
 			var copyDoc = app.documents.addDocument(docRef.documentColorSpace, preset);
 			//app.activeDocument = docRef; // this allows us to do the selection trick when copying layers
 			var emptyLayer = copyDoc.layers[0];
+
+			// for some mystical reason, setting these can mess up the artboard dimensions
 			copyDoc.pageOrigin = docRef.pageOrigin;
 			copyDoc.rulerOrigin = docRef.rulerOrigin;
+
 			var count = 1; // indices are 1 based!
 			var n = docRef.layers.length;
 			for ( var j=docRef.layers.length-1; j >= 0; j-- ) {
@@ -308,7 +335,7 @@
 				if (layerCheck(layer)) {
 					var layerBounds = this.getLayerBounds(layer);
 					if(layerBounds && this.intersects(rect, layerBounds)){
-						var newLayer = this.copyLayer(docRef, layer, copyDoc.layers.add(), offset, w, h, doInnerPadding, outlineText);
+						var newLayer = this.copyLayer(docRef, artboard, layer, copyDoc.layers.add(), offset, doInnerPadding, outlineText, docRef.rulerOrigin);
 						this.setLayerDepth(newLayer, count);
 						if(!newLayer.pageItems.length && !newLayer.layers.length){
 							newLayer.remove();
@@ -327,7 +354,7 @@
 			return copyDoc;
 		},
 		
-		copyLayer: function(doc, fromLayer, toLayer, offset, docW, docH, doInnerPadding, outlineText) {
+		copyLayer: function(doc, artboard, fromLayer, toLayer, offset, doInnerPadding, outlineText, rulerOrigin) {
 			toLayer.artworkKnockout = fromLayer.artworkKnockout;
 			toLayer.blendingMode = fromLayer.blendingMode;
 			toLayer.color = fromLayer.color;
@@ -362,13 +389,9 @@
 				}
 			}
 			if(toLayer.parent.artboards!=null){ // only if top level layer
-				try{
-					this.shiftLayer(toLayer, offset.x, offset.y);
-				}catch(e){
-					alert("shift layer failed");
-				}
+				this.shiftLayer(toLayer, offset.x, offset.y);
 			}
-			if(doInnerPadding)this.innerPadLayer(toLayer, docW, docH);
+			if(doInnerPadding)this.innerPadLayer(toLayer, artboard.artboardRect, rulerOrigin);
 			if(outlineText)this.doOutlineLayer(toLayer);
 
 			return toLayer;
@@ -386,6 +409,10 @@
 			}
 			if(layer.pageItems.length==0){
 				return layer.layers;
+			}
+			if(!this.layerItemWarned && !this.exportSettings.ignoreWarnings){
+				this.layerItemWarned = true;
+				alert("To improve output performance, avoid using child layers (groups can do the same thing).");
 			}
 			var items = [];
 			var layers = layer.layers;
@@ -429,20 +456,16 @@
 		},
 	
 		shiftLayer: function(layer, shiftX, shiftY) {
-			this.shiftItems(layer.pageItems, shiftX, shiftY);
+			if(shiftX==undefined)shiftX = 0;
+			if(shiftY==undefined)shiftY = 0;
+
+			for(var i=0; i<layer.pageItems.length; ++i){
+				layer.pageItems[i].translate(shiftX, shiftY, true, true, true, true)
+			}
 
 			// copy backwards for correct z-ordering
 			for(var i=layer.layers.length-1; i>=0; --i){
 				this.shiftLayer(layer.layers[i], shiftX, shiftY)
-			}
-		},
-		
-		shiftItems: function(items, shiftX, shiftY) {
-			if(shiftX==undefined)shiftX = 0;
-			if(shiftY==undefined)shiftY = 0;
-
-			for(var i=0; i<items.length; ++i){
-				items[i].translate(shiftX, shiftY)
 			}
 		},
 		
@@ -494,6 +517,61 @@
 			}
 			return shown;
 		},
+
+		getItemBounds:function(parent){
+			if(parent.typename=="GroupItem"){
+				var rect;
+				var maskRect;
+				var items = parent.pageItems;
+				for(var i=0; i<items.length; ++i){
+					var item = items[i];
+
+					if(item.guides || item.hidden){
+						continue;
+					}
+					var visBounds = item.visibleBounds;
+					if(visBounds==null)continue;
+					else if(parent.clipped && item.clipping){
+						maskRect = visBounds;
+						continue;
+					}
+
+					if(rect==null){
+						rect = visBounds;
+					}else{
+						if(rect[0]>visBounds[0]){
+							rect[0] = visBounds[0];
+						}
+						if(rect[1]<visBounds[1]){
+							rect[1] = visBounds[1];
+						}
+						if(rect[2]<visBounds[2]){
+							rect[2] = visBounds[2];
+						}
+						if(rect[3]>visBounds[3]){
+							rect[3] = visBounds[3];
+						}
+					}
+				}
+				if(maskRect){
+					if(rect[0]<maskRect[0]){
+						rect[0] = maskRect[0];
+					}
+					if(rect[1]>maskRect[1]){
+						rect[1] = maskRect[1];
+					}
+					if(rect[2]>maskRect[2]){
+						rect[2] = maskRect[2];
+					}
+					if(rect[3]<maskRect[3]){
+						rect[3] = maskRect[3];
+					}
+				}
+				return rect;
+			}else{
+				return parent.visibleBounds;
+			}
+		},
 	
 		getLayerBounds: function(layer) {
 			var rect;
@@ -504,7 +582,7 @@
 				if(item.guides || item.hidden){
 					continue;
 				}
-				var visBounds = item.visibleBounds;
+				var visBounds = this.getItemBounds(item);
 				if(visBounds==null)continue;
 
 				if(rect==null){
@@ -568,29 +646,53 @@
 				}else{
 					if(item.hidden)continue;
 
-					if(item.typename == "GroupItem" && !item.clipped){
+					/*if(item.typename == "GroupItem" && !item.clipped){
 						this.copyItems(doc, item.pageItems, toLayer);
-					}else{
-						var copy = item.duplicate(toLayer, ElementPlacement.PLACEATEND);
-					}
+					}else{*/
+						item.duplicate(toLayer, ElementPlacement.PLACEATEND);
+					//}
 				}
 			}
 			toLayer.visible = visWas;
 		},
 
-		innerPadLayer: function(layer, docW, docH){
+		precision:function(num, roundTo){
+			return Math.round(num / roundTo) * roundTo;
+		},
+
+		innerPadLayer: function(layer, rect, rulerOrigin){
+			var artL = this.precision(rect[0], 0.01);
+			var artB = this.precision(rect[1], 0.01);
+			var artR = this.precision(rect[2], 0.01);
+			var artT = this.precision(rect[3], 0.01);
+			var artW = artR-artL;
+			var artH = artB-artT;
+
 			for(var i=0; i<layer.pageItems.length; ++i){
 				var item = layer.pageItems[i];
 				var bounds = item.visibleBounds;
 				// round to two decimal points
-				var l = Math.round(bounds[0] * 100) / 100;
-				var b = Math.round(bounds[1] * 100) / 100;
-				var r = Math.round(bounds[2] * 100) / 100;
-				var t = Math.round(bounds[3] * 100) / 100;
-				if(l==0 && t==0 && r==docW && b==docH){
-					var scaleX = (r-1) / r * 100; // resize takes percentage values
-					var scaleY = (b-1) / b * 100;
-					item.resize(scaleX, scaleY, null, null, null, null, null, Transformation.CENTER);
+				var l = this.precision(bounds[0], 0.01);
+				var b = this.precision(bounds[1], 0.01);
+				var r = this.precision(bounds[2], 0.01);
+				var t = this.precision(bounds[3], 0.01);
+				var w = r-l;
+				var h = b-t;
+				//alert("ya:\n"+l+" "+b+" "+r+" "+t+"\n"+artL+" "+artB+" "+artR+" "+artT);
+				var diffL = (l-artL);
+				var diffB = (b-artB);
+				var diffW = w - artW;
+				var diffH = h - artH;
+				if(diffL<1 && diffB<1 && diffW<1 && diffH<1){
+					if(diffL || diffB){
+						item.translate(artL + (artW - w)/2 - l, artB + (artH - h)/2 - b, true, true, true, true);
+					}
+
+					var w = r - l;
+					var h = b - t;
+					var scaleX = (artW-1) / w * 100; // resize takes percentage values
+					var scaleY = (artH-1) / h * 100;
+					item.resize(scaleX, scaleY, true, true, true, true, null, Transformation.TOPLEFT);
 				}
 			}
 			for(var i=0; i<layer.layers.length; ++i){
