@@ -126,8 +126,7 @@
 		doc.exportFile(destFile, ExportType.PNG24 , options);
 	}
 	var savePdf = function ( doc, filePath, options, artboardIndex, artboardName ) {
-		var destFile = new File( filePath );   
-		options.artboardRange = (artboardIndex+1).toString();
+		var destFile = new File( filePath );
 		doc.saveAs( destFile, options, artboardIndex, artboardName )
 	}
 	var saveJpg = function ( doc, filePath, options, artboardIndex, artboardName ) {
@@ -140,12 +139,10 @@
 	}
 	var saveEps = function ( doc, filePath, options, artboardIndex, artboardName ) {
 		var destFile = new File( filePath );
-		options.artboardRange = (artboardIndex+1).toString();
 		doc.saveAs( destFile, options, artboardIndex, artboardName )			
 	}
 	var saveAi = function ( doc, filePath, options, artboardIndex, artboardName ) {
 		var destFile = new File( filePath );
-		options.artboardRange = (artboardIndex+1).toString();
 		doc.saveAs( destFile, options, artboardIndex, artboardName )			
 	}
 	var saveSvg = function ( doc, filePath, options, artboardIndex, artboardName ) {
@@ -154,7 +151,6 @@
 	}
 	var saveFxg = function ( doc, filePath, options, artboardIndex, artboardName ) {
 		var destFile = new File( filePath );
-		options.artboardRange = (artboardIndex+1).toString();
 		doc.saveAs( destFile, options, artboardIndex, artboardName )	
 	}
 
@@ -202,7 +198,12 @@
 	var optimization = bool("optimization", "Optimization", true);
 	var qualitySetting = percent("qualitySetting", "Quality", 30);
 	var infoLossPercent = percent("infoLossPercent", "Info Loss Percent", 0);
-	var compatibility = list("compatibility", "Compatibility", 9, [opt(Compatibility.ILLUSTRATOR8, "Illustrator 8"), opt(Compatibility.ILLUSTRATOR9, "Illustrator 9"), opt(Compatibility.ILLUSTRATOR10, "Illustrator 10"), opt(Compatibility.ILLUSTRATOR11, "Illustrator 11 (CS)"), opt(Compatibility.ILLUSTRATOR12, "Illustrator 12 (CS2)"), opt(Compatibility.ILLUSTRATOR13, "Illustrator 13 (CS3)"), opt(Compatibility.ILLUSTRATOR14, "Illustrator 14 (CS4)"), opt(Compatibility.ILLUSTRATOR15, "Illustrator 15 (CS5)"), opt(Compatibility.ILLUSTRATOR16, "Illustrator 16 (CS6)"), opt(Compatibility.ILLUSTRATOR17, "Illustrator 17 (CC)"), opt(Compatibility.JAPANESEVERSION3, "Japanese Version 3")]);
+	var compatList = [opt(Compatibility.ILLUSTRATOR8, "Illustrator 8"), opt(Compatibility.ILLUSTRATOR9, "Illustrator 9"), opt(Compatibility.ILLUSTRATOR10, "Illustrator 10"), opt(Compatibility.ILLUSTRATOR11, "Illustrator 11 (CS)"), opt(Compatibility.ILLUSTRATOR12, "Illustrator 12 (CS2)"), opt(Compatibility.ILLUSTRATOR13, "Illustrator 13 (CS3)"), opt(Compatibility.ILLUSTRATOR14, "Illustrator 14 (CS4)"), opt(Compatibility.ILLUSTRATOR15, "Illustrator 15 (CS5)"), opt(Compatibility.ILLUSTRATOR16, "Illustrator 16 (CS6)")]
+	if(parseFloat(app.version) >= 17){
+		compatList.push(opt(Compatibility.ILLUSTRATOR17, "Illustrator 17 (CC)"));
+	}
+	compatList.push(opt(Compatibility.JAPANESEVERSION3, "Japanese Version 3"));
+	var compatibility = list("compatibility", "Compatibility", 9, compatList);
 	var fontSubsetThreshold = percent("fontSubsetThreshold", "Font Subset Threshold", 100);
 
 	// AI
