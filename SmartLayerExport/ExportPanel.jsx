@@ -16,7 +16,7 @@
 
 			// progress bar
 			this.progBar = container.add( 'progressbar', undefined, 0, 100 );
-			this.progBar.size = [420,10];
+			this.progBar.size = [496,10];
 
 
 			// buttons row

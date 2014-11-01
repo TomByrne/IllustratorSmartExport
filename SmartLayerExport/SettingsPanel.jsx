@@ -15,12 +15,12 @@
 			this.exportSettings = exportSettings;
 
 			var row;
-			var column = container.add('panel', undefined, 'General Settings')
+			var column = container.add('group')
 			column.orientation = 'column';
 			column.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
 
 			// Artboard Pattern Heading and tokens
-			row = column.add('group', undefined, '')
+			/*row = column.add('group', undefined, '')
 			row.orientation = 'row';
 			row.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
 
@@ -75,10 +75,10 @@
 				scopedThis.exportSettings.layerPattern = scopedThis.layerPatternInput.text;
 				if(scopedThis.onPatternChanged)scopedThis.onPatternChanged();
 			};
-			this.layerPatternInput.addEventListener("keyup", this.layerPatternInput.onChange);
+			this.layerPatternInput.addEventListener("keyup", this.layerPatternInput.onChange);*/
 
 			// scaling row
-			row = column.add('group', undefined, '')
+			/*row = column.add('group', undefined, '')
 			row.orientation = 'row';
 			row.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP]
 
@@ -105,7 +105,7 @@
 				}
 			});
 
-			var scalingTip = row.add('statictext', undefined, 'Raster formats only, Use 200% for Retina');
+			var scalingTip = row.add('statictext', undefined, 'Raster formats only, Use 200% for Retina');*/
 
 			// DIR GROUP
 			row = column.add( 'group', undefined, '') 
@@ -122,7 +122,7 @@
 			}
 
 			this.directoryInput = row.add('edittext', undefined, exportSettings.directory); 
-			this.directoryInput.size = [ 256,20 ];
+			this.directoryInput.size = [ 354,20 ];
 			this.directoryInput.onChange = function(){
 				scopedThis.exportSettings.directory = scopedThis.directoryInput.text;
 				if(scopedThis.onDirectoryChanged)scopedThis.onDirectoryChanged();
@@ -130,13 +130,13 @@
 		},
 
 		updateSettings:function(){
-			this.artboardPatternInput.text = this.exportSettings.artboardPattern;
-			this.layerPatternInput.text = this.exportSettings.layerPattern;
+			//this.artboardPatternInput.text = this.exportSettings.artboardPattern;
+			//this.layerPatternInput.text = this.exportSettings.layerPattern;
 			this.directoryInput.text = this.exportSettings.directory;
-			this.scalingInput.text = this.exportSettings.scaling + "%";
-			this.artboardPatternInput.enabled = this.exportSettings.exportArtboards;
-			this.artboardTokenList.enabled = this.exportSettings.exportArtboards;
-		},
+			//this.scalingInput.text = this.exportSettings.scaling + "%";
+			//this.artboardPatternInput.enabled = this.exportSettings.exportArtboards;
+			//this.artboardTokenList.enabled = this.exportSettings.exportArtboards;
+		}/*,
 
 		addToken:function(tokenList, input){
 			if(tokenList.selection>0){
@@ -149,9 +149,9 @@
 		},
 
 		updateArtboardsEnabled:function(){
-			this.artboardPatternInput.enabled = exportSettings.exportArtboards;
-			this.artboardTokenList.enabled = exportSettings.exportArtboards;
-		}
+			//this.artboardPatternInput.enabled = this.exportSettings.exportArtboards;
+			//this.artboardTokenList.enabled = this.exportSettings.exportArtboards;
+		}*/
 	};
 	pack.SettingsPanel = SettingsPanel;
 })(smartExport)

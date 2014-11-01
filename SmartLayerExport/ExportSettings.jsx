@@ -10,13 +10,16 @@
 	}
 
 	ExportSettings.prototype={
+		DEFAULT_ARTBOARD_PATTERN:"<ArtboardName>.<Ext>",
+		DEFAULT_LAYER_PATTERN:"<ArtboardName>_<LayerName>.<Ext>",
+
 		type:ExportSettings,
 
-		artboardPattern:"<ArtboardName>.<Ext>",
-		layerPattern:"<ArtboardName>_<LayerName>.<Ext>",
-		directory:"",
-		scaling:"",
+		//artboardPattern:"<ArtboardName>.<Ext>",
+		//layerPattern:"<ArtboardName>_<LayerName>.<Ext>",
+		//scaling:"",
 
+		directory:"",
 		formats:[],
 
 		artboardAll:true,
@@ -29,7 +32,6 @@
 
 
 		toXML:function(includePatterns, includeGeneralSettings, includeFormatSettings, includeArtboards, includeLayers){
-			if(includePatterns===undefined)includePatterns = true;
 			if(includeGeneralSettings===undefined)includeGeneralSettings = true;
 			if(includeFormatSettings===undefined)includeFormatSettings = true;
 			if(includeArtboards===undefined)includeArtboards = true;
@@ -37,13 +39,13 @@
 
 			var ret = new XML( '<prefs></prefs>' );
 
-			if(includePatterns){
+			/*if(includePatterns){
 				ret.appendChild( new XML('<artboardPattern>'+this.xmlEncode(this.artboardPattern)+'</artboardPattern>') );
 				ret.appendChild( new XML('<layerPattern>'+this.xmlEncode(this.layerPattern)+'</layerPattern>') );
-			}
+			}*/
 			if(includeGeneralSettings){
 				ret.appendChild( new XML('<directory>'+this.directory+'</directory>') );
-				ret.appendChild( new XML('<scaling>'+this.scaling+'</scaling>') );
+				/*ret.appendChild( new XML('<scaling>'+this.scaling+'</scaling>') );*/
 				ret.appendChild( new XML('<exportArtboards>'+this.exportArtboards+'</exportArtboards>') );
 				ret.appendChild( new XML('<ignoreWarnings>'+this.ignoreWarnings+'</ignoreWarnings>') );
 			}
@@ -52,7 +54,7 @@
 				var formats = new XML('<formats/>');
 				for(var i=0; i<this.formats.length; ++i){
 					var format = this.formats[i];
-					formats.appendChild(format.toXML());
+					formats.appendChild(format.toXML(includePatterns));
 				}
 				ret.appendChild( formats );
 			}
@@ -70,24 +72,57 @@
 			return ret;
 		},
 
+		addNewFormat:function(formatSettings){
+			this.formats.push(formatSettings);
+
+			var defaultPatterns = {};
+			var scaling;
+			for(var i=this.formats.length-1; i>=0; --i){
+				var format = this.formats[i];
+				if(format.scaling)scaling = format.scaling;
+				if(format==formatSettings)continue;
+				for(var j in format.patterns){
+					if(!defaultPatterns[j])defaultPatterns[j] = format.patterns[j];
+				}
+			}
+			if(formatSettings.hasProp("scaling")){
+				formatSettings.scaling = scaling || 100;
+			}else{
+				formatSettings.scaling = null;
+			}
+			if(!defaultPatterns.artboard)defaultPatterns.artboard = this.DEFAULT_ARTBOARD_PATTERN;
+			if(!defaultPatterns.layer)defaultPatterns.layer = this.DEFAULT_LAYER_PATTERN;
+
+			for(var j in defaultPatterns){
+				if(!formatSettings.patterns[j])formatSettings.patterns[j] = defaultPatterns[j];
+			}
+		},
+
 		populateWithXML:function(xml){
 			this.migrateXML(xml);
 			
-			if(xml.artboardPattern.length())this.artboardPattern = xml.artboardPattern.toString() || this.DEFAULT_ARTBOARD_PATTERN;
-			if(xml.layerPattern.length())this.layerPattern	= xml.layerPattern.toString() || this.DEFAULT_LAYER_PATTERN;
+			//if(xml.artboardPattern.length())this.artboardPattern = xml.artboardPattern.toString() || this.DEFAULT_ARTBOARD_PATTERN;
+			//if(xml.layerPattern.length())this.layerPattern	= xml.layerPattern.toString() || this.DEFAULT_LAYER_PATTERN;
 			if(xml.directory.length())this.directory		= xml.directory.toString();
 			if(xml.scaling.length())this.scaling 		= parseFloat( xml.scaling.toString().replace( /\% /, '' ));
 
+			var defaultPatterns = {artboard:this.DEFAULT_ARTBOARD_PATTERN, layer:this.DEFAULT_LAYER_PATTERN};
 			var formatNodes = xml.formats.format;
 			if(formatNodes.length()){
 				this.formats = [];
 				for(var i=0; i<formatNodes.length(); i++){
 					var format = pack.FormatSettings.fromXML(formatNodes[i]);
 					if(format.formatRef)this.formats.push(format);
+					for(var j in format.patterns){
+						defaultPatterns[j] = format.patterns[j];
+					}
+					for(var j in defaultPatterns){
+						if(!format.patterns[j])format.patterns[j] = defaultPatterns[j];
+					}
 				}
 			}
 			if(!this.formats.length){
-				this.formats.push(new pack.FormatSettings("PNG 24"));
+				this.addNewFormat(new pack.FormatSettings("PNG 24"));
 			}
 
 			if(xml.artboardAll.length())this.artboardAll	= xml.artboardAll == "true";
@@ -186,7 +221,6 @@
 				formatNode.fontHandling = (node.embedFont?"embed":"none");
 				formatNode.trimEdges = node.trimEdges;
 				formatNode.innerPadding = node.innerPadding;
-				formatNode.scaling = "";
 
 				formats.appendChild(formatNode);
 				node.appendChild(formats);
@@ -197,9 +231,29 @@
 				delete node.embedFont;
 				delete node.trimEdges;
 				delete node.innerPadding;
-
 			}
-		},
+			var formats = node.formats.format;
+			if(formats.length() && (node.artboardPattern || node.layerPattern || node.scaling)){
+				for(var i=0; i<formats.length(); ++i){
+					var formatNode = formats[i];
+					if(formatNode.patterns.length()==0){
+						formats.appendChild(new XML("<patterns/>"));
+					}
+					if(node.artboardPattern && formatNode.patterns.artboard.length()==0){
+						formatNode.patterns.artboard = node.artboardPattern.toString();
+					}
+					if(node.layerPattern && formatNode.patterns.layer.length()==0){
+						formatNode.patterns.layer = node.layerPattern.toString();
+					}
+					if(node.scaling && formatNode.scaling.length()==0){
+						formatNode.scaling = node.scaling.toString();
+					}
+				}
+				delete node.artboardPattern;
+				delete node.layerPattern;
+				delete node.scaling;
+			}
+		}/*,
 		xmlEncode:function(str){
 			str = str.split("&").join("&amp;");
 			str = str.split("<").join("&lt;");
@@ -207,7 +261,7 @@
 			str = str.split('"').join("&quot;");
 			str = str.split("'").join("&apos;");
 			return str;
-		}
+		}*/
 	};
 	pack.ExportSettings = ExportSettings;
 })(smartExport)

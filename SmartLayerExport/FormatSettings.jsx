@@ -4,6 +4,8 @@
 			this.format = formatName;
 			this.formatRef = pack.getFormat(formatName);
 		}
+		this.options = {};
+		this.patterns = {};
 		return this;
 	}
 
@@ -15,27 +17,38 @@
 
 	FormatSettings.prototype={
 		format:null,
-		transparency:true,
 		embedImage:true,
+		ungroup:false,
 		fontHandling:"none",
 		trimEdges:true,
 		innerPadding:false,
 		scaling:null,
 		directory:null,
-		options:{},
+		options:null,
+		patterns:null,
 
 		formatRef:null,
+		saveOptions:null, // for save/export call, generated at runtime, no need to store
 
-		toXML:function(){
+		toXML:function(includePatterns){
+			if(includePatterns===undefined)includePatterns = true;
 			var ret = new XML('<format/>');
 			ret.appendChild( new XML('<format>'+this.format+'</format>') );
 			if(this.hasProp("scaling") && this.scaling)ret.appendChild( new XML('<scaling>'+this.scaling+'</scaling>') );
-			if(this.hasProp("transparency"))ret.appendChild( new XML('<transparency>'+this.transparency+'</transparency>') );
+			if(this.hasProp("ungroup"))ret.appendChild( new XML('<ungroup>'+this.ungroup+'</ungroup>') );
 			if(this.hasProp("embedImage"))ret.appendChild( new XML('<embedImage>'+this.embedImage+'</embedImage>') );
 			if(this.hasProp("trimEdges"))ret.appendChild( new XML('<trimEdges>'+this.trimEdges+'</trimEdges>') );
 			if(this.hasProp("innerPadding"))ret.appendChild( new XML('<innerPadding>'+this.innerPadding+'</innerPadding>') );
 			if(this.directory)ret.appendChild( new XML('<directory>'+this.directory+'</directory>') );
 			if(this.fontHandling && this.fontHandling!="none")ret.appendChild( new XML('<fontHandling>'+this.fontHandling+'</fontHandling>') );
+
+			if(includePatterns){
+				var patterns = new XML('<patterns/>');
+				for(var i in this.patterns){
+					patterns.appendChild( new XML('<'+i+'>'+this.xmlEncode(this.patterns[i])+'</'+i+'>') );
+				}
+				ret.appendChild(patterns);
+			}
 
 			var options = new XML('<options/>');
 			for(var i in this.options){
@@ -44,21 +57,20 @@
 			ret.appendChild(options);
 			return ret;
 		},
+		xmlEncode:function(str){
+			str = str.split("&").join("&amp;");
+			str = str.split("<").join("&lt;");
+			str = str.split(">").join("&gt;");
+			str = str.split('"').join("&quot;");
+			str = str.split("'").join("&apos;");
+			return str;
+		},
 
-		populateWithXML:function(xml){
-			this.format		    = xml.format.toString();
-			this.transparency	= xml.transparency == "true";
-			this.embedImage	    = xml.embedImage == "true";
-			this.fontHandling   = xml.fontHandling.toString() || "none";
-			this.trimEdges	    = xml.trimEdges == "true";
-			this.innerPadding   = xml.innerPadding == "true";
-			this.scaling 		= parseFloat( xml.scaling.toString().replace( /\% /, '' ));
-			this.directory 		= xml.directory.toString();
-
-			var options = xml.options.children();
-			this.options = {};
-			for(var i=0; i<options.length(); i++){
-				var node = options[i];
+		parseObjectNode:function(parentNode){
+			var children = parentNode.children();
+			var ret = {};
+			for(var i=0; i<children.length(); i++){
+				var node = children[i];
 				var value = node.text().toString();
 				if(value=="true"){
 					value = true;
@@ -70,12 +82,29 @@
 						value = num;
 					}
 				}
-				this.options[node.localName()] = value;
+				ret[node.localName()] = value;
 			}
+			return ret;
+		},
 
+		populateWithXML:function(xml){
+			this.format		    = xml.format.toString();
+			this.ungroup		= xml.ungroup == "true";
+			this.embedImage	    = xml.embedImage == "true";
+			this.fontHandling   = xml.fontHandling.toString() || "none";
+			this.trimEdges	    = xml.trimEdges == "true";
+			this.innerPadding   = xml.innerPadding == "true";
+			this.scaling 		= parseFloat( xml.scaling.toString().replace( /\% /, '' )) || 100;
+			this.directory 		= xml.directory.toString();
+
+			this.patterns = this.parseObjectNode(xml.patterns);
+			this.options = this.parseObjectNode(xml.options);
+			
 			this.formatRef = pack.getFormat(this.format);
 			if(!this.formatRef){
 				alert("Unrecognised format: "+this.format);
+			}else if(!this.hasProp("scaling")){
+				this.scaling 	= null;
 			}
 		},
 

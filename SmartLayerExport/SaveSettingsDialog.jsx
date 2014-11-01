@@ -16,10 +16,6 @@
 			this.input = this.dialog.add("edittext", undefined, "");
 			this.input.preferredSize = [220, 22];
 			
-			this.patternCheckbox = this.dialog.add("checkbox", undefined, "Save Filename Patterns");
-			this.patternCheckbox.value = true;
-			this.patternCheckbox.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
-			
 			this.generalCheckbox = this.dialog.add("checkbox", undefined, "Save General Settings");
 			this.generalCheckbox.value = true;
 			this.generalCheckbox.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
@@ -27,6 +23,13 @@
 			this.formatCheckbox = this.dialog.add("checkbox", undefined, "Save Format Settings");
 			this.formatCheckbox.value = true;
 			this.formatCheckbox.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
+			this.formatCheckbox.onClick = function(){
+				scopedThis.patternCheckbox.enabled = scopedThis.formatCheckbox.value;
+			}
+			
+			this.patternCheckbox = this.dialog.add("checkbox", undefined, "Save Filename Patterns");
+			this.patternCheckbox.value = true;
+			this.patternCheckbox.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
 
 			var buttonRow = this.dialog.add("group");
 			buttonRow.orientation = "row";

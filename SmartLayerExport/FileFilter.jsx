@@ -33,7 +33,7 @@
 			if(Folder.fs=="Windows"){
 				return this.filterStr;
 			}else{
-				return this.doFilter;
+				return closure(this, this.doFilter, [], true);
 			}
 		},
 

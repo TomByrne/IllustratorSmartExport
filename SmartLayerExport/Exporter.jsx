@@ -9,19 +9,34 @@
 	Exporter.prototype={
 		type:Exporter,
 		onExportFinished:null,
+		cancelled:false,
+		running:false,
 		
 		// run_export function. does the dirty work
-		run_export: function(exportList, directory) {
-			this.exportList = exportList;
+		run_export: function(bundleList, exportSettings, directory) {
+			this.bundleList = bundleList;
+			this.exportSettings = exportSettings;
 			this.directory = directory;
+			this.cancelled = false;
+			this.running = true;
 
-			this.export_artboards = this.exportSettings.artboardInd;
-			this.export_layers = this.exportSettings.layerInd;
-			this.num_to_export = exportList.length;
+			//this.export_artboards = this.exportSettings.artboardInd;
+			//this.export_layers = this.exportSettings.layerInd;
 			this.num_exported = 0;
 			this.layerItemWarned = false;
 
-			if(!this.exportList.length){
+			this.num_to_export = 0;
+			for (var x = 0; x < this.bundleList.length; x++ ) {
+				this.num_to_export += this.bundleList[x].items.length;
+			}
+
+			for (var x = 0; x < exportSettings.formats.length; x++ ) {
+				var formatSettings = exportSettings.formats[x];
+				formatSettings.saveOptions = formatSettings.formatRef.getOptions(formatSettings);
+			}
+
+
+			if(!this.num_to_export){
 				alert('Please select valid artboards / layers');
 				return;
 			}
@@ -30,13 +45,11 @@
 				alert('Please select select a destination');
 				return;
 			}
-
 			if(!Folder(directory).exists){
 				if(confirm("Output directory doesn't exist.\nCreate it now?")){
 					Folder(directory).create();
 				}else{
-					if(this.onExportFinished)this.onExportFinished(null, true);
-					return;
+					return this.doFinish(false);
 				}
 			}
 
@@ -48,6 +61,122 @@
 		},
 
 		doRun:function(){
+			var docRef = app.activeDocument;
+			var failed = [];
+			for (var x = 0; x < this.bundleList.length; x++ ) {
+				var bundle = this.bundleList[x];
+				var items = bundle.items;
+				if(this.cancelled)return this.doFinish(false);
+
+				try{
+					var i=0; // in case error is thrown
+					//alert("PREPARE");
+					var copyDoc = bundle.prepareHandler(docRef, this.exportSettings, bundle);
+					//alert("PREPARE FINISHED: "+copyDoc);
+
+
+					for(var i=0; i<items.length; i++){
+						if(this.cancelled)return this.doFinish(false);
+
+						var item = items[i];
+						if(item.state == "invalid" || item.state=="success"){
+							continue;
+						}
+
+						if(copyDoc=="skipped"){
+							item.state = "skipped";
+
+						}else if(!copyDoc || copyDoc=="failed"){
+							failed.push(item);
+							item.state = "failed";
+
+						}else{
+							try{
+								var formatSettings = item.formatSettings;
+								var dir = this.directory + (formatSettings.directory?"/"+formatSettings.directory:"");
+								var dirObj = Folder(dir);
+								if(!dirObj.exists){
+									dirObj.create();
+								}
+								var fileName = dir + "/" + item.fileName;
+								//alert("SAVE");
+								formatSettings.formatRef.saveFile(copyDoc, fileName, item.formatSettings.saveOptions );
+								//alert("SAVED");
+								item.state = "success";
+
+							}catch(e){
+			alert("oops: "+e);
+								failed.push(item);
+								item.state = "failed";
+							}
+						}
+						this.updateProgress(++this.num_exported, this.num_to_export);
+						this.updatedExportItem(item);
+						$.sleep(40) // Allows UI update;
+					}
+
+					if(copyDoc && copyDoc!="skipped" && copyDoc!="failed"){
+						if(bundle.cleanupHandler)bundle.cleanupHandler(docRef, this.exportSettings, bundle);
+					}
+				}catch(e){
+			alert("hmmm: "+e);
+					try{
+						if(bundle.cleanupHandler)bundle.cleanupHandler(docRef, this.exportSettings, bundle);
+					}catch(e){}
+
+					for(i; i<items.length; i++){
+						var item = items[i];
+						item.state = "failed";
+						this.updatedExportItem(item);
+						failed.push(item);
+					}
+					this.num_exported += (items.length - i);
+					this.updateProgress(this.num_exported, this.num_to_export);
+				}
+			}
+			if(failed.length){
+				var msg = "Exports failed:";
+				var n = Math.min(20, failed.length);
+				for(var i=0; i<n; ++i){
+					var item = failed[i];
+					msg += "\n - "+item.fileName;
+				}
+				if(failed.length > n) msg += "\nPlus "+(failed.length - n)+" more";
+				msg += "\n\nTry again?";
+				if(confirm(msg)){
+					return this.doRun();
+				}else{
+					return this.doFinish(false);
+				}
+			}else{
+				return this.doFinish(true);
+			}
+		},
+
+		doFinish: function(success){
+			this.running = false;
+			if(this.onExportFinished){
+				if(success){
+					this.onExportFinished(true, null);
+				}else{
+					this.onExportFinished(null, true);
+				}
+			}
+			return success;
+		},
+
+		cancel:function(){
+			this.cancelled = true;
+		},
+
+		indexOf: function ( array, element ) {
+			for(var i=0; i<array.length; i++){
+				if(array[i]==element)return i;
+			}
+			return -1;
+		}
+
+		/*doRun:function(){
 			this.failed_artboards = [];
 			this.failed_layers = [];
 
@@ -60,7 +189,7 @@
 				var formatSettings = this.exportSettings.formats[x];
 				var doOutline = formatSettings.fontHandling=="outline";
 				var formatInfo = formatSettings.formatRef;
-				var scaling = (formatSettings.scaling?formatSettings.scaling:this.exportSettings.scaling);
+				var scaling = formatSettings.scaling;
 
 				var copyBehaviour = formatInfo.copyBehaviour || formatSettings.trimEdges;
 				var options = formatInfo.getOptions(formatSettings, scaling);
@@ -244,7 +373,7 @@
 					else this.onExportFinished(true, null);
 				}
 			}
-		},
+		},*/
 
 		/*outlineSymbols:function(doc){
 			for(var i=0; i<doc.symbols.length; ++i){
@@ -253,16 +382,16 @@
 			}
 		},*/
 
-		setLayerDepth:function(layer, depth){
+		/*setLayerDepth:function(layer, depth){
 			while(layer.zOrderPosition<depth){
 				layer.zOrder(ZOrderMethod.BRINGFORWARD);
 			}
 			while(layer.zOrderPosition>depth){
 				layer.zOrder(ZOrderMethod.SENDBACKWARD);
 			}
-		},
+		},*/
 
-		checkShouldExport:function(formatSettings, artboard, layer){
+		/*checkShouldExport:function(formatSettings, artboard, layer){
 			var matchLayer = !(layer===null);
 			for(var i=0; i<this.exportList.length; i++){
 				var item = this.exportList[i];
@@ -275,9 +404,9 @@
 				}
 			}
 			return false;
-		},
+		},*/
 	
-		redoFailed: function(failed_layers, failed_artboards) {
+		/*redoFailed: function(failed_layers, failed_artboards) {
 			var newLayers = [];
 			for(var i=0; i<failed_layers.length; ++i){
 				var index = failed_layers[i];
@@ -310,9 +439,9 @@
 				return true;
 			}
 			return false;
-		},
+		},*/
 		
-		copyDocument: function(docRef, artboard, rect, w, h, offset, doInnerPadding, layerCheck, layerDepths, outlineText) {
+		/*copyDocument: function(docRef, artboard, rect, w, h, offset, doInnerPadding, layerCheck, layerDepths, outlineText) {
 			var preset = new DocumentPreset();
 			preset.width = w;
 			preset.height = h;
@@ -395,15 +524,15 @@
 			if(outlineText)this.doOutlineLayer(toLayer);
 
 			return toLayer;
-		},
-		toArray:function(coll) {  
+		},*/
+		/*toArray:function(coll) {  
 		    var arr = [];  
 		    for (var i = 0; i < coll.length; ++i) {  
 		        arr.push(coll[i]);  
 		    }  
 		    return arr;  
-		},
-		getAllPageItems:function(doc, layer) {
+		},*/
+		/*getAllPageItems:function(doc, layer) {
 			if(layer.layers.length==0){
 				return layer.pageItems;
 			}
@@ -425,9 +554,9 @@
 		    	}
 		    }
 		    return items;
-		},
+		},*/
 		
-		copyIntoLayer: function(doc, fromLayer, toLayer) {
+		/*copyIntoLayer: function(doc, fromLayer, toLayer) {
 			var items = this.getAllPageItems(doc, fromLayer);
 			try{
 				this.copyItems(doc, items, toLayer);
@@ -435,16 +564,16 @@
 				alert(e);
 				alert("copy items failed");
 			}
-		},
+		},*/
 		
-		doOutlineLayer: function(layer) {
+		/*doOutlineLayer: function(layer) {
 			this.doOutlineItems(layer.pageItems);
 			for(var i=0; i<layer.layers.length; i++){
 				this.doOutlineLayer(layer.layers[i]);
 			}
-		},
+		},*/
 		
-		doOutlineItems: function(items) {
+		/*doOutlineItems: function(items) {
 			for(var i=0; i<items.length; ++i){
 				var item = items[i];
 				if(item.typename == "TextFrame"){
@@ -453,9 +582,9 @@
 					this.doOutlineItems(item.pageItems);
 				}
 			}
-		},
+		},*/
 	
-		shiftLayer: function(layer, shiftX, shiftY) {
+		/*shiftLayer: function(layer, shiftX, shiftY) {
 			if(shiftX==undefined)shiftX = 0;
 			if(shiftY==undefined)shiftY = 0;
 
@@ -467,9 +596,9 @@
 			for(var i=layer.layers.length-1; i>=0; --i){
 				this.shiftLayer(layer.layers[i], shiftX, shiftY)
 			}
-		},
+		},*/
 		
-		hideAllLayers: function() {
+		/*hideAllLayers: function() {
 			var n = docRef.layers.length;
 			
 			for(var i=0; i<n; ++i) {
@@ -494,16 +623,16 @@
 				layer = docRef.layers[layerIndices[i]];
 				layer.visible = true;
 			}
-		},
+		},*/
 	
-		intersects: function(rect1, rect2) {
+		/*intersects: function(rect1, rect2) {
 			return !(  rect2[0] > rect1[2] || 
 			           rect2[1] < rect1[3] ||
 			           rect2[2] < rect1[0] || 
 			           rect2[3] > rect1[1]);
-		},
+		},*/
 		
-		getShownLayers: function() {
+		/*getShownLayers: function() {
 			var shown = []
 			var n = docRef.layers.length;
 			
@@ -516,9 +645,9 @@
 				}
 			}
 			return shown;
-		},
+		},*/
 
-		getItemBounds:function(parent){
+		/*getItemBounds:function(parent){
 			if(parent.typename=="GroupItem"){
 				var rect;
 				var maskRect;
@@ -571,9 +700,9 @@
 			}else{
 				return parent.visibleBounds;
 			}
-		},
+		},*/
 	
-		getLayerBounds: function(layer) {
+		/*getLayerBounds: function(layer) {
 			var rect;
 			var items = layer.pageItems;
 			for(var i=0; i<items.length; ++i){
@@ -628,13 +757,13 @@
 				}
 			}
 			return rect;
-		},
+		},*/
 		
-		rectEqual: function(rect1, rect2) {
+		/*rectEqual: function(rect1, rect2) {
 			return rect1[0]==rect2[0] && rect1[1]==rect2[1] && rect1[2]==rect2[2] && rect1[3]==rect2[3] ;
-		},
+		},*/
 		
-		copyItems: function(doc, fromList, toLayer) {
+		/*copyItems: function(doc, fromList, toLayer) {
 			var visWas = toLayer.visible;
 			toLayer.visible = true;
 			for(var i=0; i<fromList.length; ++i){
@@ -646,21 +775,17 @@
 				}else{
 					if(item.hidden)continue;
 
-					/*if(item.typename == "GroupItem" && !item.clipped){
-						this.copyItems(doc, item.pageItems, toLayer);
-					}else{*/
-						item.duplicate(toLayer, ElementPlacement.PLACEATEND);
-					//}
+					item.duplicate(toLayer, ElementPlacement.PLACEATEND);
 				}
 			}
 			toLayer.visible = visWas;
-		},
+		},*/
 
-		precision:function(num, roundTo){
+		/*precision:function(num, roundTo){
 			return Math.round(num / roundTo) * roundTo;
-		},
+		},*/
 
-		innerPadLayer: function(layer, rect, rulerOrigin){
+		/*innerPadLayer: function(layer, rect, rulerOrigin){
 			var artL = this.precision(rect[0], 0.01);
 			var artB = this.precision(rect[1], 0.01);
 			var artR = this.precision(rect[2], 0.01);
@@ -698,18 +823,11 @@
 			for(var i=0; i<layer.layers.length; ++i){
 				innerPadLayer(layer.layers[i], docW, docH);
 			}
-		},
+		},*/
 	
-		isAdditionalLayer: function(layer) {
+		/*isAdditionalLayer: function(layer) {
 			return ( layer.name.match( /^\+/ ) && layer.visible);
-		},
-
-		indexOf: function ( array, element ) {
-			for(var i=0; i<array.length; i++){
-				if(array[i]==element)return i;
-			}
-			return -1;
-		}
+		},*/
 	};
 	pack.Exporter = Exporter;
 })(smartExport)

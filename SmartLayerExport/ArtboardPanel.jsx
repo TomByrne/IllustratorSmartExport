@@ -17,7 +17,7 @@
 			column.orientation = 'column';
 			column.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
 
-			this.artboardList = column.add ('ListBox', [0, 0, 230, 410], '', 
+			this.artboardList = column.add ('ListBox', [0, 0, 200, 410], '', 
 									{numberOfColumns: 3, showHeaders: false, multiselect:true,
 									columnTitles: ['', '', 'Artboard'] });
 			this.artboardList.onChange = function(){

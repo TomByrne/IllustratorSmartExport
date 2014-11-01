@@ -41,7 +41,7 @@ var smartExportPanel = {
 		}
 		var parse_success = this.load_prefs();
 
-		this.TOKENS = ["--Tokens--", this.ARTBOARD_NUM_TOKEN, this.ARTBOARD_NAME_TOKEN, this.LAYER_NUM_TOKEN, this.LAYER_NAME_TOKEN, this.FILE_EXT_TOKEN];
+		//this.TOKENS = ["--Tokens--", this.ARTBOARD_NUM_TOKEN, this.ARTBOARD_NAME_TOKEN, this.LAYER_NUM_TOKEN, this.LAYER_NAME_TOKEN, this.FILE_EXT_TOKEN];
 		
 		if (parse_success) {
 			this.showDialog();
@@ -96,33 +96,39 @@ var smartExportPanel = {
 	},
 
 	updatePreviewList:function(){
-		this.exportList = [];
-
-		for(var x=0; x<this.exportSettings.formats.length; ++x){
-			var settings = this.exportSettings.formats[x];
-			var format = settings.formatRef;
-
-			for(var i=0; i<this.exportSettings.artboardInd.length; ++i){
-				var artI = this.exportSettings.artboardInd[i];
-				var artboard = docRef.artboards[artI];
-				if(this.exportSettings.exportArtboards){
-					this.exportList.push({state:"waiting", formatSettings:settings, artboard:artI, fileName:this.makeFileName(this.exportSettings.artboardPattern, format.ext, artI+1, artboard.name, "", "")});
-				}
-				for(var j=0; j<this.exportSettings.layerInd.length; ++j){
-					var layI = this.exportSettings.layerInd[j];
-					var layer = docRef.layers[layI];
-					this.exportList.push({state:"waiting", formatSettings:settings, artboard:artI, layer:layI, fileName:this.makeFileName(this.exportSettings.layerPattern, format.ext, artI+1, artboard.name, layI+1, layer.name)});
-				}
-			}
-		}
 		try{
-			this.previewPanel.updateList(this.exportList);
+			this.bundleList = [];
+
+			if(this.exportSettings.exportArtboards){
+				smartExport.ArtboardBundler.add(docRef, this.bundleList, this.exportSettings, "artboard");
+			}
+			smartExport.LayerBundler.add(docRef, this.bundleList, this.exportSettings, "layer");
+
+			/*for(var x=0; x<this.exportSettings.formats.length; ++x){
+				var settings = this.exportSettings.formats[x];
+				var format = settings.formatRef;
+
+				for(var i=0; i<this.exportSettings.artboardInd.length; ++i){
+					var artI = this.exportSettings.artboardInd[i];
+					var artboard = docRef.artboards[artI];
+					if(this.exportSettings.exportArtboards){
+						this.exportList.push({state:"waiting", formatSettings:settings, artboard:artI, fileName:this.makeFileName(this.exportSettings.artboardPattern, format.ext, artI+1, artboard.name, "", "")});
+					}
+					for(var j=0; j<this.exportSettings.layerInd.length; ++j){
+						var layI = this.exportSettings.layerInd[j];
+						var layer = docRef.layers[layI];
+						this.exportList.push({state:"waiting", formatSettings:settings, artboard:artI, layer:layI, fileName:this.makeFileName(this.exportSettings.layerPattern, format.ext, artI+1, artboard.name, layI+1, layer.name)});
+					}
+				}
+			}*/
+
+			this.previewPanel.updateList(this.bundleList);
 		}catch(e){
 			alert(e);
 		}
 	},
 
-	ARTBOARD_NUM_TOKEN:"<ArtboardNum>",
+	/*ARTBOARD_NUM_TOKEN:"<ArtboardNum>",
 	ARTBOARD_NAME_TOKEN:"<ArtboardName>",
 
 	LAYER_NUM_TOKEN:"<LayerNum>",
@@ -138,7 +144,7 @@ var smartExportPanel = {
 		ret = ret.split(this.LAYER_NAME_TOKEN).join(layName);
 		ret = ret.split(this.FILE_EXT_TOKEN).join(ext);
 		return ret;
-	},
+	},*/
 
 	
 	// dialog display
@@ -176,7 +182,7 @@ var smartExportPanel = {
 		this.artboardPanel.onWholeArtboardModeChanged = function(){
 			exSettings.exportArtboards = scopedThis.artboardPanel.wholeArtboardMode;
 			scopedThis.updatePreviewList();
-			scopedThis.settingsPanel.updateArtboardsEnabled();
+			scopedThis.formatPanel.updateArtboardsEnabled();
 		}
 		this.artboardPanel.onSelectedChanged = function() {
 			exSettings.artboardAll  = scopedThis.artboardPanel.selectAll;
@@ -207,8 +213,7 @@ var smartExportPanel = {
 			scopedThis.formatPanel.updateSettings();
 			scopedThis.exportPanel.updateSettings();
 		}
-
-		this.settingsPanel = new pack.SettingsPanel(settingsCol, this.exportSettings, this.TOKENS);
+		this.settingsPanel = new pack.SettingsPanel(settingsCol, this.exportSettings, smartExport.tokens.ALL);
 		this.settingsPanel.onPatternChanged = function(){
 			scopedThis.updatePreviewList();
 		}
@@ -221,7 +226,11 @@ var smartExportPanel = {
 
 		this.exportPanel = new pack.ExportPanel(settingsCol, this.exportSettings);
 		this.exportPanel.onCancelClicked = function() {
-			scopedThis.dlg.close()
+			if(scopedThis.exporter.running){
+				scopedThis.exporter.cancel();
+			}else{
+				scopedThis.dlg.close();
+			}
 		};
 		this.exportPanel.onSaveCloseClicked = function() {
 			scopedThis.saveOptions();
@@ -232,9 +241,9 @@ var smartExportPanel = {
 			try{
 				scopedThis.saveOptions(); // save options before export in case of errors
 				if(scopedThis.exportSettings.directory){
-					scopedThis.exporter.run_export(scopedThis.exportList, scopedThis.exportSettings.directory);
+					scopedThis.exporter.run_export(scopedThis.bundleList, this.exportSettings, scopedThis.exportSettings.directory);
 				}else{
-					scopedThis.exporter.run_export(scopedThis.exportList, docRef.path);
+					scopedThis.exporter.run_export(scopedThis.bundleList, this.exportSettings, docRef.path);
 				}
 			}catch(e){
 				alert(e);

@@ -9,6 +9,7 @@
 
 	    formatTabs:null,
 	    formatPanels:null,
+	    ignoreChanges:false,
 
 		init:function(container, formats, exportSettings){
 			var scopedThis = this;
@@ -42,7 +43,7 @@
 				}
 			}
 
-			this.formatList = column.add ('ListBox', [0, 0, 110, 174], '', 
+			this.formatList = column.add ('ListBox', [0, 0, 110, 332], '', 
 									{numberOfColumns: 1, showHeaders: false, multiselect:false,
 									columnTitles: ['Format'] });
 			this.formatList.onChange = function(){
@@ -56,6 +57,24 @@
 			this.formatColumn = row.add("panel", undefined, 'Format Settings:');
 			this.formatColumn.orientation = "column";
 			this.formatColumn.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP]
+			this.formatColumn.size = [374, 367]
+
+			//artboard pattern
+			this.artboardPattern = new pack.FilePatternControl(this.formatColumn, 'Artboard Filename Pattern:', null, pack.tokens.ALL);
+			this.artboardPattern.onChange = function(){
+				if(scopedThis.ignoreChanges)return;
+				scopedThis.currentFormatSettings.patterns["artboard"] = scopedThis.artboardPattern.getValue();
+				scopedThis.onFormatsChanged();
+			}
+			this.artboardPattern.setEnabled(this.exportSettings.exportArtboards);
+
+			//layer pattern
+			this.layerPattern = new pack.FilePatternControl(this.formatColumn, 'Layer Filename Pattern:', null, pack.tokens.ALL);
+			this.layerPattern.onChange = function(){
+				if(scopedThis.ignoreChanges)return;
+				scopedThis.currentFormatSettings.patterns["layer"] = scopedThis.layerPattern.getValue();
+				scopedThis.onFormatsChanged();
+			}
 
 			// scaling row
 			var scalingRow = this.formatColumn.add('group', undefined, '')
@@ -74,81 +93,84 @@
 				if(scaling){
 					scopedThis.currentFormatSettings.scaling = scaling
 					if(scopedThis.onScalingChanged)scopedThis.onScalingChanged();
-					scopedThis.scalingInput.text = scopedThis.currentFormatSettings.scaling + "%";
-				}else{
-					scopedThis.currentFormatSettings.scaling = "";
 				}
+				scopedThis.scalingInput.text = scopedThis.currentFormatSettings.scaling + "%";
 				scopedThis.checkSettingsName(scopedThis.currentFormatSettings, true, true);
 			}
 			this.scalingInput.addEventListener("keydown", function(e){
 				if(!scopedThis.currentFormatSettings.scaling)return;
 
+				var pressed;
 				if(e.keyName=="Up"){
+					pressed = true;
 					scopedThis.currentFormatSettings.scaling += 10;
 				}else if(e.keyName=="Down"){
+					pressed = true;
 					scopedThis.currentFormatSettings.scaling = Math.max(10, scopedThis.currentFormatSettings.scaling - 10);
 				}
-				scopedThis.scalingInput.text = scopedThis.currentFormatSettings.scaling + "%";
-				scopedThis.checkSettingsName(scopedThis.currentFormatSettings, true, true);
+				if(pressed){
+					scopedThis.scalingInput.text = scopedThis.currentFormatSettings.scaling + "%";
+					scopedThis.checkSettingsName(scopedThis.currentFormatSettings, true, true);
+				}
 			});
 
-			this.scalingTip = scalingRow.add('statictext', undefined, 'Overrides general settings');
-			this.scalingTip.enabled = false;
+			var fontRow = this.formatColumn.add('group', undefined, '')
+			fontRow.orientation = 'row';
+			fontRow.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP]
 
-			// transparency / trim row
-			var transRow = this.formatColumn.add('group', undefined, '')
-			transRow.orientation = 'row';
-			transRow.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP]
-		
-			this.transCheckBox = transRow.add('checkbox', undefined, 'Transparency');
-			this.transCheckBox.value = false;
-			this.transCheckBox.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
-			this.transCheckBox.enabled = false; 
-			this.transCheckBox.size = [ 120,20 ];
-			this.transCheckBox.onClick = function(){
-				scopedThis.currentFormatSettings.transparency = scopedThis.transCheckBox.value;
-			}
-
-			this.embedImageCheckBox = transRow.add('checkbox', undefined, 'Embed Imagery');
-			this.embedImageCheckBox.value = false;
-			this.embedImageCheckBox.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
-			this.embedImageCheckBox.enabled = false;
-			this.embedImageCheckBox.onClick = function(){
-				scopedThis.currentFormatSettings.embedImage = scopedThis.embedImageCheckBox.value;
-			}
-
-			// font row
-			var embedRow = this.formatColumn.add('group', undefined, '')
-			embedRow.orientation = 'row';
-			embedRow.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.CENTER];
-		
-			this.trimEdgesCheckBox = embedRow.add('checkbox', undefined, 'Trim Edges');
-			this.trimEdgesCheckBox.value = false;
-			this.trimEdgesCheckBox.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.CENTER];
-			this.trimEdgesCheckBox.enabled = false;
-			this.trimEdgesCheckBox.size = [ 120,20 ];
-			this.trimEdgesCheckBox.onClick = function(){
-				scopedThis.currentFormatSettings.trimEdges = scopedThis.trimEdgesCheckBox.value;
-			}
-
-			this.fontHandlingLabel = embedRow.add('statictext', undefined, 'Fonts:');
+			this.fontHandlingLabel = fontRow.add('statictext', undefined, 'Fonts:');
 			this.fontHandlingLabel.enabled = false;
 			this.fontHandlingLabel.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.CENTER];
 
-			this.fontHandlingList = embedRow.add('dropdownlist', undefined);
+			this.fontHandlingList = fontRow.add('dropdownlist', undefined);
 			this.fontHandlingList.enabled = false;
 			this.fontHandlingList.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.CENTER];
-			this.fontHandlingList.size = [ 95,20 ];
+			this.fontHandlingList.size = [ 105,20 ];
 			this.fontHandlingList.onChange = function() {
 				scopedThis.currentFormatSettings.fontHandling = scopedThis.fontHandlingOptions[scopedThis.fontHandlingList.selection.index].key;
+				scopedThis.onFormatsChanged();
 			};
-		
+
+			var embedRow = this.formatColumn.add('group', undefined, '')
+			embedRow.orientation = 'row';
+			embedRow.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP]
+
+			this.embedImageCheckBox = embedRow.add('checkbox', undefined, 'Embed Imagery');
+			this.embedImageCheckBox.value = false;
+			this.embedImageCheckBox.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
+			this.embedImageCheckBox.enabled = false;
+			this.embedImageCheckBox.size = [ 180,20 ];
+			this.embedImageCheckBox.onClick = function(){
+				scopedThis.currentFormatSettings.embedImage = scopedThis.embedImageCheckBox.value;
+				scopedThis.onFormatsChanged();
+			}
+
+			this.ungroupCheckBox = embedRow.add('checkbox', undefined, 'Expand Groups');
+			this.ungroupCheckBox.value = false;
+			this.ungroupCheckBox.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
+			this.ungroupCheckBox.enabled = false;
+			this.ungroupCheckBox.onClick = function(){
+				scopedThis.currentFormatSettings.ungroup = scopedThis.ungroupCheckBox.value;
+				scopedThis.onFormatsChanged();
+			}
+
+			this.trimEdgesCheckBox = this.formatColumn.add('checkbox', undefined, 'Trim Edges');
+			this.trimEdgesCheckBox.value = false;
+			this.trimEdgesCheckBox.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
+			this.trimEdgesCheckBox.enabled = false;
+			this.trimEdgesCheckBox.onClick = function(){
+				scopedThis.currentFormatSettings.trimEdges = scopedThis.trimEdgesCheckBox.value;
+				scopedThis.onFormatsChanged();
+			}
+			
+			// padding row
 			this.innerPaddingCheckBox = this.formatColumn.add('checkbox', undefined, 'Inner Padding (prevents curved edge clipping)');
 			this.innerPaddingCheckBox.value = false;
 			this.innerPaddingCheckBox.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
 			this.innerPaddingCheckBox.enabled = false;
 			this.innerPaddingCheckBox.onClick = function(){
 				scopedThis.currentFormatSettings.innerPadding = scopedThis.innerPaddingCheckBox.value;
+				scopedThis.onFormatsChanged();
 			}
 
 			// directory row
@@ -164,6 +186,7 @@
 			this.dirInput.enabled = false;
 			this.dirInput.onChange = function(){
 				scopedThis.currentFormatSettings.directory = scopedThis.dirInput.text;
+				scopedThis.onFormatsChanged();
 			}
 			
 
@@ -189,6 +212,9 @@
 
 			this.updateFormats();
 		},
+		updateArtboardsEnabled:function(){
+			this.artboardPattern.setEnabled(this.enabled && this.exportSettings.exportArtboards);
+		},
 		updateSettings:function(){
 			this.updateFormats();
 			this.setCurrentFormat(this.currentIndex);
@@ -213,7 +239,10 @@
 		removeCurrent:function(){
 			this.exportSettings.formats.splice(this.currentIndex, 1);
 			this.formatList.remove(this.currentIndex);
-			if(this.currentIndex==this.exportSettings.formats.length){
+			if(this.exportSettings.formats.length==0){
+				this.setEnabled(false);
+
+			}else if(this.currentIndex==this.exportSettings.formats.length){
 				this.formatList.selection = this.currentIndex-1;
 				//this.setCurrentFormat(this.currentIndex-1);
 			}else{
@@ -221,33 +250,47 @@
 				//this.setCurrentFormat(this.currentIndex);
 			}
 		},
+		setEnabled:function(enabled){
+			this.enabled = enabled;
+			this.dirLabel.enabled = enabled;
+			this.dirInput.enabled = enabled;
+			this.scalingLabel.enabled = enabled;
+			//this.transCheckBox.enabled = enabled;
+			this.trimEdgesCheckBox.enabled = enabled;
+			this.embedImageCheckBox.enabled = enabled;
+			this.ungroupCheckBox.enabled = enabled;
+			this.fontHandlingList.enabled = enabled;
+			this.fontHandlingLabel.enabled = enabled;
+			this.moreButton.enabled = enabled;
+			this.removeButton.enabled = enabled;
+
+			this.layerPattern.setEnabled(enabled);
+			this.updateArtboardsEnabled();
+		},
 		setCurrentFormat:function(index){
+
+			this.ignoreChanges = true;
 			this.currentIndex = index;
 			this.currentFormatSettings = this.exportSettings.formats[index];
 			this.currentFormat = this.currentFormatSettings.formatRef;
 
-			this.dirLabel.enabled = true;
-			this.dirInput.enabled = true;
+			this.setEnabled(true);
+
 			if(this.currentFormatSettings.directory){
 				this.dirInput.text = this.currentFormatSettings.directory;
 			}else{
 				this.dirInput.text = "";
 			}
 
+			this.artboardPattern.setValue(this.currentFormatSettings.patterns["artboard"]);
+			this.layerPattern.setValue(this.currentFormatSettings.patterns["layer"]);
+
 			this.scalingInput.enabled = this.currentFormatSettings.hasProp("scaling");
 			this.scalingLabel.enabled = this.scalingInput.enabled;
-			this.scalingTip.enabled = this.scalingInput.enabled;
 			if(this.scalingInput.enabled && this.currentFormatSettings.scaling){
 				this.scalingInput.text = this.currentFormatSettings.scaling + "%";
 			}else{
 				this.scalingInput.text = "";
-			}
-			
-			this.transCheckBox.enabled = this.currentFormatSettings.hasProp("transparency");
-			if(this.transCheckBox.enabled){
-				this.transCheckBox.value = this.currentFormatSettings.transparency;
-			}else{
-				this.transCheckBox.value = false;
 			}
 
 			this.trimEdgesCheckBox.enabled = this.currentFormatSettings.hasProp("trimEdges");
@@ -262,6 +305,13 @@
 				this.embedImageCheckBox.value = this.currentFormatSettings.embedImage;
 			}else{
 				this.embedImageCheckBox.value = false;
+			}
+
+			this.ungroupCheckBox.enabled = this.currentFormatSettings.hasProp("ungroup");
+			if(this.ungroupCheckBox.enabled){
+				this.ungroupCheckBox.value = this.currentFormatSettings.ungroup;
+			}else{
+				this.ungroupCheckBox.value = false;
 			}
 
 			if(this.currentFormatSettings.hasProp("fontEmbed")){
@@ -303,6 +353,7 @@
 			this.removeButton.enabled = true;
 
 			this.setPanelHeading();
+			this.ignoreChanges = false;
 		},
 		setPanelHeading:function(){
 			this.formatColumn.text = "Format Settings: "+this.currentFormatSettings.name;
@@ -314,7 +365,12 @@
 				formatSettings = new pack.FormatSettings(format.name);
 				formatSettings.formatRef = format;
 				formatSettings.directory = format.defaultDir;
-				this.exportSettings.formats.push(formatSettings);
+
+				if(!formatSettings.patterns)formatSettings.patterns = {};
+				formatSettings.patterns.layer = this.layerPattern.getValue();
+				formatSettings.patterns.artboard = this.artboardPattern.getValue();
+
+				this.exportSettings.addNewFormat(formatSettings);
 			}
 			if(!formatSettings.name){
 				this.checkSettingsName(formatSettings);
@@ -324,7 +380,7 @@
 		checkSettingsName:function(formatSettings, updateHeading, updateList){
 			var format = formatSettings.formatRef;
 			var name = format.name;
-			if(formatSettings.scaling){
+			if(formatSettings.scaling && formatSettings.scaling!=100){
 				name += " ("+formatSettings.scaling+"%)";
 			}
 			formatSettings.name = name;
@@ -333,6 +389,10 @@
 				var index = this.indexOf(this.exportSettings.formats, formatSettings);
 				var item = this.formatList.items[index];
 				item.text = name;
+
+				// This is to force a refresh (an issue in CC 2014)
+				var item = this.formatList.add("item");
+				this.formatList.remove(item);
 			}
 		},
 		indexOf: function ( array, element ) {

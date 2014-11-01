@@ -9,33 +9,36 @@
 
 		init:function(container){
 
-			this.list = container.add ('ListBox', [0, 0, 465, 470], 'asd', 
+			this.list = container.add ('ListBox', [0, 0, 410, 470], 'asd', 
 									{numberOfColumns: 4, showHeaders: true, multiselect:true,
-									columnTitles: ['', 'Artboard', 'Layer', 'Filename'] }); 
+									columnTitles: ['', '', '', 'Filename'] }); 
 
 			//container.margins =  [5,5,0,0];
 		},
-		updateList:function(data){
-			this.data = data;
+		updateList:function(bundleList){
+			this.bundleList = bundleList;
 			this.refreshList();
 		},
 		refreshList:function(){
 			var lastArtboard;
 			this.list.removeAll();
 			var docRef = app.activeDocument;
-			for(var i=0; i<this.data.length; i++){
-				var itemData = this.data[i];
-				var item = this.list.add ('item');
-				this.updatedExportItem(itemData, item);
+			var lastNames = [];
+			this.flattenedList = [];
+			for(var i=0; i<this.bundleList.length; i++){
+				var exportBundle = this.bundleList[i];
+				for(var j=0; j<exportBundle.items.length; j++){
+					var exportItem = exportBundle.items[j];
+					var item = this.list.add ('item');
+					this.updatedExportItem(exportItem, item);
 
-				var artboard = itemData.artboard;
-				var layer = itemData.layer;
-				if(artboard!=lastArtboard){
-					lastArtboard = artboard;
-					item.subItems[0].text = docRef.artboards[artboard].name;
-				}
-				if(layer!=null){
-					item.subItems[1].text = docRef.layers[layer].name;
+					var names = exportItem.names;
+
+					if(lastNames[0]!=names[0])item.subItems[0].text = names[0];
+					if(lastNames[1]!=names[1])item.subItems[1].text = names[1];
+
+					lastNames = names;
+					this.flattenedList.push(exportItem);
 				}
 			}
 		},
@@ -65,7 +68,7 @@
 			var state = itemData.state;
 
 			if(!item){
-				item = this.list.items[this.indexOf(this.data, itemData)];
+				item = this.list.items[this.indexOf(this.flattenedList, itemData)];
 			}
 
 			var icon;

@@ -30,7 +30,7 @@
 			row.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.BOTTOM];
 
 			this.presetList = row.add('dropdownlist', undefined);
-			this.presetList.preferredSize = [248, undefined];
+			this.presetList.preferredSize = [312, 22];
 			this.presetList.onChange = function() {
 				if(scopedThis.presetList.selection.index==0)return;
 				scopedThis.loadPreset(scopedThis.presetList.selection.index-1);
@@ -62,7 +62,8 @@
 		loadPreset:function(index){
 			var file = this.files[index];
 			file.open("r");
-			var xml = new XML(file.read());
+			var str = file.read();
+			var xml = new XML(str);
 			this.exportSettings.populateWithXML(xml);
 			if(this.onSettingsChanged!=null)this.onSettingsChanged();
 		},
@@ -79,7 +80,16 @@
 		},
 		doExport:function(){
 			var file = File.saveDialog("Export Current Settings", this.fileFilter);
-			if(file)this.saveCurrentTo(file);
+			if(file){
+				var filePath = file.absoluteURI;
+				var extIndex = filePath.indexOf(this.SETTINGS_EXTENSION);
+				var checkCollision = (Folder.fs=="Windows");
+				if(extIndex != (filePath.length - this.SETTINGS_EXTENSION.length)){
+					file = File(filePath + this.SETTINGS_EXTENSION);
+					checkCollision = true;
+				}
+				this.saveCurrentTo(file, true, true, true, checkCollision);
+			}
 		},
 		buildPresetList:function(){
 			this.presetList.removeAll();
@@ -88,6 +98,7 @@
 			for(var i=0; i<this.files.length; ++i){
 				var file = this.files[i];
 				var extIndex = file.name.indexOf(this.SETTINGS_EXTENSION);
+				if(extIndex==-1)continue;
 				var fileName = file.name.substr(0, extIndex);
 				fileName = decodeURIComponent(fileName);
 				this.presetList.add("item", fileName);
@@ -99,11 +110,11 @@
 			var name = nameDlg.text;
 			if(name){
 				var path = this.presetDir.fullName + "/" + name + this.SETTINGS_EXTENSION;
-				this.saveCurrentTo(new File(path), nameDlg.patterns, nameDlg.generalSettings, nameDlg.formatSettings);
+				this.saveCurrentTo(new File(path), nameDlg.patterns, nameDlg.generalSettings, nameDlg.formatSettings, true);
 			}
 		},
-		saveCurrentTo:function(file, patterns, generalSettings, formatSettings){
-			if(file.exists && !confirm("File already exists.\nPress Yes to overwrite.")){
+		saveCurrentTo:function(file, patterns, generalSettings, formatSettings, checkCollision){
+			if(checkCollision && file.exists && !confirm("File already exists.\nPress Yes to overwrite.")){
 				return;
 			}
 			if(file.exists){
@@ -111,7 +122,7 @@
 			}
 			var settingsXml = this.exportSettings.toXML(patterns, generalSettings, formatSettings, false, false);
 			var save = settingsXml.toXMLString();
-			file.open("w");
+			file.open("w", "TEXT", "????");
 			file.write(save);
 			file.close();
 			this.buildPresetList();

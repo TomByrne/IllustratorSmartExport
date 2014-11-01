@@ -16,7 +16,7 @@
 			column.orientation = 'column';
 			column.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
 
-			this.layerList = column.add ('ListBox', [0, 0, 230, 410], '', 
+			this.layerList = column.add ('ListBox', [0, 0, 210, 410], '', 
 									{numberOfColumns: 3, showHeaders: false, multiselect:true,
 									columnTitles: ['', '', 'Layer'] });
 			this.layerList.onChange = function(){
