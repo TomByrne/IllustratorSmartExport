@@ -68,7 +68,7 @@
 		var artH = rect[1]-rect[3];
 
 		var offset = {x:0, y:0};
-		exportBundle.copyDoc = pack.DocUtils.copyDocument(docRef, artboard, rect, artW, artH, offset, padding, function(layer){return (layer.name!=pack.PREFS_LAYER_NAME && layer.visible)}, null, doOutline, ungroup);
+		exportBundle.copyDoc = pack.DocUtils.copyDocument(docRef, artboard, rect, artW, artH, offset, padding, function(layer){return (layer.name!=pack.PREFS_LAYER_NAME && layer.visible)}, null, doOutline, ungroup, null, exportSettings.ignoreWarnings);
 		return exportBundle.copyDoc;
 	}
 	ArtboardBundler.cleanupCopy = function(docRef, exportSettings, exportBundle){

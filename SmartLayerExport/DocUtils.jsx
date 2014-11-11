@@ -3,7 +3,9 @@
 
 
 		
-	DocUtils.copyDocument = function(docRef, artboard, artboardRect, w, h, offset, doInnerPadding, layerCheck, layerDepths, outlineText, ungroup, layerVis) {
+	DocUtils.copyDocument = function(docRef, artboard, artboardRect, w, h, offset, doInnerPadding, layerCheck, layerDepths, outlineText, ungroup, layerVis, ignoreWarnings) {
+		if(w<1)w = 1;
+		if(h<1)h = 1;
 		var preset = new DocumentPreset();
 		preset.width = w;
 		preset.height = h;
@@ -28,7 +30,7 @@
 				if (layerCheck==null || layerCheck(layer, vis)) {
 					var layerBounds = this.getLayerBounds(layer);
 					if(layerBounds && this.intersects(artboardRect, layerBounds)){
-						var newLayer = this.copyLayer(docRef, artboard, artboardRect, layer, copyDoc.layers.add(), offset, doInnerPadding, outlineText, ungroup, docRef.rulerOrigin);
+						var newLayer = this.copyLayer(docRef, artboard, artboardRect, layer, copyDoc.layers.add(), offset, doInnerPadding, outlineText, ungroup, docRef.rulerOrigin, ignoreWarnings);
 						this.setLayerDepth(newLayer, count);
 						if(!newLayer.pageItems.length && !newLayer.layers.length){
 							newLayer.remove();
@@ -54,7 +56,7 @@
 		return rect1[0]==rect2[0] && rect1[1]==rect2[1] && rect1[2]==rect2[2] && rect1[3]==rect2[3] ;
 	}
 		
-	DocUtils.copyLayer = function(doc, artboard, artboardRect, fromLayer, toLayer, offset, doInnerPadding, outlineText, ungroup, rulerOrigin) {
+	DocUtils.copyLayer = function(doc, artboard, artboardRect, fromLayer, toLayer, offset, doInnerPadding, outlineText, ungroup, rulerOrigin, ignoreWarnings) {
 
 		toLayer.artworkKnockout = fromLayer.artworkKnockout;
 		toLayer.blendingMode = fromLayer.blendingMode;
@@ -72,14 +74,14 @@
 			var oldBounds = this.getLayerBounds(fromLayer);
 			 //for mystery reasons, this only works if done before copying items across
 		}
-		this.copyIntoLayer(doc, fromLayer, toLayer);
+		this.copyIntoLayer(doc, fromLayer, toLayer, ignoreWarnings);
 
 		if(toLayer.pageItems.length && !offset.norm){
 
 			var newBounds = this.getLayerBounds(toLayer);
 			if(this.rectEqual(oldBounds, newBounds)){
 				//$.sleep(5000); // sleeping doesn't help!!
-				if(!this.exportSettings.ignoreWarnings)alert("Illustrator visibleBounds issue workaround.\nTry removing groups on layer '"+fromLayer.name+"' to avoid this in future.\nPlease press OK");
+				if(!ignoreWarnings)alert("Illustrator visibleBounds issue workaround.\nTry removing groups on layer '"+fromLayer.name+"' to avoid this in future.\nPlease press OK");
 				newBounds = this.getLayerBounds(toLayer);
 				// sometimes it takes a moment for bounds to be updated
 			}
@@ -187,33 +189,28 @@
 		return this.intersects(artRect, rect);
 	}
 
-	DocUtils.copyIntoLayer = function(doc, fromLayer, toLayer) {
-		var items = this.getAllPageItems(doc, fromLayer);
+	DocUtils.copyIntoLayer = function(doc, fromLayer, toLayer, ignoreWarnings) {
+		var items = this.getAllPageItems(doc, fromLayer, ignoreWarnings);
 		try{
-			this.copyItems(doc, items, toLayer);
+			this.copyItems(doc, items, toLayer, ignoreWarnings);
 		}catch(e){
 			alert(e);
 			alert("copy items failed");
 		}
 	}
 		
-	DocUtils.copyItems = function(doc, fromList, toLayer) {
+	DocUtils.copyItems = function(doc, fromList, toLayer, ignoreWarnings) {
 		var visWas = toLayer.visible;
 		toLayer.visible = true;
 		for(var i=0; i<fromList.length; ++i){
 			var item = fromList[i];
 			if(item.typename=="Layer"){
 				if(item.visible && (item.pageItems.length || item.layers.length)){
-					this.copyIntoLayer(doc, item, toLayer)
+					this.copyIntoLayer(doc, item, toLayer, ignoreWarnings)
 				}
 			}else{
 				if(item.hidden)continue;
-
-				/*if(item.typename == "GroupItem" && !item.clipped){
-					this.copyItems(doc, item.pageItems, toLayer);
-				}else{*/
-					item.duplicate(toLayer, ElementPlacement.PLACEATEND);
-				//}
+				item.duplicate(toLayer, ElementPlacement.PLACEATEND);
 			}
 		}
 		toLayer.visible = visWas;
@@ -277,14 +274,14 @@
 		           rect2[3] > rect1[1]);
 	}
 
-	DocUtils.getAllPageItems = function(doc, layer) {
+	DocUtils.getAllPageItems = function(doc, layer, ignoreWarnings) {
 		if(layer.layers.length==0){
 			return layer.pageItems;
 		}
 		if(layer.pageItems.length==0){
 			return layer.layers;
 		}
-		if(!this.layerItemWarned && !this.exportSettings.ignoreWarnings){
+		if(!this.layerItemWarned && !ignoreWarnings){
 			this.layerItemWarned = true;
 			alert("To improve output performance, avoid using child layers (groups can do the same thing).");
 		}

@@ -63,6 +63,7 @@
 			var file = this.files[index];
 			file.open("r");
 			var str = file.read();
+			file.close();
 			var xml = new XML(str);
 			this.exportSettings.populateWithXML(xml);
 			if(this.onSettingsChanged!=null)this.onSettingsChanged();
@@ -94,14 +95,16 @@
 		buildPresetList:function(){
 			this.presetList.removeAll();
 			this.presetList.add("item", "--- Load Settings ---");
-			this.files = this.presetDir.getFiles();
-			for(var i=0; i<this.files.length; ++i){
-				var file = this.files[i];
+			var allFiles = this.presetDir.getFiles();
+			this.files = [];
+			for(var i=0; i<allFiles.length; ++i){
+				var file = allFiles[i];
 				var extIndex = file.name.indexOf(this.SETTINGS_EXTENSION);
 				if(extIndex==-1)continue;
 				var fileName = file.name.substr(0, extIndex);
 				fileName = decodeURIComponent(fileName);
 				this.presetList.add("item", fileName);
+				this.files.push(file);
 			}
 			this.presetList.selection = 0;
 		},
@@ -122,7 +125,7 @@
 			}
 			var settingsXml = this.exportSettings.toXML(patterns, generalSettings, formatSettings, false, false);
 			var save = settingsXml.toXMLString();
-			file.open("w", "TEXT", "????");
+			file.open("w");
 			file.write(save);
 			file.close();
 			this.buildPresetList();

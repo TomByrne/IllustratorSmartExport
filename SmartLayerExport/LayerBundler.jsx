@@ -86,13 +86,12 @@
 		docRef.artboards.setActiveArtboardIndex(artI);
 			
 		var rect = artboard.artboardRect;
-
 		var artW = rect[2]-rect[0];
 		var artH = rect[1]-rect[3];
 
 		var offset = {x:0, y:0};
 		exportBundle.layerDepths = [];
-		exportBundle.copyDoc = pack.DocUtils.copyDocument(docRef, artboard, rect, artW, artH, offset, padding, pack.DocUtils.isAdditionalLayer, exportBundle.layerDepths, doOutline, ungroup, layerVis);
+		exportBundle.copyDoc = pack.DocUtils.copyDocument(docRef, artboard, rect, artW, artH, offset, padding, pack.DocUtils.isAdditionalLayer, exportBundle.layerDepths, doOutline, ungroup, layerVis, exportSettings.ignoreWarnings);
 		exportBundle.hasAdditLayers = exportBundle.copyDoc.layers.length > 0 && (exportBundle.copyDoc.layers.length!=1 || exportBundle.copyDoc.layers[0].pageItems.length || exportBundle.copyDoc.layers[0].layers.length);
 		return this.prepareCopyLayer(docRef, exportSettings, exportBundle, artI, layI, padding, doOutline, ungroup, false, layerVis, rect);
 	}
@@ -140,7 +139,7 @@
 
 				layOffset = {x:layerOffsetX, y:layerOffsetY};
 				exportBundle.layerDepths = [];
-				doc = pack.DocUtils.copyDocument(doc, artboard, rect, docW, docH, layOffset, padding, pack.DocUtils.isAdditionalLayer, exportBundle.layerDepths, doOutline, ungroup, layerVis);
+				doc = pack.DocUtils.copyDocument(doc, artboard, rect, docW, docH, layOffset, padding, pack.DocUtils.isAdditionalLayer, exportBundle.layerDepths, doOutline, ungroup, layerVis, exportSettings.ignoreWarnings);
 				exportBundle.copyDoc = doc;
 			
 				exportBundle.hasAdditLayers = doc.layers.length > 0 && (doc.layers.length!=1 || doc.layers[0].pageItems.length || doc.layers[0].layers.length);
@@ -150,7 +149,7 @@
 			if(isVis){
 				// only copy layer if it is visible (if not only visible '+' layers will be output)
 				var artb = doc.artboards[0];
-				var new_layer = pack.DocUtils.copyLayer(docRef, artb, artb.artboardRect, layer, doc.layers.add(), layOffset, padding, doOutline, ungroup, docRef.rulerOrigin);
+				var new_layer = pack.DocUtils.copyLayer(docRef, artb, artb.artboardRect, layer, doc.layers.add(), layOffset, padding, doOutline, ungroup, docRef.rulerOrigin, exportSettings.ignoreWarnings);
 				new_layer.visible = true;
 				var depth = exportBundle.layerDepths[layI];
 				pack.DocUtils.setLayerDepth(new_layer, depth);

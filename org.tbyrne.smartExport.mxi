@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<macromedia-extension id="org.tbyrne.smartExport" name="Smart Layer Export" version="1.6.0">
+<macromedia-extension id="org.tbyrne.smartExport" name="Smart Layer Export" version="2.0.0">
   <description><![CDATA[<h3>Features:</h3>
 - Ability to scale output files for HiDPI (Retina) displays, or any other scale factor.
 - Can set up multiple export formats for a single file for easy regeneration of multiple asset sizes/types.
@@ -19,12 +19,19 @@
 - GIF
 - EPS
 - SVG
-- FXG
+- SVGZ
 - AI
+- FXG (CS6 Only)
 </ul>
 
 
 <h3>Change Log:</h3>
+
+<h3>03/11/2014 - v2.0</h3>
+- Massive performance improvements for multi-format exports
+- Ability to modify patterns on a per-export basis
+- Fixed Mac Preset loading issue
+- Simplification of UI
 
 <h3>07/10/2014 - v1.6</h3>
 - Fixed regression issue for CS6
