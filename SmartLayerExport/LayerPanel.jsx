@@ -1,13 +1,13 @@
 (function(pack){
-	function LayerPanel(container, selectAll, selectedIndices, propsLayerName){
-		this.init(container, selectAll, selectedIndices, propsLayerName);
+	function LayerPanel(container, selectAll, selectedIndices, ignoreLayerNames){
+		this.init(container, selectAll, selectedIndices, ignoreLayerNames);
 		return this;
 	}
 
 	LayerPanel.prototype={
 	    onSelectedChanged:null,
 
-		init:function(container, selectAll, selectedIndices, propsLayerName){
+		init:function(container, selectAll, selectedIndices, ignoreLayerNames){
 			this.selectAll = selectAll;
 			this.selectedIndices = selectedIndices;
 
@@ -27,7 +27,7 @@
 			var j = 0;
 			for(var i=0; i<docRef.layers.length; ++i){
 				var layer = docRef.layers[i];
-				if(layer.name==propsLayerName){
+				if(this.indexOf(ignoreLayerNames, layer.name)!=-1){
 					continue;
 				}
 				var item = this.layerList.add("item");

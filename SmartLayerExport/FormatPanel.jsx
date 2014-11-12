@@ -1,6 +1,6 @@
 (function(pack){
-	function FormatPanel(container, formats, exportSettings){
-		this.init(container, formats, exportSettings);
+	function FormatPanel(container, formats, exportSettings, doArtboard, doLayer, doSymbol){
+		this.init(container, formats, exportSettings, doArtboard, doLayer, doSymbol);
 		return this;
 	}
 
@@ -11,7 +11,7 @@
 	    formatPanels:null,
 	    ignoreChanges:false,
 
-		init:function(container, formats, exportSettings){
+		init:function(container, formats, exportSettings, doArtboard, doLayer, doSymbol){
 			var scopedThis = this;
 
 			this.formatPanels = [];
@@ -59,21 +59,35 @@
 			this.formatColumn.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP]
 			this.formatColumn.size = [374, 367]
 
-			//artboard pattern
-			this.artboardPattern = new pack.FilePatternControl(this.formatColumn, 'Artboard Filename Pattern:', null, pack.tokens.ALL);
-			this.artboardPattern.onChange = function(){
-				if(scopedThis.ignoreChanges)return;
-				scopedThis.currentFormatSettings.patterns["artboard"] = scopedThis.artboardPattern.getValue();
-				scopedThis.onFormatsChanged();
+			if(doArtboard){
+				//artboard pattern
+				this.artboardPattern = new pack.FilePatternControl(this.formatColumn, 'Artboard Filename Pattern:', null, pack.tokens.ARTBOARD_TOKENS);
+				this.artboardPattern.onChange = function(){
+					if(scopedThis.ignoreChanges)return;
+					scopedThis.currentFormatSettings.patterns["artboard"] = scopedThis.artboardPattern.getValue();
+					scopedThis.onFormatsChanged();
+				}
+				this.artboardPattern.setEnabled(this.exportSettings.exportArtboards);
 			}
-			this.artboardPattern.setEnabled(this.exportSettings.exportArtboards);
 
-			//layer pattern
-			this.layerPattern = new pack.FilePatternControl(this.formatColumn, 'Layer Filename Pattern:', null, pack.tokens.ALL);
-			this.layerPattern.onChange = function(){
-				if(scopedThis.ignoreChanges)return;
-				scopedThis.currentFormatSettings.patterns["layer"] = scopedThis.layerPattern.getValue();
-				scopedThis.onFormatsChanged();
+			if(doLayer){
+				//layer pattern
+				this.layerPattern = new pack.FilePatternControl(this.formatColumn, 'Layer Filename Pattern:', null, pack.tokens.LAYER_TOKENS);
+				this.layerPattern.onChange = function(){
+					if(scopedThis.ignoreChanges)return;
+					scopedThis.currentFormatSettings.patterns["layer"] = scopedThis.layerPattern.getValue();
+					scopedThis.onFormatsChanged();
+				}
+			}
+
+			if(doSymbol){
+				//layer pattern
+				this.symbolPattern = new pack.FilePatternControl(this.formatColumn, 'Symbol Filename Pattern:', null, pack.tokens.SYMBOL_TOKENS);
+				this.symbolPattern.onChange = function(){
+					if(scopedThis.ignoreChanges)return;
+					scopedThis.currentFormatSettings.patterns["symbol"] = scopedThis.symbolPattern.getValue();
+					scopedThis.onFormatsChanged();
+				}
 			}
 
 			// scaling row
@@ -213,7 +227,7 @@
 			this.updateFormats();
 		},
 		updateArtboardsEnabled:function(){
-			this.artboardPattern.setEnabled(this.enabled && this.exportSettings.exportArtboards);
+			if(this.artboardPattern)this.artboardPattern.setEnabled(this.enabled && this.exportSettings.exportArtboards);
 		},
 		updateSettings:function(){
 			this.updateFormats();
@@ -264,7 +278,8 @@
 			this.moreButton.enabled = enabled;
 			this.removeButton.enabled = enabled;
 
-			this.layerPattern.setEnabled(enabled);
+			if(this.layerPattern) this.layerPattern.setEnabled(enabled);
+			if(this.symbolPattern) this.symbolPattern.setEnabled(enabled);
 			this.updateArtboardsEnabled();
 		},
 		setCurrentFormat:function(index){
@@ -282,8 +297,9 @@
 				this.dirInput.text = "";
 			}
 
-			this.artboardPattern.setValue(this.currentFormatSettings.patterns["artboard"]);
-			this.layerPattern.setValue(this.currentFormatSettings.patterns["layer"]);
+			if(this.artboardPattern) this.artboardPattern.setValue(this.currentFormatSettings.patterns["artboard"]);
+			if(this.layerPattern) this.layerPattern.setValue(this.currentFormatSettings.patterns["layer"]);
+			if(this.symbolPattern) this.symbolPattern.setValue(this.currentFormatSettings.patterns["symbol"]);
 
 			this.scalingInput.enabled = this.currentFormatSettings.hasProp("scaling");
 			this.scalingLabel.enabled = this.scalingInput.enabled;
@@ -367,8 +383,9 @@
 				formatSettings.directory = format.defaultDir;
 
 				if(!formatSettings.patterns)formatSettings.patterns = {};
-				formatSettings.patterns.layer = this.layerPattern.getValue();
-				formatSettings.patterns.artboard = this.artboardPattern.getValue();
+				if(this.layerPattern) formatSettings.patterns.layer = this.layerPattern.getValue();
+				if(this.artboardPattern) formatSettings.patterns.artboard = this.artboardPattern.getValue();
+				if(this.symbolPattern) formatSettings.patterns.symbol = this.symbolPattern.getValue();
 
 				this.exportSettings.addNewFormat(formatSettings);
 			}

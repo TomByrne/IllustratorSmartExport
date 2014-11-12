@@ -12,6 +12,7 @@
 	ExportSettings.prototype={
 		DEFAULT_ARTBOARD_PATTERN:"<ArtboardName>.<Ext>",
 		DEFAULT_LAYER_PATTERN:"<ArtboardName>_<LayerName>.<Ext>",
+		DEFAULT_SYMBOL_PATTERN:"<SymbolName>.<Ext>",
 
 		type:ExportSettings,
 
@@ -26,16 +27,19 @@
 		artboardInd:[],
 		layerAll:true,
 		layerInd:[],
+		symbolAll:true,
+		symbolNames:[],
 		exportArtboards:false,
 		ignoreWarnings:false,
 		fontHandling:"none",
 
 
-		toXML:function(includePatterns, includeGeneralSettings, includeFormatSettings, includeArtboards, includeLayers){
+		toXML:function(includePatterns, includeGeneralSettings, includeFormatSettings, includeArtboards, includeLayers, includeSymbols){
 			if(includeGeneralSettings===undefined)includeGeneralSettings = true;
 			if(includeFormatSettings===undefined)includeFormatSettings = true;
 			if(includeArtboards===undefined)includeArtboards = true;
 			if(includeLayers===undefined)includeLayers = true;
+			if(includeSymbols===undefined)includeSymbols = true;
 
 			var ret = new XML( '<prefs></prefs>' );
 
@@ -68,6 +72,11 @@
 				if(!this.layerAll && this.layerInd.length)ret.appendChild( new XML('<layerInd>'+this.layerInd+'</layerInd>') );
 				else ret.appendChild( new XML('<layerAll>'+this.layerAll+'</layerAll>') );
 			}
+			
+			if(includeSymbols){
+				if(!this.symbolAll && this.symbolNames.length)ret.appendChild( new XML('<symbolNames>'+this.symbolNames+'</symbolNames>') );
+				else ret.appendChild( new XML('<symbolAll>'+this.symbolAll+'</symbolAll>') );
+			}
 
 			return ret;
 		},
@@ -92,6 +101,7 @@
 			}
 			if(!defaultPatterns.artboard)defaultPatterns.artboard = this.DEFAULT_ARTBOARD_PATTERN;
 			if(!defaultPatterns.layer)defaultPatterns.layer = this.DEFAULT_LAYER_PATTERN;
+			if(!defaultPatterns.symbol)defaultPatterns.symbol = this.DEFAULT_SYMBOL_PATTERN;
 
 			for(var j in defaultPatterns){
 				if(!formatSettings.patterns[j])formatSettings.patterns[j] = defaultPatterns[j];
@@ -106,7 +116,7 @@
 			if(xml.directory.length())this.directory		= xml.directory.toString();
 			if(xml.scaling.length())this.scaling 		= parseFloat( xml.scaling.toString().replace( /\% /, '' ));
 
-			var defaultPatterns = {artboard:this.DEFAULT_ARTBOARD_PATTERN, layer:this.DEFAULT_LAYER_PATTERN};
+			var defaultPatterns = {artboard:this.DEFAULT_ARTBOARD_PATTERN, layer:this.DEFAULT_LAYER_PATTERN, symbol:this.DEFAULT_SYMBOL_PATTERN};
 			var formatNodes = xml.formats.format;
 			if(formatNodes.length()){
 				this.formats = [];
@@ -127,6 +137,7 @@
 
 			if(xml.artboardAll.length())this.artboardAll	= xml.artboardAll == "true";
 			if(xml.layerAll.length())this.layerAll		= xml.layerAll == "true";
+			if(xml.symbolAll.length())this.symbolAll		= xml.symbolAll == "true";
 			if(xml.exportArtboards.length())this.exportArtboards = xml.exportArtboards == "true";
 			if(xml.ignoreWarnings.length())this.ignoreWarnings = xml.ignoreWarnings == "true";
 
@@ -156,6 +167,15 @@
 					this.layerAll = false;
 				}else if(xml.layerAll.length()==0){
 					this.layerAll = true;
+				}
+			}
+			if(xml.symbolNames.length()){
+				this.symbolNames		= xml.symbolNames.toString();
+				if(this.symbolNames.length){
+					this.symbolNames = this.symbolNames.split(",");
+					this.symbolAll = false;
+				}else if(xml.symbolAll.length()==0){
+					this.symbolAll = true;
 				}
 			}
 			
@@ -239,10 +259,10 @@
 					if(formatNode.patterns.length()==0){
 						formats.appendChild(new XML("<patterns/>"));
 					}
-					if(node.artboardPattern && formatNode.patterns.artboard.length()==0){
+					if(node.artboardPattern.length() && formatNode.patterns.artboard.length()==0){
 						formatNode.patterns.artboard = node.artboardPattern.toString();
 					}
-					if(node.layerPattern && formatNode.patterns.layer.length()==0){
+					if(node.layerPattern.length() && formatNode.patterns.layer.length()==0){
 						formatNode.patterns.layer = node.layerPattern.toString();
 					}
 					if(node.scaling && formatNode.scaling.length()==0){

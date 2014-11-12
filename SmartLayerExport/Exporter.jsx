@@ -12,16 +12,13 @@
 		cancelled:false,
 		running:false,
 		
-		// run_export function. does the dirty work
-		run_export: function(bundleList, exportSettings, directory) {
+		runExport: function(bundleList, exportSettings, directory) {
 			this.bundleList = bundleList;
 			this.exportSettings = exportSettings;
 			this.directory = directory;
 			this.cancelled = false;
 			this.running = true;
 
-			//this.export_artboards = this.exportSettings.artboardInd;
-			//this.export_layers = this.exportSettings.layerInd;
 			this.num_exported = 0;
 			this.layerItemWarned = false;
 
@@ -52,10 +49,6 @@
 					return this.doFinish(false);
 				}
 			}
-
-
-			//this.que = new pack.Queue(100, );
-
 
 			this.doRun();
 		},
