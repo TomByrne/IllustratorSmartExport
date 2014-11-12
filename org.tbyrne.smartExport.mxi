@@ -30,6 +30,7 @@
 <h3>11/11/2014 - v2.1</h3>
 - Better error reporting
 - Issue with tiny asset exports fixed
+- Issue with loading presets fixed
 
 <h3>03/11/2014 - v2.0</h3>
 - Massive performance improvements for multi-format exports

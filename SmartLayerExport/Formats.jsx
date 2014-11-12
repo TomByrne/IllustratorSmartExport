@@ -105,7 +105,6 @@
 		return options;
 	}
 	var getFxgOptions = function ( formatSettings ) {
-		alert("getFxgOptions");
 		options = new FXGSaveOptions();
 		fillOptions(options, formatSettings);
 		return options;
@@ -151,7 +150,6 @@
 		doc.exportFile(destFile, ExportType.SVG , options);
 	}
 	var saveFxg = function ( doc, filePath, options ) {
-		alert("saveFxg");
 		var destFile = new File( filePath );
 		doc.saveAs( destFile, options )	
 	}

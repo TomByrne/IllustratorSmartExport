@@ -141,6 +141,7 @@
 				scopedThis.settingsPanel.updateSettings();
 				scopedThis.formatPanel.updateSettings();
 				scopedThis.exportPanel.updateSettings();
+				scopedThis.updatePreviewList();
 			}
 			this.settingsPanel = new pack.SettingsPanel(settingsCol, this.exportSettings);
 			this.settingsPanel.onPatternChanged = function(){
