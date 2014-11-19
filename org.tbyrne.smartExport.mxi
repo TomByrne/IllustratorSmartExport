@@ -9,7 +9,6 @@
 - Can optionally export full Artboard images as well as individual layer images.
 - Can Load/Save/Import/Export settings.
 
-
 <h3>Current Formats:</h3>
 <ul>
 - PNG 8
@@ -24,10 +23,11 @@
 - FXG (CS6 Only)
 </ul>
 
+To use, go to File > Scripts > Smart Layer Export
 
 <h3>Change Log:</h3>
 
-<h3>11/11/2014 - v2.1</h3>
+<h3>12/11/2014 - v2.1</h3>
 - Better error reporting
 - Issue with tiny asset exports fixed
 - Issue with loading presets fixed
