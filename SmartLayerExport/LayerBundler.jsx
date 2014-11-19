@@ -18,10 +18,13 @@
 
 		for (var i = 0; i < artboardInd.length; i++ ) {
 			var artI = artboardInd[i];
+			if(artI >= docRef.artboards.length)continue;
 			var artboard = docRef.artboards[artI];
 			
 			for ( var j=0; j < layerInd.length; j++ ) {
 				var layI = layerInd[j];
+				if(layI >= docRef.layers.length)continue;
+
 				var layer = docRef.layers[layI];
 
 				var bundleMap = {};

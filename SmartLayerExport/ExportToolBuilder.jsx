@@ -203,7 +203,7 @@
 		updatePreviewList:function(){
 			try{
 				this.bundleList = [];
-
+	
 				if(this.artboardPanel && this.exportSettings.exportArtboards){
 					pack.ArtboardBundler.add(this.docRef, this.bundleList, this.exportSettings, "artboard");
 				}
@@ -213,7 +213,10 @@
 				if(this.symbolPanel){
 					pack.SymbolBundler.add(this.docRef, this.bundleList, this.exportSettings, "layer");
 				}
-
+			}catch(e){
+				alert("Error creating bundles:\n"+e);
+			}
+			try{
 				this.previewPanel.updateList(this.bundleList);
 			}catch(e){
 				alert("Error updating preview list:\n"+e);

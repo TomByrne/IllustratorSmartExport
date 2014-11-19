@@ -8,9 +8,10 @@
 
 		for (var i = 0; i < artboardInd.length; i++ ) {
 			var artI = artboardInd[i];
+			if(artI >= docRef.artboards.length)continue;
+
 			var artboard = docRef.artboards[artI];
 			var artboardName = artboard.name;
-
 
 			var bundleMap = {};
 
@@ -23,7 +24,6 @@
 				item.names = ["Artboard "+(artI+1)];
 				bundle.items.push(item);
 			}
-
 
 			for(var j in bundleMap){
 				bundle = bundleMap[j];
