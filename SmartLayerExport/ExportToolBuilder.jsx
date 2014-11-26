@@ -211,7 +211,7 @@
 					pack.LayerBundler.add(this.docRef, this.bundleList, this.exportSettings, "layer");
 				}
 				if(this.symbolPanel){
-					pack.SymbolBundler.add(this.docRef, this.bundleList, this.exportSettings, "layer");
+					pack.SymbolBundler.add(this.docRef, this.bundleList, this.exportSettings, "symbol");
 				}
 			}catch(e){
 				alert("Error creating bundles:\n"+e);

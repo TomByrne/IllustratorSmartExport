@@ -17,6 +17,7 @@
 			this.formatPanels = [];
 			this.formats = formats;
 			this.exportSettings = exportSettings;
+			this.allowTrim = doArtboard || doLayer;
 
 
 			var row = container.add("group");
@@ -168,13 +169,15 @@
 				scopedThis.onFormatsChanged();
 			}
 
-			this.trimEdgesCheckBox = this.formatColumn.add('checkbox', undefined, 'Trim Edges');
-			this.trimEdgesCheckBox.value = false;
-			this.trimEdgesCheckBox.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
-			this.trimEdgesCheckBox.enabled = false;
-			this.trimEdgesCheckBox.onClick = function(){
-				scopedThis.currentFormatSettings.trimEdges = scopedThis.trimEdgesCheckBox.value;
-				scopedThis.onFormatsChanged();
+			if(this.allowTrim){
+				this.trimEdgesCheckBox = this.formatColumn.add('checkbox', undefined, 'Trim Edges');
+				this.trimEdgesCheckBox.value = false;
+				this.trimEdgesCheckBox.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
+				this.trimEdgesCheckBox.enabled = false;
+				this.trimEdgesCheckBox.onClick = function(){
+					scopedThis.currentFormatSettings.trimEdges = scopedThis.trimEdgesCheckBox.value;
+					scopedThis.onFormatsChanged();
+				}
 			}
 			
 			// padding row
@@ -270,7 +273,7 @@
 			this.dirInput.enabled = enabled;
 			this.scalingLabel.enabled = enabled;
 			//this.transCheckBox.enabled = enabled;
-			this.trimEdgesCheckBox.enabled = enabled;
+			if(this.allowTrim)this.trimEdgesCheckBox.enabled = enabled;
 			this.embedImageCheckBox.enabled = enabled;
 			this.ungroupCheckBox.enabled = enabled;
 			this.fontHandlingList.enabled = enabled;
@@ -309,11 +312,13 @@
 				this.scalingInput.text = "";
 			}
 
-			this.trimEdgesCheckBox.enabled = this.currentFormatSettings.hasProp("trimEdges");
-			if(this.trimEdgesCheckBox.enabled){
-				this.trimEdgesCheckBox.value = this.currentFormatSettings.trimEdges;
-			}else{
-				this.trimEdgesCheckBox.value = false;
+			if(this.allowTrim){
+				this.trimEdgesCheckBox.enabled = this.currentFormatSettings.hasProp("trimEdges");
+				if(this.trimEdgesCheckBox.enabled){
+					this.trimEdgesCheckBox.value = this.currentFormatSettings.trimEdges;
+				}else{
+					this.trimEdgesCheckBox.value = false;
+				}
 			}
 
 			this.embedImageCheckBox.enabled = this.currentFormatSettings.hasProp("embedImage");

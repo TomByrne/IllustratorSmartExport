@@ -106,6 +106,7 @@
 								item.state = "success";
 
 							}catch(e){
+								alert("Save Failed: "+e);
 								failed.push(item);
 								item.state = "failed";
 							}
