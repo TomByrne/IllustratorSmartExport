@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<macromedia-extension id="org.tbyrne.smartSymbolExport" name="Smart Symbol Export" version="3.0.0">
+  <description><![CDATA[<h3>Features:</h3>
+- Ability to scale output files for HiDPI (Retina) displays, or any other scale factor.
+- Can set up multiple export formats for a single file for easy regeneration of multiple asset sizes/types.
+- Settings are saved within Illustrator file so that settings are remembered next time you open the panel.
+- File name pattern allows for full flexibility of output file names.
+- Can Load/Save/Import/Export settings.
+
+<h3>Current Formats:</h3>
+<ul>
+- PNG 8
+- PNG 24
+- PDF
+- JPG
+- GIF
+- EPS
+- SVG
+- SVGZ
+- AI
+- FXG (CS6 Only)
+</ul>
+
+To use, go to File > Scripts > Smart Symbol Export
+
+<h3>Change Log:</h3>
+
+<h3>26/11/2014 - v3.0</h3>
+- Initial launch (versioning kept in line with Smart Layer Export)
+
+]]></description>
+  <license-agreement><![CDATA[1. Your Agreement With Thomas Byrne.
+
+1.1 This agreement is with Thomas Byrne (“Developer”), and you agree, that your relationship with Developer will be governed by the laws of the state of New South Wales, Australia, as set forth in section 10.
+
+1.2 By downloading a Product (defined below), you agree to the terms and conditions contained herein and You state that You have all legal rights and powers needed to give the statements, assurances and commitments in this document and to agree to it as a validly executed, legal instrument. It shall be binding on you and on Your heirs, executors and assigns.
+
+1.3 Developer and its respective suppliers and licensors shall retain all right, title and interest in and to the Product and all portions thereof, including, without limitation, all Intellectual Property Rights thereto. Developer is solely responsible for performing, all installation, training, support, and other services requested or required for those Products you acquire through the Marketplace. By utilizing the Marketplace, you agree and acknowledge that Developer and Adobe are not liable for any Products which do not perform as advertised or stated, including but not limited to any liability related to compatibility with hardware or software.
+
+1.4 Developer reserves the right to modify the Agreement accompanying the Product from time to time at its sole discretion.
+
+2. Definitions. Unless otherwise defined, capitalized terms used throughout these General Terms have the meanings stated below:
+
+2.1 “Product” means Developer extensions, application software, code, material, text, data and other works of authorship offered through the Marketplace (“Products”).?
+
+2.2 “Payments” mean that any Product shall be handled in accordance with the applicable third party’s policies. By engaging in a transaction which utilizes a third party payment mechanism, You agree and acknowledge that Developer and Adobe shall not be liable for any damages or claims which are incurred as result of such transaction.?
+
+2.3 “Marketplace” means those methods of distribution available via the Service.
+
+3. Privacy Policy. 
+Please refer to Developer’s privacy policy as relates to the Product at: http://www.tbyrne.org
+
+4. Warranties And Disclaimers. 
+Developer provides the Product “AS IS.” DEVELOPER, ADOBE, AND ITS SUPPLIERS MAKE NO EXPRESS, IMPLIED, OR STATUTORY WARRANTY OF ANY KIND WITH RESPECT TO THE PRODUCT, YOUR TRANSACTIONS, OR THOSE PRODUCTS OBTAINED THROUGH THE MARKETPLACE INCLUDING, BUT NOT LIMITED TO, ANY WARRANTY OF PERFORMANCE, MERCHANTABILITY, SATISFACTORY QUALITY, NONINFRINGEMENT, OR FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT WILL DEVELOPER, ADOBE, OR ITS SUPPLIERS BE LIABLE TO YOU OR ANY OTHER PARTY FOR ANY DAMAGES, EVEN IF DEVELOPER OR ANY COMPANY REPRESENTATIVE HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES. YOU BEAR THE ENTIRE RISK AS TO THE USE OF THE PRODUCT, YOUR TRANSACTIONS ON THE MARKETPLACE, THE PRODUCTS AND ANY USE OF A THIRD PARTY PAYMENT MECHANISM. TO THE EXTENT AN IMPLIED WARRANTY CANNOT BE EXCLUDED, SUCH WARRANTY IS LIMITED IN DURATION TO THE EXPRESS WARRANTY PERIOD. BECAUSE SOME STATES OR JURISDICTIONS DO NOT ALLOW LIMITATIONS ON THE DURATION OF IMPLIED WARRANTIES, THE ABOVE LIMITATION MAY NOT APPLY.?THE USE OF THE MARKETPLACE, INCLUDING BUT NOT LIMITED TO YOUR TRANSACTIONS, AND THE DOWNLOADING AND/OR USE OF ALL PRODUCTS IS DONE AT YOUR OWN DISCRETION AND RISK AND WITH YOUR AGREEMENT THAT YOU WILL BE SOLELY RESPONSIBLE FOR ANY DAMAGE TO YOUR COMPUTER SYSTEM, LOSS OF DATA, OR OTHER HARM THAT RESULTS FROM SUCH ACTIVITIES. DEVELOPER ASSUMES NO LIABILITY FOR ANY COMPUTER VIRUS OR OTHER SIMILAR SOFTWARE CODE THAT IS DOWNLOADED TO YOUR COMPUTER OR DEVICE IN CONNECTION WITH YOUR USE OF THE MARKETPLACE, THE PRODUCTS OR YOUR TRANSACTIONS. NO ADVICE OR INFORMATION, WHETHER ORAL OR WRITTEN, OBTAINED BY YOU FROM DEVELOPER OR THROUGH OR FROM THE MARKETPLACE, THE PRODUCTS OR A THIRD PARTY PAYMENT MECHANISM SHALL CREATE ANY WARRANTY NOT EXPRESSLY STATED IN THE AGREEMENT. ANY AGREEMENTS ENTERED INTO WITH THIRD PARTIES ARE AT YOUR OWN RISK.?THE MARKETPLACE MAY INCLUDE TECHNICAL OR OTHER MISTAKES, INACCURACIES OR TYPOGRAPHICAL ERRORS. DEVELOPER MAY MAKE CHANGES TO THE PRODUCT AT ANY TIME WITHOUT NOTICE.
+
+5. Limitation of Liability. 
+You shall, at your own expense, indemnify, defend and hold Developer harmless from and against any and all claims, costs, fees (including reasonable attorneys’ fees), damages, liabilities and expenses to the extent such claim arises out of: (a) any breach of this Agreement, (b) any claims or allegations made in connection with your use of a third party payment mechanism, © any breach or alleged breach of any representations and warranties made by a third party concerning any aspect of a Product, including but not limited to compatibility, (d) any claims made by or on behalf of any third party pertaining directly or indirectly to Your use of a Product, (e) any alleged or actual violation of your privacy or other rights by a third party, and (f) any allegations based on a product liability claim.
+
+6. Indemnity. 
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, (A) IN NO EVENT WILL DEVELOPER BE LIABLE FOR ANY CONSEQUENTIAL, INDIRECT, EXEMPLARY, SPECIAL OR INCIDENTAL DAMAGES, INCLUDING WITHOUT LIMITATION ANY LOST DATA, LOST PROFITS AND COSTS OF PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES, ARISING FROM OR RELATING TO THIS AGREEMENT HOWEVER CAUSED AND UNDER ANY THEORY OF LIABILITY (INCLUDING NEGLIGENCE), EVEN IF DEVELOPER HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES; AND (B) DEVELOPER’S TOTAL CUMULATIVE LIABILITY ARISING FROM OR RELATED TO THIS AGREEMENT, WHETHER IN CONTRACT OR TORT OR OTHERWISE, WILL NOT EXCEED THE LESSER OF US$50 OR THE AMOUNTS RECEIVED BY DEVELOPER IN CONNECTION WITH THIS AGREEMENT DURING THE TWELVE (12) MONTH PERIOD PRECEDING THE EVENT GIVING RISE TO THE LIABILITY. You acknowledge that the fees and amounts payable set forth in this Agreement reflect the allocation of risk set forth in this Agreement and that the other party would not enter into this Agreement without these limitations on its liability. Each party agrees that these limitations shall apply notwithstanding any failure of essential purpose of any limited remedy. The foregoing limitations of liability are independent of any exclusive remedies for breach of warranty set forth in this Agreement. Some jurisdictions do not allow the exclusion or limitation of liability, so the above limitation or exclusion may not apply.
+
+7. Export. 
+You acknowledge that the Products are subject to the U.S. export control and sanctions laws (including the Export Administration Regulations) (“Export Controls”) and that You will comply with the Export Controls. You will not export or re-export the Products, directly or indirectly, to, or use or provide (or enable any third party to use) the Products in connection with: (a) any countries that are subject to U.S. export restrictions (including, but not limited to, Cuba, Iran, North Korea, Sudan, and Syria), (b) any third party whom You know or have reason to know will utilize them in the design, development or production of nuclear, chemical or biological weapons, or rocket systems, space launch vehicles, and sounding rockets, or unmanned air vehicle systems, or © any third party who has been prohibited from participating in the U.S. export transactions by any federal agency of the U.S. government.
+
+8. Release. 
+You will not hold Developer responsible for any damages, costs or liabilities of any kind arising out of or in connection with use of any Product, use of any third party payment mechanism, and You hereby release Developer, jointly and separately, from any and all such claims. If you are a California resident, you waive California Civil Code § 1542, which says: “A general release does not extend to claims which the creditor does not know or suspect to exist in his favor at the time of executing the release, which if known by him must have materially affected his settlement with the debtor.”
+
+9. Counterparts; Entire Agreement. 
+This Agreement may be executed in counterparts, each of which will be considered an original, but all of which together will constitute the same instrument. This Agreement, together with any Exhibits hereto, constitutes the entire agreement between the parties regarding the subject hereof and supersedes all prior or contemporaneous agreements, understandings, and communication, whether written or oral.
+
+10. Governing Law; Venue. 
+This Agreement shall be governed by the laws of the State of New South Wales, and the parties hereby irrevocably consent to jurisdiction and venue in the state and federal courts located in New South Wales without regard to any conflicts of laws principles that would require the application of the laws of another jurisdiction. In any action or suit to enforce any right or remedy under this Agreement or to interpret any provision of this Agreement, the prevailing party shall be entitled to recover its costs, including, without limitation, reasonable attorneys’ fees. The United Nations Convention on Contracts for the International Sale of Goods does not apply to this Agreement.
+]]></license-agreement>
+  <author name="Thomas Byrne"/>
+  <products>
+    <product version="16.0" primary="true" name="Illustrator"/>
+    <product version="16.0" primary="true" name="Illustrator32"/>
+    <product version="16.0" primary="true" name="Illustrator64"/>
+  </products>
+  <files>
+    <file source="Smart Symbol Export.jsx" destination="$presets/$locale/Scripts" products="Illustrator,Illustrator32,Illustrator64" minVersion="17.0"/>
+    <file source="SmartSymbolExport" destination="$presets/$locale" products="Illustrator,Illustrator32,Illustrator64" minVersion="17.0"/>
+
+    <file source="Smart Symbol Export.jsx" destination="$presets/en_US/Scripts" products="Illustrator,Illustrator32,Illustrator64" maxVersion="16.9"/>
+    <file source="SmartSymbolExport" destination="$presets/en_US" products="Illustrator,Illustrator32,Illustrator64" maxVersion="16.9"/>
+  </files>
+</macromedia-extension>

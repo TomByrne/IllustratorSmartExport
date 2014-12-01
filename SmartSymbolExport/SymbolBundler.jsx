@@ -62,29 +62,13 @@
 			SymbolBundler.testLayer = testLayer;
 		}
 		testLayer.symbolItems.add(symbol);
+		var item = testLayer.symbolItems[0];
 
 		var doc = docRef;
 
 		// only process layer if it has bounds (i.e. not guide layer) and falls within current artboard bounds
 		var layerRect = pack.DocUtils.getLayerBounds(testLayer);
 		if (layerRect) {
-			// crop to artboard
-			if(layerRect[0]<rect[0]){
-				layerRect[0] = rect[0];
-			}else{
-				intendedX = 0;
-			}
-			if(layerRect[1]>rect[1]){
-				layerRect[1] = rect[1];
-			}
-			if(layerRect[2]>rect[2]){
-				layerRect[2] = rect[2];
-			}
-			if(layerRect[3]<rect[3]){
-				layerRect[3] = rect[3];
-			}else{
-				intendedY = 0;
-			}
 			layerOffsetY = rect[3] - layerRect[3];
 			layerOffsetX = rect[0] - layerRect[0];
 

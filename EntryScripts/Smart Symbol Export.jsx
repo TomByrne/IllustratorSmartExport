@@ -4,7 +4,7 @@ var file;
 try{
 	smartExport = {};
 
-	var classpath = "SmartLayerExport";
+	var classpath = "SmartSymbolExport";
 
 	if($.os.toLowerCase().indexOf("macintosh")!=-1){
 		smartExport.directory =  decodeURI(app.path + '/Presets.localized/' + app.locale + "/" + classpath);
@@ -34,9 +34,9 @@ if(!app.activeDocument){
 		if(!app.documents.length){
 			alert("Please open a document before running this command");
 		}else{
-			var toolBuilder = new smartExport.ExportToolBuilder(app.activeDocument, "Smart Layer Export");
-			var loadSuccess = toolBuilder.loadPrefLayer("Export Settings", "nyt_exporter_info");
-			if (loadSuccess) toolBuilder.showDialog(true, true, false);
+			var toolBuilder = new smartExport.ExportToolBuilder(app.activeDocument, "Smart Symbol Export");
+			var loadSuccess = toolBuilder.loadPrefLayer("Export Symbol Settings");
+			if (loadSuccess) toolBuilder.showDialog(false, false, true);
 		}
 	}catch(e){
 		alert("Error opening panel:\n"+e);
