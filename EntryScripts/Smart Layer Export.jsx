@@ -6,6 +6,8 @@ try{
 
 	var classpath = "SmartLayerExport";
 
+	smartExport.appId = "org.tbyrne.smartLayerExport";
+
 	if($.os.toLowerCase().indexOf("macintosh")!=-1){
 		smartExport.directory =  decodeURI(app.path + '/Presets.localized/' + app.locale + "/" + classpath);
 	}else{

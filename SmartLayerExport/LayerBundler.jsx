@@ -84,7 +84,7 @@
 		return bundle;
 	}
 
-	LayerBundler.prepareCopyDoc = function(docRef, exportSettings, exportBundle, artI, layI, padding, doOutline, layerVis){
+	LayerBundler.prepareCopyDoc = function(docRef, exportSettings, exportBundle, artI, layI, padding, doOutline, ungroup, layerVis){
 		var artboard = docRef.artboards[artI];
 		docRef.artboards.setActiveArtboardIndex(artI);
 			
@@ -93,26 +93,33 @@
 		var artH = rect[1]-rect[3];
 
 		var offset = {x:0, y:0};
-		exportBundle.layerDepths = [];
-		exportBundle.copyDoc = pack.DocUtils.copyDocument(docRef, artboard, rect, artW, artH, offset, padding, pack.DocUtils.isAdditionalLayer, exportBundle.layerDepths, doOutline, ungroup, layerVis, exportSettings.ignoreWarnings);
-		exportBundle.hasAdditLayers = exportBundle.copyDoc.layers.length > 0 && (exportBundle.copyDoc.layers.length!=1 || exportBundle.copyDoc.layers[0].pageItems.length || exportBundle.copyDoc.layers[0].layers.length);
+		LayerBundler.layerDepths = [];
+		LayerBundler.copyDoc = pack.DocUtils.copyDocument(docRef, artboard, rect, artW, artH, offset, padding, pack.DocUtils.isAdditionalLayer, LayerBundler.layerDepths, doOutline, ungroup, layerVis, exportSettings.ignoreWarnings);
+		LayerBundler.hasAdditLayers = LayerBundler.copyDoc.layers.length > 0 && (LayerBundler.copyDoc.layers.length!=1 || LayerBundler.copyDoc.layers[0].pageItems.length || LayerBundler.copyDoc.layers[0].layers.length);
 		return this.prepareCopyLayer(docRef, exportSettings, exportBundle, artI, layI, padding, doOutline, ungroup, false, layerVis, rect);
 	}
 	LayerBundler.prepareCopyLayer = function(docRef, exportSettings, exportBundle, artI, layI, padding, doOutline, ungroup, createDoc, layerVis, rect){
-		docRef.artboards.setActiveArtboardIndex(artI);
+		//docRef.artboards.setActiveArtboardIndex(artI); // throws an error if new doc has already been created (can't change artboard when doc isn't in focus)
 
-		var doc = exportBundle.copyDoc || docRef;
+
+		var doc = LayerBundler.copyDoc || docRef;
+
+		if(LayerBundler.copyDoc) app.activeDocument = docRef; // can't access artboard props when owner doc isn't in focus
 		var layer = docRef.layers[layI];
 		var artboard = docRef.artboards[artI];
 		if(!rect)rect = artboard.artboardRect;
 
+		var artboardName = artboard.name;
+
+		if(LayerBundler.copyDoc)app.activeDocument = doc;
+
 		// only process layer if it has bounds (i.e. not guide layer) and falls within current artboard bounds
 		var layerRect = pack.DocUtils.getLayerBounds(layer);
 		if (layerRect) {
-			var isVis = pack.DocUtils.intersects(rect, layerRect);
-			if((createDoc || !exportBundle.hasAdditLayers) && !isVis){
+			var isVis = !exportSettings.ignoreOutOfBounds || pack.DocUtils.intersects(rect, layerRect);
+			if((createDoc || !LayerBundler.hasAdditLayers) && !isVis){
 				// skip layers where nothing is visible
-				if(!exportSettings.ignoreWarnings)alert("Layer '"+layer.name+"' does not intersect with the artboard '"+doc.artboards[artI].name+"', this file has been skipped.");
+				if(!exportSettings.ignoreWarnings)alert("Layer '"+layer.name+"' does not intersect with the artboard '"+artboardName+"', this file has been skipped.");
 				return "skipped";
 			}
 			if(createDoc){
@@ -141,11 +148,11 @@
 				docH = layerRect[1]-layerRect[3];
 
 				layOffset = {x:layerOffsetX, y:layerOffsetY};
-				exportBundle.layerDepths = [];
-				doc = pack.DocUtils.copyDocument(doc, artboard, rect, docW, docH, layOffset, padding, pack.DocUtils.isAdditionalLayer, exportBundle.layerDepths, doOutline, ungroup, layerVis, exportSettings.ignoreWarnings);
-				exportBundle.copyDoc = doc;
+				LayerBundler.layerDepths = [];
+				doc = pack.DocUtils.copyDocument(doc, artboard, rect, docW, docH, layOffset, padding, pack.DocUtils.isAdditionalLayer, LayerBundler.layerDepths, doOutline, ungroup, layerVis, exportSettings.ignoreWarnings);
+				LayerBundler.copyDoc = doc;
 			
-				exportBundle.hasAdditLayers = doc.layers.length > 0 && (doc.layers.length!=1 || doc.layers[0].pageItems.length || doc.layers[0].layers.length);
+				LayerBundler.hasAdditLayers = doc.layers.length > 0 && (doc.layers.length!=1 || doc.layers[0].pageItems.length || doc.layers[0].layers.length);
 			}else{
 				layOffset = {x:0, y:0};
 			}
@@ -154,7 +161,7 @@
 				var artb = doc.artboards[0];
 				var new_layer = pack.DocUtils.copyLayer(docRef, artb, artb.artboardRect, layer, doc.layers.add(), layOffset, padding, doOutline, ungroup, docRef.rulerOrigin, exportSettings.ignoreWarnings);
 				new_layer.visible = true;
-				var depth = exportBundle.layerDepths[layI];
+				var depth = LayerBundler.layerDepths[layI];
 				pack.DocUtils.setLayerDepth(new_layer, depth);
 				exportBundle.copyLayer = new_layer;
 			}
@@ -204,12 +211,14 @@
 		exportBundle.layersWereShown = null;
 	}
 	LayerBundler.cleanupCopyLayer = function(docRef, exportSettings, exportBundle){
+		if(!exportBundle.copyLayer)return;
 		exportBundle.copyLayer.remove();
 		exportBundle.copyLayer = null;
 	}
 	LayerBundler.cleanupCopyDoc = function(docRef, exportSettings, exportBundle){
-		exportBundle.copyDoc.close(SaveOptions.DONOTSAVECHANGES);
-		exportBundle.copyDoc = null;
+		if(!LayerBundler.copyDoc)return;
+		LayerBundler.copyDoc.close(SaveOptions.DONOTSAVECHANGES);
+		LayerBundler.copyDoc = null;
 	}
 
 	LayerBundler.makeFileName = function(pattern, ext, artNum, artName, layerNum, layerName){

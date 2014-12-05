@@ -31,6 +31,7 @@
 		symbolNames:[],
 		exportArtboards:false,
 		ignoreWarnings:false,
+		ignoreOutOfBounds:true,
 		fontHandling:"none",
 
 
@@ -52,6 +53,7 @@
 				/*ret.appendChild( new XML('<scaling>'+this.scaling+'</scaling>') );*/
 				ret.appendChild( new XML('<exportArtboards>'+this.exportArtboards+'</exportArtboards>') );
 				ret.appendChild( new XML('<ignoreWarnings>'+this.ignoreWarnings+'</ignoreWarnings>') );
+				ret.appendChild( new XML('<ignoreOutOfBounds>'+this.ignoreOutOfBounds+'</ignoreOutOfBounds>') );
 			}
 
 			if(includeFormatSettings){
@@ -140,6 +142,8 @@
 			if(xml.symbolAll.length())this.symbolAll		= xml.symbolAll == "true";
 			if(xml.exportArtboards.length())this.exportArtboards = xml.exportArtboards == "true";
 			if(xml.ignoreWarnings.length())this.ignoreWarnings = xml.ignoreWarnings == "true";
+
+			if(xml.ignoreOutOfBounds.length())this.ignoreOutOfBounds = xml.ignoreOutOfBounds != "false";
 
 			if(xml.artboardInd.length()){
 				this.artboardInd	= xml.artboardInd.toString();

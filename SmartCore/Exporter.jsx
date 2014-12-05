@@ -116,7 +116,7 @@
 						$.sleep(40) // Allows UI update;
 					}
 
-					if(copyDoc && copyDoc!="skipped" && copyDoc!="failed"){
+					if(copyDoc/* && copyDoc!="skipped" && copyDoc!="failed"*/){
 						if(bundle.cleanupHandler)bundle.cleanupHandler(docRef, this.exportSettings, bundle);
 					}
 				}catch(e){

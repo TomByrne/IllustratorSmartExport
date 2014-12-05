@@ -91,7 +91,7 @@
 				tab.orientation = "row";
 
 				if(doArtboard){
-					this.artboardPanel = new pack.ArtboardPanel(tab, this.exportSettings.artboardAll, this.exportSettings.artboardInd, this.exportSettings.exportArtboards);
+					this.artboardPanel = new pack.ArtboardPanel(tab, exSettings.artboardAll, exSettings.artboardInd, exSettings.exportArtboards);
 					this.artboardPanel.onWholeArtboardModeChanged = function(){
 						exSettings.exportArtboards = scopedThis.artboardPanel.wholeArtboardMode;
 						scopedThis.updatePreviewList();
@@ -105,11 +105,14 @@
 				}
 
 				if(doLayer){
-					this.layerPanel = new pack.LayerPanel(tab, this.exportSettings.layerAll, this.exportSettings.layerInd, this.ignoreLayers);
+					this.layerPanel = new pack.LayerPanel(tab, exSettings.layerAll, exSettings.layerInd, this.ignoreLayers, exSettings.ignoreOutOfBounds);
 					this.layerPanel.onSelectedChanged = function() {
 						exSettings.layerAll  = scopedThis.layerPanel.selectAll;
 						exSettings.layerInd  = scopedThis.layerPanel.selectedIndices;
 						scopedThis.updatePreviewList();
+					};
+					this.layerPanel.onIgnoreOutOfBoundsChanged = function() {
+						exSettings.ignoreOutOfBounds  = scopedThis.layerPanel.ignoreOutOfBounds;
 					};
 				}
 			}
@@ -118,7 +121,7 @@
 				var tab = this.tabPanel.add("tab", undefined, "Symbols");
 				tab.orientation = "row";
 
-				this.symbolPanel = new pack.SymbolPanel(tab, this.exportSettings.symbolAll, this.exportSettings.symbolNames);
+				this.symbolPanel = new pack.SymbolPanel(tab, exSettings.symbolAll, exSettings.symbolNames);
 				this.symbolPanel.onSelectedChanged = function() {
 					exSettings.symbolAll  = scopedThis.symbolPanel.selectAll;
 					exSettings.symbolNames  = scopedThis.symbolPanel.selectedNames;
@@ -137,7 +140,8 @@
 			var column;
 			var row;
 
-			this.presetPanel = new pack.PresetPanel(settingsCol, this.exportSettings, smartExport.directory+"/presets");
+			var presetDir = decodeURI(Folder.appData + '/' + pack.appId + "/presets");
+			this.presetPanel = new pack.PresetPanel(settingsCol, this.exportSettings, presetDir);
 			this.presetPanel.onSettingsChanged = function(){
 				scopedThis.settingsPanel.updateSettings();
 				scopedThis.formatPanel.updateSettings();

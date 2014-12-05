@@ -17,7 +17,7 @@
 			column.orientation = 'column';
 			column.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
 
-			this.artboardList = column.add ('ListBox', [0, 0, 200, 410], '', 
+			this.artboardList = column.add ('ListBox', [0, 0, 200, 380], '', 
 									{numberOfColumns: 3, showHeaders: false, multiselect:true,
 									columnTitles: ['', '', 'Artboard'] });
 			this.artboardList.onChange = function(){
@@ -52,6 +52,15 @@
 				scopedThis.wholeArtboardMode  = scopedThis.exportArtboardsCheckBox.value;
 				if(scopedThis.onWholeArtboardModeChanged)scopedThis.onWholeArtboardModeChanged();
 			};
+
+			var key;
+			if($.os.toLowerCase().indexOf("mac")!=-1){
+				key = "CMD";
+			}else{
+				key = "CTRL";
+			}
+			var tip = column.add ('statictext', undefined, key+"+Click to select multiple in lists"); 
+			tip.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
 		},
 		doArtboardSelect:function(select){
 			this.ignoreChanges = true;

@@ -1,15 +1,17 @@
 (function(pack){
-	function LayerPanel(container, selectAll, selectedIndices, ignoreLayerNames){
-		this.init(container, selectAll, selectedIndices, ignoreLayerNames);
+	function LayerPanel(container, selectAll, selectedIndices, ignoreLayerNames, ignoreOutOfBounds){
+		this.init(container, selectAll, selectedIndices, ignoreLayerNames, ignoreOutOfBounds);
 		return this;
 	}
 
 	LayerPanel.prototype={
 	    onSelectedChanged:null,
+	    onIgnoreOutOfBoundsChanged:null,
 
-		init:function(container, selectAll, selectedIndices, ignoreLayerNames){
+		init:function(container, selectAll, selectedIndices, ignoreLayerNames, ignoreOutOfBounds){
 			this.selectAll = selectAll;
 			this.selectedIndices = selectedIndices;
+			this.ignoreOutOfBounds = ignoreOutOfBounds;
 
 			var scopedThis = this;
 			var column = container.add('group', undefined, '')
@@ -52,22 +54,20 @@
 				this.doLayerSelect(true);
 			}
 
-			var key;
-			if($.os.toLowerCase().indexOf("mac")!=-1){
-				key = "CMD";
-			}else{
-				key = "CTRL";
-			}
-			var tip = column.add ('statictext', undefined, key+"+Click to select multiple from lists"); 
-			tip.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
-
-
 			var selectVis = row.add('iconbutton');
 			selectVis.image = File(pack.directory+"/icons/eye.png");
 			selectVis.helpTip = "Select Visible Layers";
 			selectVis.onClick = function() {
 				scopedThis.selectByVisible();
 			};
+
+			this.ignoreOutOfBoundsInput = column.add("checkbox", undefined, "Ignore layers out of artboard");
+			this.ignoreOutOfBoundsInput.value = ignoreOutOfBounds;
+			this.ignoreOutOfBoundsInput.onClick = function(){
+				scopedThis.ignoreOutOfBounds = scopedThis.ignoreOutOfBoundsInput.value;
+				scopedThis.onIgnoreOutOfBoundsChanged();
+			}
+			this.ignoreOutOfBoundsInput.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
 		},
 		selectByVisible:function(){
 			this.ignoreChanges = true;
