@@ -4,7 +4,9 @@
 	LayerBundler.NO_COPY = "noCopy";
 
 
-	LayerBundler.add = function(docRef, bundles, exportSettings, patternName){
+	LayerBundler.add = function(docRef, bundles, exportSettings, patternName, hasBoundErrorRef){
+
+		LayerBundler.hasBoundErrorRef = hasBoundErrorRef;
 
 		var artboardInd = exportSettings.artboardInd;
 		var layerInd = exportSettings.layerInd;
@@ -94,7 +96,7 @@
 
 		var offset = {x:0, y:0};
 		LayerBundler.layerDepths = [];
-		LayerBundler.copyDoc = pack.DocUtils.copyDocument(docRef, artboard, rect, artW, artH, offset, padding, pack.DocUtils.isAdditionalLayer, LayerBundler.layerDepths, doOutline, ungroup, layerVis, exportSettings.ignoreWarnings);
+		LayerBundler.copyDoc = pack.DocUtils.copyDocument(docRef, artboard, rect, artW, artH, offset, padding, pack.DocUtils.isAdditionalLayer, LayerBundler.layerDepths, doOutline, ungroup, layerVis, exportSettings.ignoreWarnings, LayerBundler.hasBoundErrorRef);
 		LayerBundler.hasAdditLayers = LayerBundler.copyDoc.layers.length > 0 && (LayerBundler.copyDoc.layers.length!=1 || LayerBundler.copyDoc.layers[0].pageItems.length || LayerBundler.copyDoc.layers[0].layers.length);
 		return this.prepareCopyLayer(docRef, exportSettings, exportBundle, artI, layI, padding, doOutline, ungroup, false, layerVis, rect);
 	}
@@ -119,7 +121,6 @@
 			var isVis = !exportSettings.ignoreOutOfBounds || pack.DocUtils.intersects(rect, layerRect);
 			if((createDoc || !LayerBundler.hasAdditLayers) && !isVis){
 				// skip layers where nothing is visible
-				if(!exportSettings.ignoreWarnings)alert("Layer '"+layer.name+"' does not intersect with the artboard '"+artboardName+"', this file has been skipped.");
 				return "skipped";
 			}
 			if(createDoc){
@@ -159,7 +160,7 @@
 			if(isVis){
 				// only copy layer if it is visible (if not only visible '+' layers will be output)
 				var artb = doc.artboards[0];
-				var new_layer = pack.DocUtils.copyLayer(docRef, artb, artb.artboardRect, layer, doc.layers.add(), layOffset, padding, doOutline, ungroup, docRef.rulerOrigin, exportSettings.ignoreWarnings);
+				var new_layer = pack.DocUtils.copyLayer(docRef, artb, artb.artboardRect, layer, doc.layers.add(), layOffset, padding, doOutline, ungroup, docRef.rulerOrigin, exportSettings.ignoreWarnings, LayerBundler.hasBoundErrorRef);
 				new_layer.visible = true;
 				var depth = LayerBundler.layerDepths[layI];
 				pack.DocUtils.setLayerDepth(new_layer, depth);

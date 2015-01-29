@@ -85,6 +85,8 @@
 						if(item.state == "invalid" || item.state=="success"){
 							continue;
 						}
+						item.state = "processing";
+						this.updatedExportItem(item);
 
 						if(copyDoc=="skipped"){
 							item.state = "skipped";

@@ -3,7 +3,7 @@
 
 
 		
-	DocUtils.copyDocument = function(docRef, artboard, artboardRect, w, h, offset, doInnerPadding, layerCheck, layerDepths, outlineText, ungroup, layerVis, ignoreWarnings) {
+	DocUtils.copyDocument = function(docRef, artboard, artboardRect, w, h, offset, doInnerPadding, layerCheck, layerDepths, outlineText, ungroup, layerVis, ignoreWarnings, hasBoundErrorRef) {
 		if(w<1)w = 1;
 		if(h<1)h = 1;
 		var preset = new DocumentPreset();
@@ -30,7 +30,7 @@
 				if (layerCheck==null || layerCheck(layer, vis)) {
 					var layerBounds = this.getLayerBounds(layer);
 					if(layerBounds && this.intersects(artboardRect, layerBounds)){
-						var newLayer = this.copyLayer(docRef, artboard, artboardRect, layer, copyDoc.layers.add(), offset, doInnerPadding, outlineText, ungroup, docRef.rulerOrigin, ignoreWarnings);
+						var newLayer = this.copyLayer(docRef, artboard, artboardRect, layer, copyDoc.layers.add(), offset, doInnerPadding, outlineText, ungroup, docRef.rulerOrigin, ignoreWarnings, hasBoundErrorRef);
 						this.setLayerDepth(newLayer, count);
 						if(!newLayer.pageItems.length && !newLayer.layers.length){
 							newLayer.remove();
@@ -56,7 +56,7 @@
 		return rect1[0]==rect2[0] && rect1[1]==rect2[1] && rect1[2]==rect2[2] && rect1[3]==rect2[3] ;
 	}
 		
-	DocUtils.copyLayer = function(doc, artboard, artboardRect, fromLayer, toLayer, offset, doInnerPadding, outlineText, ungroup, rulerOrigin, ignoreWarnings) {
+	DocUtils.copyLayer = function(doc, artboard, artboardRect, fromLayer, toLayer, offset, doInnerPadding, outlineText, ungroup, rulerOrigin, ignoreWarnings, hasBoundErrorRef) {
 
 		toLayer.artworkKnockout = fromLayer.artworkKnockout;
 		toLayer.blendingMode = fromLayer.blendingMode;
@@ -82,6 +82,7 @@
 			if(this.rectEqual(oldBounds, newBounds)){
 				//$.sleep(5000); // sleeping doesn't help!!
 				if(!ignoreWarnings)alert("Illustrator visibleBounds issue workaround.\nTry removing groups on layer '"+fromLayer.name+"' to avoid this in future.\nPlease press OK");
+				else hasBoundErrorRef.broken++;
 				newBounds = this.getLayerBounds(toLayer);
 				// sometimes it takes a moment for bounds to be updated
 			}

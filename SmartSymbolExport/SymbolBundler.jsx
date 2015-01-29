@@ -1,7 +1,9 @@
 (function(pack){
 	SymbolBundler = {};
 
-	SymbolBundler.add = function(docRef, bundles, exportSettings, patternName){
+	SymbolBundler.add = function(docRef, bundles, exportSettings, patternName, hasBoundErrorRef){
+
+		SymbolBundler.hasBoundErrorRef = hasBoundErrorRef;
 
 		var symbolNames = exportSettings.symbolNames;
 
@@ -76,13 +78,13 @@
 			docH = layerRect[1]-layerRect[3];
 
 			layOffset = {x:layerOffsetX, y:layerOffsetY};
-			doc = pack.DocUtils.copyDocument(doc, artboard, rect, docW, docH, layOffset, padding, pack.DocUtils.isAdditionalLayer, null, doOutline, ungroup, exportSettings.ignoreWarnings);
+			doc = pack.DocUtils.copyDocument(doc, artboard, rect, docW, docH, layOffset, padding, pack.DocUtils.isAdditionalLayer, null, doOutline, ungroup, exportSettings.ignoreWarnings, SymbolBundler.hasBoundErrorRef);
 			exportBundle.copyDoc = doc;
 		
 			exportBundle.hasAdditLayers = doc.layers.length > 0 && (doc.layers.length!=1 || doc.layers[0].pageItems.length || doc.layers[0].layers.length);
 
 			var artb = doc.artboards[0];
-			var new_layer = pack.DocUtils.copyLayer(docRef, artb, artb.artboardRect, layer, doc.layers.add(), layOffset, padding, doOutline, ungroup, docRef.rulerOrigin, exportSettings.ignoreWarnings);
+			var new_layer = pack.DocUtils.copyLayer(docRef, artb, artb.artboardRect, layer, doc.layers.add(), layOffset, padding, doOutline, ungroup, docRef.rulerOrigin, exportSettings.ignoreWarnings, SymbolBundler.hasBoundErrorRef);
 			return doc;
 		}
 

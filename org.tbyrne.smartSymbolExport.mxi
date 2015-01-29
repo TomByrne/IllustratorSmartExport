@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<macromedia-extension id="org.tbyrne.smartSymbolExport" name="Smart Symbol Export" version="3.0.0">
+<macromedia-extension id="org.tbyrne.smartSymbolExport" name="Smart Symbol Export" version="3.3.0">
   <description><![CDATA[<h3>Features:</h3>
 - Ability to scale output files for HiDPI (Retina) displays, or any other scale factor.
 - Can set up multiple export formats for a single file for easy regeneration of multiple asset sizes/types.
@@ -24,6 +24,16 @@
 To use, go to File > Scripts > Smart Symbol Export
 
 <h3>Change Log:</h3>
+
+<h3>29/01/2015 - v3.3</h3>
+- Improvements in Output panel
+
+<h3>19/12/2014 - v3.2</h3>
+- Installation fix for many languages
+
+<h3>5/12/2014 - v3.1</h3>
+- Fixed permissions issues when saving presets
+- Initial fix for locale install issue
 
 <h3>26/11/2014 - v3.0</h3>
 - Initial launch (versioning kept in line with Smart Layer Export)
@@ -78,10 +88,41 @@ This Agreement shall be governed by the laws of the State of New South Wales, an
     <product version="16.0" primary="true" name="Illustrator64"/>
   </products>
   <files>
-    <file source="Smart Symbol Export.jsx" destination="$presets/$locale/Scripts" products="Illustrator,Illustrator32,Illustrator64" minVersion="17.0"/>
-    <file source="SmartSymbolExport" destination="$presets/$locale" products="Illustrator,Illustrator32,Illustrator64" minVersion="17.0"/>
+    <file source="Smart Symbol Export.jsx" destination="$presets/$locale/Scripts/" shared="true" minVersion="17.0"/>
 
-    <file source="Smart Symbol Export.jsx" destination="$presets/en_US/Scripts" products="Illustrator,Illustrator32,Illustrator64" maxVersion="16.9"/>
-    <file source="SmartSymbolExport" destination="$presets/en_US" products="Illustrator,Illustrator32,Illustrator64" maxVersion="16.9"/>
+    <file source="Smart Symbol Export.jsx" destination="$presets/en_US/Scripts/" shared="true" maxVersion="16.9"/>
+    <file source="Smart Symbol Export.jsx" destination="$presets/en_GB/Scripts/" shared="true" maxVersion="16.9"/>
+    <file source="Smart Symbol Export.jsx" destination="$presets/fr_FR/Scripts/" shared="true" maxVersion="16.9"/>
+    <file source="Smart Symbol Export.jsx" destination="$presets/fr_CA/Scripts/" shared="true" maxVersion="16.9"/>
+    <file source="Smart Symbol Export.jsx" destination="$presets/da_DK/Scripts/" shared="true" maxVersion="16.9"/>
+    <file source="Smart Symbol Export.jsx" destination="$presets/nl_NL/Scripts/" shared="true" maxVersion="16.9"/>
+    <file source="Smart Symbol Export.jsx" destination="$presets/pt_BR/Scripts/" shared="true" maxVersion="16.9"/>
+
+    <file source="Smart Symbol Export.jsx" destination="$presets/ja_JP/スクリプト/" shared="true"/> 
+    <file source="Smart Symbol Export.jsx" destination="$presets/de_DE/Skripten/" shared="true"/> 
+    <file source="Smart Symbol Export.jsx" destination="$presets/es_ES/Secuencias de comandos/" shared="true"/>  
+    <file source="Smart Symbol Export.jsx" destination="$presets/es_MX/Secuencias de comandos/" shared="true"/>
+    <file source="Smart Symbol Export.jsx" destination="$presets/it_IT/Script/" shared="true"/>  
+    <file source="Smart Symbol Export.jsx" destination="$presets/cs_CZ/Skripty/" shared="true"/>  
+    <file source="Smart Symbol Export.jsx" destination="$presets/ru_RU/Сценарии/" shared="true"/>
+    <file source="Smart Symbol Export.jsx" destination="$presets/uk_UA/Сценарії/" shared="true"/> 
+    <file source="Smart Symbol Export.jsx" destination="$presets/zh_CN/脚本/" shared="true"/>   
+    <file source="Smart Symbol Export.jsx" destination="$presets/zh_TW/指令檔/" shared="true"/>  
+    <file source="Smart Symbol Export.jsx" destination="$presets/ko_KR/스크립트/" shared="true"/> 
+    <file source="Smart Symbol Export.jsx" destination="$presets/sv_SE/Skript/" shared="true"/>   
+    <file source="Smart Symbol Export.jsx" destination="$presets/tr_TR/Komut Dosyaları/" shared="true"/>  
+    <file source="Smart Symbol Export.jsx" destination="$presets/hu_HU/Parancsfájlok/" shared="true"/>
+    <file source="Smart Symbol Export.jsx" destination="$presets/pl_PL/Skrypty/" shared="true"/>
+
+    
+    <file source="SmartSymbolExport" destination="$presets/$locale" shared="true" minVersion="17.0"/>
+
+    <file source="SmartSymbolExport" destination="$presets/en_US" shared="true" maxVersion="16.9"/>
+    <file source="SmartSymbolExport" destination="$presets/en_GB" shared="true" maxVersion="16.9"/>
+    <file source="SmartSymbolExport" destination="$presets/fr_FR" shared="true" maxVersion="16.9"/>
+    <file source="SmartSymbolExport" destination="$presets/fr_CA" shared="true" maxVersion="16.9"/>
+    <file source="SmartSymbolExport" destination="$presets/da_DK" shared="true" maxVersion="16.9"/>
+    <file source="SmartSymbolExport" destination="$presets/nl_NL" shared="true" maxVersion="16.9"/>
+    <file source="SmartSymbolExport" destination="$presets/pt_BR" shared="true" maxVersion="16.9"/>
   </files>
 </macromedia-extension>

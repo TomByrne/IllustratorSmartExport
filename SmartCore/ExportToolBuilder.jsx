@@ -174,11 +174,16 @@
 			this.exportPanel.onExportClicked = function() {
 				scopedThis.tabPanel.selection = 1;
 				try{
+					scopedThis.hasBoundErrorRef.broken = 0;
 					scopedThis.saveOptions(); // save options before export in case of errors
 					if(scopedThis.exportSettings.directory){
 						scopedThis.exporter.runExport(scopedThis.bundleList, this.exportSettings, scopedThis.exportSettings.directory);
 					}else{
 						scopedThis.exporter.runExport(scopedThis.bundleList, this.exportSettings, scopedThis.docRef.path);
+					}
+					if(scopedThis.hasBoundErrorRef.broken){
+						var layerName = ( scopedThis.hasBoundErrorRef.broken==1 ? "A layer" : scopedThis.hasBoundErrorRef.broken+" layers");
+						alert(layerName+" couldn't be positioned correctly due to an Illustrator bug, if there are alignment problems in the exported files please export again with warnings turned on.\n\nYou'll have to click through warnings but the exports should be aligned properly.");
 					}
 				}catch(e){
 					alert("Error running export: "+e);
@@ -208,12 +213,13 @@
 		updatePreviewList:function(){
 			try{
 				this.bundleList = [];
+				this.hasBoundErrorRef = {};
 	
 				if(this.artboardPanel && this.exportSettings.exportArtboards){
-					pack.ArtboardBundler.add(this.docRef, this.bundleList, this.exportSettings, "artboard");
+					pack.ArtboardBundler.add(this.docRef, this.bundleList, this.exportSettings, "artboard", this.hasBoundErrorRef);
 				}
 				if(this.layerPanel){
-					pack.LayerBundler.add(this.docRef, this.bundleList, this.exportSettings, "layer");
+					pack.LayerBundler.add(this.docRef, this.bundleList, this.exportSettings, "layer", this.hasBoundErrorRef);
 				}
 				if(this.symbolPanel){
 					pack.SymbolBundler.add(this.docRef, this.bundleList, this.exportSettings, "symbol");

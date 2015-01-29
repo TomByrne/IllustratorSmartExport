@@ -10,7 +10,7 @@
 		init:function(container){
 
 			this.list = container.add ('ListBox', [0, 0, 410, 470], 'asd', 
-									{numberOfColumns: 4, showHeaders: true, multiselect:true,
+									{numberOfColumns: 4, showHeaders: true,
 									columnTitles: ['', '', '', 'Filename'] }); 
 
 			//container.margins =  [5,5,0,0];
@@ -79,6 +79,8 @@
 				case "failed":
 					icon = "cross";
 					break;
+				case "processing":
+					this.list.selection = [item];
 				case "waiting":
 					icon = "null";
 					break;
