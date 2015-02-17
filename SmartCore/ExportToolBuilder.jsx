@@ -176,11 +176,18 @@
 				try{
 					scopedThis.hasBoundErrorRef.broken = 0;
 					scopedThis.saveOptions(); // save options before export in case of errors
-					if(scopedThis.exportSettings.directory){
-						scopedThis.exporter.runExport(scopedThis.bundleList, this.exportSettings, scopedThis.exportSettings.directory);
+
+					var dir = scopedThis.exportSettings.directory || "";
+					if($.os.toLowerCase().indexOf("mac")!=-1){
+						if(dir.charAt(0)!="/"){
+							dir = scopedThis.docRef.path + "/" + dir;
+						}
 					}else{
-						scopedThis.exporter.runExport(scopedThis.bundleList, this.exportSettings, scopedThis.docRef.path);
+						if(dir.indexOf(":")==-1){
+							dir = scopedThis.docRef.path + "\\" + dir;
+						}
 					}
+					scopedThis.exporter.runExport(scopedThis.bundleList, this.exportSettings, dir);
 					if(scopedThis.hasBoundErrorRef.broken){
 						var layerName = ( scopedThis.hasBoundErrorRef.broken==1 ? "A layer" : scopedThis.hasBoundErrorRef.broken+" layers");
 						alert(layerName+" couldn't be positioned correctly due to an Illustrator bug, if there are alignment problems in the exported files please export again with warnings turned on.\n\nYou'll have to click through warnings but the exports should be aligned properly.");

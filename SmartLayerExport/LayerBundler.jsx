@@ -67,7 +67,7 @@
 			// export types which don't require a new document to be created just show/hide layers to complete export. (No pad, no trim, raster exports)
 			bundle = new pack.ExportBundle();
 			bundle.prepareHandler = isFirst ? closure(LayerBundler, LayerBundler.prepareShowLayerFirst, [artI, layI], true) : closure(LayerBundler, LayerBundler.prepareShowLayer, [artI, layI], true);
-			bundle.cleanupHandler = isLast ? closure(LayerBundler, LayerBundler.cleanupShowLayerLast, [layerVis], true) : LayerBundler.cleanupShowLayer;
+			bundle.cleanupHandler = isLast ? closure(LayerBundler, LayerBundler.cleanupShowLayerLast, [layerVis], true) : closure(LayerBundler, LayerBundler.cleanupShowLayer, [artI, layI], true);
 
 		}else if(!trim){
 			// non-trimmed export types can simply create a new document once for each artboard. (no trim, vector exports)
@@ -174,7 +174,6 @@
 	}
 	LayerBundler.prepareShowLayerFirst = function(docRef, exportSettings, exportBundle, artI, layI){
 		pack.DocUtils.hideAllLayers(docRef);
-		LayerBundler.prepareShowLayer(docRef, exportSettings, exportBundle, artI, layI);
 
 		exportBundle.hasOrigAdditLayers = false;
 		for(var i=0; i<docRef.layers.length; i++){
@@ -183,9 +182,10 @@
 				break;
 			}
 		}
-		return docRef;
+		return LayerBundler.prepareShowLayer(docRef, exportSettings, exportBundle, artI, layI);
 	}
 	LayerBundler.prepareShowLayer = function(docRef, exportSettings, exportBundle, artI, layI){
+		docRef.artboards.setActiveArtboardIndex(artI);
 		var layer = docRef.layers[layI];
 
 		var layerRect = pack.DocUtils.getLayerBounds(layer);

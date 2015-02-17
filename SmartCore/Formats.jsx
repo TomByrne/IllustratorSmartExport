@@ -100,7 +100,7 @@
 	var getSvgOptions = function ( formatSettings ) {
 		options = new ExportOptionsSVG();
 		options.embedRasterImages = formatSettings.embedImage;
-		//options.saveMultipleArtboards = true;
+		options.saveMultipleArtboards = false;
 		fillOptions(options, formatSettings);
 		return options;
 	}

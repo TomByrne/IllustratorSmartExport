@@ -184,7 +184,7 @@
 		}
 	}
 
-	DocUtils.artboardIntersects = function(doc, artI, rect){
+	DocUtils.artboardIntersects = function(docRef, artI, rect){
 		var artboard = docRef.artboards[artI];
 		var artRect = artboard.artboardRect;
 		return this.intersects(artRect, rect);
