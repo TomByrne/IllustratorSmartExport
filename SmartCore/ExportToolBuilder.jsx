@@ -140,7 +140,7 @@
 			var column;
 			var row;
 
-			var presetDir = decodeURI(Folder.appData + '/' + pack.appId + "/presets");
+			var presetDir = decodeURI(Folder.userData + '/' + pack.appId + "/presets");
 			this.presetPanel = new pack.PresetPanel(settingsCol, this.exportSettings, presetDir);
 			this.presetPanel.onSettingsChanged = function(){
 				scopedThis.settingsPanel.updateSettings();
