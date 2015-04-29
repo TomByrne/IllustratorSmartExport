@@ -94,6 +94,7 @@ This Agreement shall be governed by the laws of the State of New South Wales, an
     <file source="Smart Symbol Export.jsx" destination="$presets/en_GB/Scripts/" shared="true" maxVersion="16.9"/>
     <file source="Smart Symbol Export.jsx" destination="$presets/fr_FR/Scripts/" shared="true" maxVersion="16.9"/>
     <file source="Smart Symbol Export.jsx" destination="$presets/fr_CA/Scripts/" shared="true" maxVersion="16.9"/>
+    <file source="Smart Symbol Export.jsx" destination="$presets/fr_MA/Scripts/" shared="true" maxVersion="16.9"/>
     <file source="Smart Symbol Export.jsx" destination="$presets/da_DK/Scripts/" shared="true" maxVersion="16.9"/>
     <file source="Smart Symbol Export.jsx" destination="$presets/nl_NL/Scripts/" shared="true" maxVersion="16.9"/>
     <file source="Smart Symbol Export.jsx" destination="$presets/pt_BR/Scripts/" shared="true" maxVersion="16.9"/>
@@ -121,6 +122,7 @@ This Agreement shall be governed by the laws of the State of New South Wales, an
     <file source="SmartSymbolExport" destination="$presets/en_GB" shared="true" maxVersion="16.9"/>
     <file source="SmartSymbolExport" destination="$presets/fr_FR" shared="true" maxVersion="16.9"/>
     <file source="SmartSymbolExport" destination="$presets/fr_CA" shared="true" maxVersion="16.9"/>
+    <file source="SmartSymbolExport" destination="$presets/fr_MA" shared="true" maxVersion="16.9"/>
     <file source="SmartSymbolExport" destination="$presets/da_DK" shared="true" maxVersion="16.9"/>
     <file source="SmartSymbolExport" destination="$presets/nl_NL" shared="true" maxVersion="16.9"/>
     <file source="SmartSymbolExport" destination="$presets/pt_BR" shared="true" maxVersion="16.9"/>

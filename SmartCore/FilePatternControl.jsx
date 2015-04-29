@@ -53,7 +53,7 @@
 		},
 		setValue : function(value){
 			this.value = value;
-			this.input.text = value;
+			if(this.input.text != value)this.input.text = value; // Important to check first for CS6
 			if(this.onChange)this.onChange();
 		},
 
