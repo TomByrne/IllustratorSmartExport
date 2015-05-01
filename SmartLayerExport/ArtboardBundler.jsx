@@ -22,7 +22,7 @@
 				var format = formatSettings.formatRef;
 				var bundle = this.getBundle(bundleMap, artI, formatSettings.innerPadding, formatSettings.scaling, format.copyBehaviour, formatSettings.fontHandling=="outline", formatSettings.ungroup);
 
-				var item = new pack.ExportItem(formatSettings, ArtboardBundler.makeFileName(formatSettings.patterns[patternName], formatSettings.formatRef.ext, i, artboardName));
+				var item = new pack.ExportItem(formatSettings, ArtboardBundler.makeFileName(formatSettings.patterns[patternName], docRef.fullName.name, formatSettings.formatRef.ext, i, artboardName));
 				item.names = ["Artboard "+(artI+1)];
 				bundle.items.push(item);
 			}
@@ -78,11 +78,13 @@
 		exportBundle.copyDoc = null;
 	}
 
-	ArtboardBundler.makeFileName = function(pattern, ext, artNum, artName){
+	ArtboardBundler.makeFileName = function(pattern, docName, ext, artNum, artName){
 		var ret = pattern;
+		docName = docName.substring(0, docName.lastIndexOf("."));
 		ret = ret.split(pack.tokens.ARTBOARD_NUM_TOKEN).join(artNum);
 		ret = ret.split(pack.tokens.ARTBOARD_NAME_TOKEN).join(artName);
 		ret = ret.split(pack.tokens.FILE_EXT_TOKEN).join(ext);
+		ret = ret.split(pack.tokens.DOC_NAME_TOKEN).join(docName);
 		return ret;
 	}
 

@@ -21,7 +21,7 @@
 
 
 				var bundle = this.getBundle(bundleMap, symbol, formatSettings.innerPadding, formatSettings.scaling, formatSettings.trimEdges, formatSettings.fontHandling=="outline", formatSettings.ungroup, j==symbolNames.length-1 && x==exportSettings.formats.length-1);
-				var item = new pack.ExportItem(formatSettings, SymbolBundler.makeFileName(formatSettings.patterns[patternName], formatSettings.formatRef.ext, symbol.name));
+				var item = new pack.ExportItem(formatSettings, SymbolBundler.makeFileName(formatSettings.patterns[patternName], docRef.fullName.name, formatSettings.formatRef.ext, symbol.name));
 				item.names = [symbol.name];
 				bundle.items.push(item);
 			}
@@ -102,9 +102,11 @@
 		SymbolBundler.testLayer = null;
 	}
 
-	SymbolBundler.makeFileName = function(pattern, ext, symbolName){
+	SymbolBundler.makeFileName = function(pattern, docName, ext, symbolName){
 		var ret = pattern.split(pack.tokens.SYMBOL_NAME_TOKEN).join(symbolName);
+		docName = docName.substring(0, docName.lastIndexOf("."));
 		ret = ret.split(pack.tokens.FILE_EXT_TOKEN).join(ext);
+		ret = ret.split(pack.tokens.DOC_NAME_TOKEN).join(docName);
 		return ret;
 	}
 	SymbolBundler.indexOf = function ( array, element ) {

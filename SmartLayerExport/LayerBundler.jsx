@@ -37,7 +37,7 @@
 
 
 					var bundle = this.getBundle(bundleMap, artI, layI, formatSettings.innerPadding, formatSettings.scaling, formatSettings.trimEdges, format.copyBehaviour, formatSettings.fontHandling=="outline", formatSettings.ungroup, j==0, j==layerInd.length-1, layerVis);
-					var item = new pack.ExportItem(formatSettings, LayerBundler.makeFileName(formatSettings.patterns[patternName], formatSettings.formatRef.ext, artI, artboard.name, layI, layer.name));
+					var item = new pack.ExportItem(formatSettings, LayerBundler.makeFileName(formatSettings.patterns[patternName], docRef.fullName.name, formatSettings.formatRef.ext, artI, artboard.name, layI, layer.name));
 					item.names = ["Artboard "+(artI+1), "Layer "+(layI+1)];
 					bundle.items.push(item);
 				}
@@ -222,8 +222,8 @@
 		LayerBundler.copyDoc = null;
 	}
 
-	LayerBundler.makeFileName = function(pattern, ext, artNum, artName, layerNum, layerName){
-		var ret = pack.ArtboardBundler.makeFileName(pattern, ext, artNum, artName);
+	LayerBundler.makeFileName = function(pattern, docName, ext, artNum, artName, layerNum, layerName){
+		var ret = pack.ArtboardBundler.makeFileName(pattern, docName, ext, artNum, artName);
 		ret = ret.split(pack.tokens.LAYER_NUM_TOKEN).join(layerNum);
 		ret = ret.split(pack.tokens.LAYER_NAME_TOKEN).join(layerName);
 		return ret;
