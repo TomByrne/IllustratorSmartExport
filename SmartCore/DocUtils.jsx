@@ -13,6 +13,7 @@
 		preset.units = docRef.rulerUnits;
 
 		var copyDoc = app.documents.addDocument(docRef.documentColorSpace, preset);
+		copyDoc.isNew = true;
 		try{
 			//app.activeDocument = docRef; // this allows us to do the selection trick when copying layers
 			var emptyLayer = copyDoc.layers[0];
@@ -30,7 +31,7 @@
 				if (layerCheck==null || layerCheck(layer, vis)) {
 					var layerBounds = this.getLayerBounds(layer);
 					if(layerBounds && this.intersects(artboardRect, layerBounds)){
-						var newLayer = this.copyLayer(docRef, artboard, artboardRect, layer, copyDoc.layers.add(), offset, doInnerPadding, outlineText, ungroup, docRef.rulerOrigin, ignoreWarnings, hasBoundErrorRef);
+						var newLayer = this.copyLayer(docRef, copyDoc, artboard, artboardRect, layer, copyDoc.layers.add(), offset, doInnerPadding, outlineText, ungroup, docRef.rulerOrigin, ignoreWarnings, hasBoundErrorRef);
 						this.setLayerDepth(newLayer, count);
 						if(!newLayer.pageItems.length && !newLayer.layers.length){
 							newLayer.remove();
@@ -56,7 +57,7 @@
 		return rect1[0]==rect2[0] && rect1[1]==rect2[1] && rect1[2]==rect2[2] && rect1[3]==rect2[3] ;
 	}
 		
-	DocUtils.copyLayer = function(doc, artboard, artboardRect, fromLayer, toLayer, offset, doInnerPadding, outlineText, ungroup, rulerOrigin, ignoreWarnings, hasBoundErrorRef) {
+	DocUtils.copyLayer = function(fromDoc, toDoc, artboard, artboardRect, fromLayer, toLayer, offset, doInnerPadding, outlineText, ungroup, rulerOrigin, ignoreWarnings, hasBoundErrorRef) {
 
 		toLayer.artworkKnockout = fromLayer.artworkKnockout;
 		toLayer.blendingMode = fromLayer.blendingMode;
@@ -74,7 +75,7 @@
 			var oldBounds = this.getLayerBounds(fromLayer);
 			 //for mystery reasons, this only works if done before copying items across
 		}
-		this.copyIntoLayer(doc, fromLayer, toLayer, ignoreWarnings);
+		this.copyIntoLayer(fromDoc, fromLayer, toLayer, ignoreWarnings);
 
 		if(toLayer.pageItems.length && !offset.norm){
 
@@ -98,6 +99,12 @@
 		if(doInnerPadding)this.innerPadLayer(toLayer, artboardRect, rulerOrigin);
 		if(outlineText)this.doOutlineLayer(toLayer);
 		if(ungroup)this.doUngroupLayer(toLayer);
+
+		if(toDoc.isNew){
+			var ind = toDoc.layers[0]==toLayer ? 1 : 0;
+			toDoc.layers[ind].remove();
+			toDoc.isNew = false;
+		}
 
 		return toLayer;
 	}

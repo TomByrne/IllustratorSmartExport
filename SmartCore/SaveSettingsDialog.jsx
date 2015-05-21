@@ -10,11 +10,17 @@
 		init:function(){
 			var scopedThis = this;
 
-			this.dialog = new Window('dialog', "Settings name");
+			this.dialog = new Window('dialog', "Add New Preset");
 			this.dialog.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
+
+			var nameRow = this.dialog.add("group");
+			nameRow.orientation = "row";
+			nameRow.alignment = [ScriptUI.Alignment.CENTER, ScriptUI.Alignment.TOP];
+
+			nameRow.add("statictext", undefined, "Preset name:");
 			
-			this.input = this.dialog.add("edittext", undefined, "");
-			this.input.preferredSize = [220, 22];
+			this.input = nameRow.add("edittext", undefined, "");
+			this.input.preferredSize = [190, 22];
 			
 			this.generalCheckbox = this.dialog.add("checkbox", undefined, "Save Destination Folder");
 			this.generalCheckbox.value = true;

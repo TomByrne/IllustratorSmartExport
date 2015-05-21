@@ -160,7 +160,7 @@
 			if(isVis){
 				// only copy layer if it is visible (if not only visible '+' layers will be output)
 				var artb = doc.artboards[0];
-				var new_layer = pack.DocUtils.copyLayer(docRef, artb, artb.artboardRect, layer, doc.layers.add(), layOffset, padding, doOutline, ungroup, docRef.rulerOrigin, exportSettings.ignoreWarnings, LayerBundler.hasBoundErrorRef);
+				var new_layer = pack.DocUtils.copyLayer(docRef, LayerBundler.copyDoc, artb, artb.artboardRect, layer, doc.layers.add(), layOffset, padding, doOutline, ungroup, docRef.rulerOrigin, exportSettings.ignoreWarnings, LayerBundler.hasBoundErrorRef);
 				new_layer.visible = true;
 				var depth = LayerBundler.layerDepths[layI];
 				pack.DocUtils.setLayerDepth(new_layer, depth);

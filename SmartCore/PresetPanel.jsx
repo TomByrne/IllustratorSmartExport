@@ -33,25 +33,26 @@
 			this.presetList.preferredSize = [312, 22];
 			this.presetList.onChange = function() {
 				if(scopedThis.presetList.selection.index==0)return;
-				scopedThis.loadPreset(scopedThis.presetList.selection.index-1);
+				scopedThis.loadPreset(scopedThis.files[scopedThis.presetList.selection.index-1]);
 				scopedThis.presetList.selection = 0;
 			};
 
-			var saveBtn = row.add('button', undefined, 'Save Settings');
+			var saveBtn = row.add('button', undefined, 'Add Preset');
+			saveBtn.helpTip = "Create new preset from current settings";
 			saveBtn.onClick = function() { 
 				scopedThis.saveCurrent();
 			};
 			saveBtn.preferredSize = [100, 22];
 
 			var importButton = row.add('iconbutton', undefined,  ScriptUI.newImage (File(pack.directory+"/icons/import.png")));
-			importButton.helpTip = "Import Settings";
+			importButton.helpTip = "Import settings file to presets";
 			importButton.onClick = function() { 
 				scopedThis.doImport();
 			};
 			importButton.preferredSize = [28, 22];
 
 			var exportButton = row.add('iconbutton', undefined,  ScriptUI.newImage (File(pack.directory+"/icons/export.png")));
-			exportButton.helpTip = "Export Settings";
+			exportButton.helpTip = "Export settings to file";
 			exportButton.onClick = function() {
 				scopedThis.doExport();
 			};
@@ -59,8 +60,7 @@
 
 			this.buildPresetList();
 		},
-		loadPreset:function(index){
-			var file = this.files[index];
+		loadPreset:function(file){
 			file.open("r");
 			var str = file.read();
 			file.close();
@@ -69,17 +69,32 @@
 			if(this.onSettingsChanged!=null)this.onSettingsChanged();
 		},
 		doImport:function(){
-			var files = File.openDialog ("Import Settings", this.fileFilter, true);
-			for(var i=0; i<files.length; i++){
-				var file = files[i];
-				var othFile = File(this.presetDir + "/" + file.name);
-				if(!othFile.exists || confirm("Settings "+decodeURIComponent(file.name)+" already exists.\nOverwrite?")){
-					file.copy(this.presetDir + "/" + file.name);
+			var dlg = new pack.ImportDialog();
+			var dest = dlg.dest;
+			if(dest == null)return;
+
+			var toPresets = dest=="presets";
+
+			if(toPresets){
+				var files = File.openDialog ("Import Settings", this.fileFilter, true);
+				for(var i=0; i<files.length; i++){
+					var file = files[i];
+					var othFile = File(this.presetDir + "/" + file.name);
+					if(!othFile.exists || confirm("Settings "+decodeURIComponent(file.name)+" already exists.\nOverwrite?")){
+						file.copy(this.presetDir + "/" + file.name);
+					}
 				}
+				this.buildPresetList();
+			}else{
+				var file = File.openDialog ("Import Settings", this.fileFilter, false);
+				this.loadPreset(file);
 			}
-			this.buildPresetList();
 		},
 		doExport:function(){
+			var dlg = new pack.ExportDialog(this.presetDir, this.SETTINGS_EXTENSION);
+			var settings = dlg.settings;
+			if(settings == null)return;
+
 			var file = File.saveDialog("Export Current Settings", this.fileFilter);
 			if(file){
 				var filePath = file.absoluteURI;
@@ -89,7 +104,12 @@
 					file = File(filePath + this.SETTINGS_EXTENSION);
 					checkCollision = true;
 				}
-				this.saveCurrentTo(file, true, true, true, checkCollision);
+
+				if(settings == "current"){
+					this.saveCurrentTo(file, true, true, true, checkCollision);
+				}else{
+					settings.copy(file);
+				}
 			}
 		},
 		buildPresetList:function(){

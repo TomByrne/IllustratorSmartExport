@@ -343,7 +343,7 @@
 						{name:"AI", ext:'ai', defaultDir:'ai', copyBehaviour:true, getOptions:getAiOptions, saveFile:saveAi, props:["embedImage","fontOutline","trimEdges","ungroup"],
 							more:[	compatibility, compressed, embedICCProfile, fontSubsetThreshold, pdfCompatible ]},
 
-						{name:"PDF", ext:'pdf', defaultDir:'pdf', copyBehaviour:false, getOptions:getPdfOptions, saveFile:savePdf, props:["trimEdges","fontOutline","ungroup"],
+						{name:"PDF", ext:'pdf', defaultDir:'pdf', copyBehaviour:true, getOptions:getPdfOptions, saveFile:savePdf, props:["trimEdges","fontOutline","ungroup"],
 							more:[	pdfCompatibility, acrobatLayers, documentPassword, permissionPassword,
 							fontSubsetThreshold, compressArt, generateThumbnails, optimization, pageInformation, preserveEditability, printerResolution,
 							registrationMarks, trimMarks, trimMarkWeight ]}];
