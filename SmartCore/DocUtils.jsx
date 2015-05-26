@@ -3,7 +3,7 @@
 
 
 		
-	DocUtils.copyDocument = function(docRef, artboard, artboardRect, w, h, offset, doInnerPadding, layerCheck, layerDepths, outlineText, ungroup, layerVis, ignoreWarnings, hasBoundErrorRef) {
+	DocUtils.copyDocument = function(docRef, artboard, artboardRect, w, h, doInnerPadding, layerCheck, layerDepths, outlineText, ungroup, layerVis, ignoreWarnings, hasBoundErrorRef, offset) {
 		if(w<1)w = 1;
 		if(h<1)h = 1;
 		var preset = new DocumentPreset();
@@ -13,14 +13,16 @@
 		preset.units = docRef.rulerUnits;
 
 		var copyDoc = app.documents.addDocument(docRef.documentColorSpace, preset);
+		var copyArtboard = copyDoc.artboards[0];
+		copyArtboard.shift = null; // Illustrator seems to reuse instances behind the scenes
+		app.coordinateSystem = CoordinateSystem.ARTBOARDCOORDINATESYSTEM;
 		copyDoc.isNew = true;
 		try{
 			//app.activeDocument = docRef; // this allows us to do the selection trick when copying layers
-			var emptyLayer = copyDoc.layers[0];
 
 			// for some mystical reason, setting these can mess up the artboard dimensions
-			copyDoc.pageOrigin = docRef.pageOrigin;
-			copyDoc.rulerOrigin = docRef.rulerOrigin;
+			//copyDoc.pageOrigin = docRef.pageOrigin;
+			//copyDoc.rulerOrigin = docRef.rulerOrigin;
 
 			var count = 1; // indices are 1 based!
 			var n = docRef.layers.length;
@@ -29,24 +31,21 @@
 				
 				var vis = (layerVis ? layerVis[j] : layer.visible );
 				if (layerCheck==null || layerCheck(layer, vis)) {
-					var layerBounds = this.getLayerBounds(layer);
-					if(layerBounds && this.intersects(artboardRect, layerBounds)){
-						var newLayer = this.copyLayer(docRef, copyDoc, artboard, artboardRect, layer, copyDoc.layers.add(), offset, doInnerPadding, outlineText, ungroup, docRef.rulerOrigin, ignoreWarnings, hasBoundErrorRef);
+					//var layerBounds = this.getLayerBounds(layer);
+					//if(layerBounds && this.intersects(artboardRect, layerBounds)){
+						var newLayer = this.copyLayer(docRef, copyDoc, artboard, copyArtboard, artboardRect, layer, copyDoc.layers.add(), doInnerPadding, outlineText, ungroup, docRef.rulerOrigin, ignoreWarnings, hasBoundErrorRef, offset);
 						this.setLayerDepth(newLayer, count);
 						if(!newLayer.pageItems.length && !newLayer.layers.length){
 							newLayer.remove();
 						}else{
 							++count;
-							if(emptyLayer){
-								emptyLayer.remove();
-								emptyLayer = null;
-							}
 						}
-					}
+					//}
 				}else if(layerDepths){
 					layerDepths[j] = count;
 				}
 			}
+
 			return copyDoc;
 		}catch(e){
 			alert("DocUtils.copyDocument failed:\n"+e);
@@ -57,7 +56,13 @@
 		return rect1[0]==rect2[0] && rect1[1]==rect2[1] && rect1[2]==rect2[2] && rect1[3]==rect2[3] ;
 	}
 		
-	DocUtils.copyLayer = function(fromDoc, toDoc, artboard, artboardRect, fromLayer, toLayer, offset, doInnerPadding, outlineText, ungroup, rulerOrigin, ignoreWarnings, hasBoundErrorRef) {
+	DocUtils.getArtboardShift = function(artboardRect, toArtboard) {
+		var toRect = toArtboard.artboardRect;
+		return {x:toRect[0] - artboardRect[0], y:toRect[3] - artboardRect[3]};
+	}
+		
+	DocUtils.copyLayer = function(fromDoc, toDoc, fromArtboard, toArtboard, artboardRect, fromLayer, toLayer, doInnerPadding, outlineText, ungroup, rulerOrigin, ignoreWarnings, hasBoundErrorRef, offset) {
+		app.coordinateSystem = CoordinateSystem.ARTBOARDCOORDINATESYSTEM;
 
 		toLayer.artworkKnockout = fromLayer.artworkKnockout;
 		toLayer.blendingMode = fromLayer.blendingMode;
@@ -71,31 +76,30 @@
 		toLayer.sliced = fromLayer.sliced;
 		toLayer.typename = fromLayer.typename;
 
-		if(!offset.norm){
-			var oldBounds = this.getLayerBounds(fromLayer);
-			 //for mystery reasons, this only works if done before copying items across
-		}
-		this.copyIntoLayer(fromDoc, fromLayer, toLayer, ignoreWarnings);
-
-		if(toLayer.pageItems.length && !offset.norm){
-
-			var newBounds = this.getLayerBounds(toLayer);
-			if(this.rectEqual(oldBounds, newBounds)){
-				//$.sleep(5000); // sleeping doesn't help!!
-				if(!ignoreWarnings)alert("Illustrator visibleBounds issue workaround.\nTry removing groups on layer '"+fromLayer.name+"' to avoid this in future.\nPlease press OK");
-				else hasBoundErrorRef.broken++;
-				newBounds = this.getLayerBounds(toLayer);
-				// sometimes it takes a moment for bounds to be updated
+		if(toDoc.isNew){
+			var artOffset = toArtboard.shift;
+			if(!artOffset){
+				artOffset = DocUtils.getArtboardShift(artboardRect, toArtboard);
+				toArtboard.shift = artOffset;
 			}
-			if(oldBounds && newBounds){
-				offset.x += oldBounds[0]-newBounds[0];
-				offset.y += oldBounds[3]-newBounds[3];
-				offset.norm = true;
+
+			var offX = artOffset.x;
+			var offY = artOffset.y;
+			if(offset){
+				offX += offset.x;
+				offY += offset.y;
+			}
+			if(offX!=0 || offY!=0){
+				var toRect = toArtboard.artboardRect;
+				toRect[0] -= offX;
+				toRect[1] -= offY;
+				toRect[2] -= offX;
+				toRect[3] -= offY;
+				toArtboard.artboardRect = toRect;
 			}
 		}
-		if(toLayer.parent.artboards!=null){ // only if top level layer
-			this.shiftLayer(toLayer, offset.x, offset.y);
-		}
+
+		this.copyIntoLayer(fromDoc, fromLayer, toLayer, ignoreWarnings, artboardRect);
 		if(doInnerPadding)this.innerPadLayer(toLayer, artboardRect, rulerOrigin);
 		if(outlineText)this.doOutlineLayer(toLayer);
 		if(ungroup)this.doUngroupLayer(toLayer);
@@ -130,7 +134,7 @@
 			item.remove();
 		}
 	}
-	DocUtils.getLayerBounds = function(layer) {
+	DocUtils.getLayerBounds = function(layer, artboardRect) {
 		var rect;
 		var items = layer.pageItems;
 		for(var i=0; i<items.length; ++i){
@@ -141,6 +145,8 @@
 			}
 			var visBounds = this.getItemBounds(item);
 			if(visBounds==null)continue;
+
+			if(artboardRect && !DocUtils.intersects(artboardRect, visBounds))continue;
 
 			if(rect==null){
 				rect = visBounds;
@@ -164,7 +170,7 @@
 
 			if(!childLayer.visible)continue;
 
-			var childRect = this.getLayerBounds(childLayer);
+			var childRect = this.getLayerBounds(childLayer, artboardRect);
 			if(childRect==null)continue;
 
 			if(rect==null){
@@ -193,31 +199,33 @@
 
 	DocUtils.artboardIntersects = function(docRef, artI, rect){
 		var artboard = docRef.artboards[artI];
+		app.coordinateSystem = CoordinateSystem.ARTBOARDCOORDINATESYSTEM;
 		var artRect = artboard.artboardRect;
 		return this.intersects(artRect, rect);
 	}
 
-	DocUtils.copyIntoLayer = function(doc, fromLayer, toLayer, ignoreWarnings) {
+	DocUtils.copyIntoLayer = function(doc, fromLayer, toLayer, ignoreWarnings, artboardRect) {
 		var items = this.getAllPageItems(doc, fromLayer, ignoreWarnings);
 		try{
-			this.copyItems(doc, items, toLayer, ignoreWarnings);
+			this.copyItems(doc, items, toLayer, ignoreWarnings, artboardRect);
 		}catch(e){
-			alert(e);
-			alert("copy items failed");
+			alert("Copy items failed: "+e);
 		}
 	}
 		
-	DocUtils.copyItems = function(doc, fromList, toLayer, ignoreWarnings) {
+	DocUtils.copyItems = function(doc, fromList, toLayer, ignoreWarnings, artboardRect) {
 		var visWas = toLayer.visible;
 		toLayer.visible = true;
 		for(var i=0; i<fromList.length; ++i){
 			var item = fromList[i];
 			if(item.typename=="Layer"){
 				if(item.visible && (item.pageItems.length || item.layers.length)){
-					this.copyIntoLayer(doc, item, toLayer, ignoreWarnings)
+					this.copyIntoLayer(doc, item, toLayer, ignoreWarnings, artboardRect)
 				}
 			}else{
-				if(item.hidden)continue;
+				if(item.hidden || !DocUtils.intersects(artboardRect, item.visibleBounds)){
+					continue;
+				}
 				item.duplicate(toLayer, ElementPlacement.PLACEATEND);
 			}
 		}
@@ -312,10 +320,8 @@
 		if(shiftY==undefined)shiftY = 0;
 
 		for(var i=0; i<layer.pageItems.length; ++i){
-			layer.pageItems[i].translate(shiftX, shiftY, true, true, true, true)
+			layer.pageItems[i].translate(shiftX, shiftY, true, true, true, true);
 		}
-
-		// copy backwards for correct z-ordering
 		for(var i=layer.layers.length-1; i>=0; --i){
 			this.shiftLayer(layer.layers[i], shiftX, shiftY)
 		}
@@ -357,7 +363,7 @@
 				}
 
 				if(rect==null){
-					rect = visBounds;
+					rect = visBounds.concat();
 				}else{
 					if(rect[0]>visBounds[0]){
 						rect[0] = visBounds[0];
@@ -389,7 +395,7 @@
 			}
 			return rect;
 		}else{
-			return parent.visibleBounds;
+			return parent.visibleBounds.concat();
 		}
 	}
 

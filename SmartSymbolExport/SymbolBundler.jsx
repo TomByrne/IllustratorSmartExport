@@ -21,7 +21,7 @@
 
 
 				var bundle = this.getBundle(bundleMap, symbol, formatSettings.innerPadding, formatSettings.scaling, formatSettings.trimEdges, formatSettings.fontHandling=="outline", formatSettings.ungroup, j==symbolNames.length-1 && x==exportSettings.formats.length-1);
-				var item = new pack.ExportItem(formatSettings, SymbolBundler.makeFileName(formatSettings.patterns[patternName], docRef.fullName.name, formatSettings.formatRef.ext, symbol.name));
+				var item = new pack.ExportItem(formatSettings, SymbolBundler.makeFileName(formatSettings.patterns[patternName], formatSettings.formatRef.ext, symbol.name));
 				item.names = [symbol.name];
 				bundle.items.push(item);
 			}
@@ -55,6 +55,7 @@
 
 		docRef.artboards.setActiveArtboardIndex(0);
 		var artboard = docRef.artboards[0];
+		app.coordinateSystem = CoordinateSystem.ARTBOARDCOORDINATESYSTEM;
 		var rect = artboard.artboardRect;
 
 		var testLayer = SymbolBundler.testLayer;
@@ -66,25 +67,25 @@
 		testLayer.symbolItems.add(symbol);
 		var item = testLayer.symbolItems[0];
 
+		item.translate(rect[0] - item.visibleBounds[0], rect[1] - item.visibleBounds[1]);
+
 		var doc = docRef;
 
 		// only process layer if it has bounds (i.e. not guide layer) and falls within current artboard bounds
 		var layerRect = pack.DocUtils.getLayerBounds(testLayer);
 		if (layerRect) {
-			layerOffsetY = rect[3] - layerRect[3];
-			layerOffsetX = rect[0] - layerRect[0];
 
 			docW = layerRect[2]-layerRect[0];
 			docH = layerRect[1]-layerRect[3];
 
-			layOffset = {x:layerOffsetX, y:layerOffsetY};
-			doc = pack.DocUtils.copyDocument(doc, artboard, rect, docW, docH, layOffset, padding, pack.DocUtils.isAdditionalLayer, null, doOutline, ungroup, exportSettings.ignoreWarnings, SymbolBundler.hasBoundErrorRef);
+			doc = pack.DocUtils.copyDocument(docRef, artboard, rect, docW, docH, padding, pack.DocUtils.isAdditionalLayer, null, doOutline, ungroup, exportSettings.ignoreWarnings, SymbolBundler.hasBoundErrorRef);
 			exportBundle.copyDoc = doc;
 		
 			exportBundle.hasAdditLayers = doc.layers.length > 0 && (doc.layers.length!=1 || doc.layers[0].pageItems.length || doc.layers[0].layers.length);
 
 			var artb = doc.artboards[0];
-			var new_layer = pack.DocUtils.copyLayer(docRef, artb, artb.artboardRect, layer, doc.layers.add(), layOffset, padding, doOutline, ungroup, docRef.rulerOrigin, exportSettings.ignoreWarnings, SymbolBundler.hasBoundErrorRef);
+			app.coordinateSystem = CoordinateSystem.ARTBOARDCOORDINATESYSTEM;
+			var new_layer = pack.DocUtils.copyLayer(docRef, doc, artb, doc.artboards[0], artb.artboardRect, layer, doc.layers.add(), padding, doOutline, ungroup, docRef.rulerOrigin, exportSettings.ignoreWarnings, SymbolBundler.hasBoundErrorRef);
 			return doc;
 		}
 
@@ -94,19 +95,17 @@
 	SymbolBundler.cleanupCopyDoc = function(docRef, exportSettings, exportBundle){
 		exportBundle.copyDoc.close(SaveOptions.DONOTSAVECHANGES);
 		exportBundle.copyDoc = null;
-		SymbolBundler.testLayer.symbolItems.removeAll();
+		//SymbolBundler.testLayer.symbolItems.removeAll();
 	}
 	SymbolBundler.cleanupTempLayer = function(docRef, exportSettings, exportBundle){
 		SymbolBundler.cleanupCopyDoc(docRef, exportSettings, exportBundle);
-		SymbolBundler.testLayer.remove();
+		//SymbolBundler.testLayer.remove();
 		SymbolBundler.testLayer = null;
 	}
 
-	SymbolBundler.makeFileName = function(pattern, docName, ext, symbolName){
+	SymbolBundler.makeFileName = function(pattern, ext, symbolName){
 		var ret = pattern.split(pack.tokens.SYMBOL_NAME_TOKEN).join(symbolName);
-		docName = docName.substring(0, docName.lastIndexOf("."));
 		ret = ret.split(pack.tokens.FILE_EXT_TOKEN).join(ext);
-		ret = ret.split(pack.tokens.DOC_NAME_TOKEN).join(docName);
 		return ret;
 	}
 	SymbolBundler.indexOf = function ( array, element ) {

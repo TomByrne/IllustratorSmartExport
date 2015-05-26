@@ -20,7 +20,7 @@
 			for (var x = 0; x < exportSettings.formats.length; x++ ) {
 				var formatSettings = exportSettings.formats[x];
 				var format = formatSettings.formatRef;
-				var bundle = this.getBundle(bundleMap, artI, formatSettings.innerPadding, formatSettings.scaling, format.copyBehaviour, formatSettings.fontHandling=="outline", formatSettings.ungroup);
+				var bundle = this.getBundle(bundleMap, artI, formatSettings.innerPadding, formatSettings.scaling, formatSettings.trimEdges, format.copyBehaviour, formatSettings.fontHandling=="outline", formatSettings.ungroup);
 
 				var item = new pack.ExportItem(formatSettings, ArtboardBundler.makeFileName(formatSettings.patterns[patternName], docRef.fullName.name, formatSettings.formatRef.ext, i, artboardName));
 				item.names = ["Artboard "+(artI+1)];
@@ -35,10 +35,10 @@
 			}
 		}
 	}
-	ArtboardBundler.getBundle = function(bundleMap, artI, padding, scaling, forceCopy, doOutline, ungroup){
-		if(doOutline || padding)forceCopy = true;
+	ArtboardBundler.getBundle = function(bundleMap, artI, padding, scaling, trim, forceCopy, doOutline, ungroup){
+		if(doOutline || padding || trim)forceCopy = true;
 
-		var key = (padding?"pad":"nopad")+"_"+(forceCopy?"copy":"nocopy")+"_"+(doOutline?"outline":"nooutline");
+		var key = (padding?"pad":"nopad")+"_"+(forceCopy?"copy":"nocopy")+"_"+(doOutline?"outline":"nooutline")+"_"+(trim?"trim":"notrim");
 		var bundle = bundleMap[key];
 		if(bundle){
 			return bundle;
@@ -49,7 +49,7 @@
 
 		}else{
 			bundle = new pack.ExportBundle();
-			bundle.prepareHandler = closure(ArtboardBundler, ArtboardBundler.prepareCopy, [artI, padding, doOutline, ungroup], true);
+			bundle.prepareHandler = closure(ArtboardBundler, ArtboardBundler.prepareCopy, [artI, trim, padding, doOutline, ungroup], true);
 			bundle.cleanupHandler = ArtboardBundler.cleanupCopy;
 
 		}
@@ -60,17 +60,65 @@
 		docRef.artboards.setActiveArtboardIndex(artI);
 		return docRef;
 	}
-	ArtboardBundler.prepareCopy = function(docRef, exportSettings, exportBundle, artI, padding, doOutline, ungroup){
+	ArtboardBundler.prepareCopy = function(docRef, exportSettings, exportBundle, artI, trim, padding, doOutline, ungroup){
 		var artboard = docRef.artboards[artI];
 		docRef.artboards.setActiveArtboardIndex(artI);
-			
+		
+		app.coordinateSystem = CoordinateSystem.ARTBOARDCOORDINATESYSTEM;
 		var rect = artboard.artboardRect;
+
+		var layerCheck = function(layer){
+			return (layer.visible && DocUtils.indexOf(pack.IGNORE_LAYERS, layer.name)==-1);
+		};
+
+		var offset;
+		if(trim){
+			var allLayerBounds;
+			for(var i=0; i<docRef.layers.length; i++){
+				var layer = docRef.layers[i];
+				if(!layerCheck(layer))continue;
+
+				var layerBounds = pack.DocUtils.getLayerBounds(layer, rect);
+
+				if(allLayerBounds==null){
+					allLayerBounds = layerBounds;
+				}else{
+					if(allLayerBounds[0]>layerBounds[0]){
+						allLayerBounds[0] = layerBounds[0];
+					}
+					if(allLayerBounds[1]<layerBounds[1]){
+						allLayerBounds[1] = layerBounds[1];
+					}
+					if(allLayerBounds[2]<layerBounds[2]){
+						allLayerBounds[2] = layerBounds[2];
+					}
+					if(allLayerBounds[3]>layerBounds[3]){
+						allLayerBounds[3] = layerBounds[3];
+					}
+				}
+			}
+			// crop to artboard
+			if(allLayerBounds[0]<rect[0]){
+				allLayerBounds[0] = rect[0];
+			}
+			if(allLayerBounds[1]>rect[1]){
+				allLayerBounds[1] = rect[1];
+			}
+			if(allLayerBounds[2]>rect[2]){
+				allLayerBounds[2] = rect[2];
+			}
+			if(allLayerBounds[3]<rect[3]){
+				allLayerBounds[3] = rect[3];
+			}
+			rect = allLayerBounds;
+			offset = { x: rect[3] - allLayerBounds[3], y: rect[0] - allLayerBounds[0] };
+		}
 
 		var artW = rect[2]-rect[0];
 		var artH = rect[1]-rect[3];
 
-		var offset = {x:0, y:0};
-		exportBundle.copyDoc = pack.DocUtils.copyDocument(docRef, artboard, rect, artW, artH, offset, padding, function(layer){return (layer.name!=pack.PREFS_LAYER_NAME && layer.visible)}, null, doOutline, ungroup, null, exportSettings.ignoreWarnings, ArtboardBundler.hasBoundErrorRef);
+		
+		exportBundle.copyDoc = pack.DocUtils.copyDocument(docRef, artboard, rect, artW, artH, padding, layerCheck, null, doOutline, ungroup, null, exportSettings.ignoreWarnings, ArtboardBundler.hasBoundErrorRef, offset);
 		return exportBundle.copyDoc;
 	}
 	ArtboardBundler.cleanupCopy = function(docRef, exportSettings, exportBundle){

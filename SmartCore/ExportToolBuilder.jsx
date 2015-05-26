@@ -4,8 +4,9 @@
 		return this;
 	}
 
+	pack.IGNORE_LAYERS = ["Export Settings", "Export Symbol Settings", "nyt_exporter_info"];
+
 	ExportToolBuilder.prototype={
-		ignoreLayers:           null,
 		prefsLayerName:         null,
 		smartExportPrefs:       null,
 		toolPanel:			    null,
@@ -18,7 +19,6 @@
 
 		loadPrefLayer: function(prefsLayerName, migratePrefsLayerName) {
 			this.prefsLayerName = prefsLayerName;
-			this.ignoreLayers = [prefsLayerName, migratePrefsLayerName];
 		
 			try {
 				this.smartExportPrefs = this.docRef.layers.getByName( prefsLayerName );
@@ -105,7 +105,7 @@
 				}
 
 				if(doLayer){
-					this.layerPanel = new pack.LayerPanel(tab, exSettings.layerAll, exSettings.layerInd, this.ignoreLayers, exSettings.ignoreOutOfBounds);
+					this.layerPanel = new pack.LayerPanel(tab, exSettings.layerAll, exSettings.layerInd, pack.IGNORE_LAYERS, exSettings.ignoreOutOfBounds);
 					this.layerPanel.onSelectedChanged = function() {
 						exSettings.layerAll  = scopedThis.layerPanel.selectAll;
 						exSettings.layerInd  = scopedThis.layerPanel.selectedIndices;

@@ -268,7 +268,6 @@
 																				opt(PDFChangesAllowedEnum.CHANGE40COMMENTING, "Commenting (40bit)"),
 																				opt(PDFChangesAllowedEnum.CHANGE40PAGELAYOUT, "Page Layout (40bit)"),
 																				opt(PDFChangesAllowedEnum.CHANGE40NONE, "None (40bit)")]);*/
-	var preserveEditability = bool("preserveEditability", "Preserve Editability", true);
 	var printerResolution = num("printerResolution", "Printer Resolution", 800, "dpi");
 	//var trapped = bool("trapped", "Manual Trapping Prepared", true);
 
