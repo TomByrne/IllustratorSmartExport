@@ -79,6 +79,7 @@
 				if(!layerCheck(layer))continue;
 
 				var layerBounds = pack.DocUtils.getLayerBounds(layer, rect);
+				if(!layerBounds)continue;
 
 				if(allLayerBounds==null){
 					allLayerBounds = layerBounds;
@@ -97,6 +98,8 @@
 					}
 				}
 			}
+			if(!allLayerBounds)return "skipped";
+			
 			// crop to artboard
 			if(allLayerBounds[0]<rect[0]){
 				allLayerBounds[0] = rect[0];
@@ -119,9 +122,11 @@
 
 		
 		exportBundle.copyDoc = pack.DocUtils.copyDocument(docRef, artboard, rect, artW, artH, padding, layerCheck, null, doOutline, ungroup, null, exportSettings.ignoreWarnings, ArtboardBundler.hasBoundErrorRef, offset);
+		
 		return exportBundle.copyDoc;
 	}
 	ArtboardBundler.cleanupCopy = function(docRef, exportSettings, exportBundle){
+		if(!exportBundle.copyDoc)return;
 		exportBundle.copyDoc.close(SaveOptions.DONOTSAVECHANGES);
 		exportBundle.copyDoc = null;
 	}

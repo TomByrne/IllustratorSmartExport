@@ -95,11 +95,11 @@
 	SymbolBundler.cleanupCopyDoc = function(docRef, exportSettings, exportBundle){
 		exportBundle.copyDoc.close(SaveOptions.DONOTSAVECHANGES);
 		exportBundle.copyDoc = null;
-		//SymbolBundler.testLayer.symbolItems.removeAll();
+		SymbolBundler.testLayer.symbolItems.removeAll();
 	}
 	SymbolBundler.cleanupTempLayer = function(docRef, exportSettings, exportBundle){
 		SymbolBundler.cleanupCopyDoc(docRef, exportSettings, exportBundle);
-		//SymbolBundler.testLayer.remove();
+		SymbolBundler.testLayer.remove();
 		SymbolBundler.testLayer = null;
 	}
 

@@ -100,7 +100,7 @@
 		}
 
 		this.copyIntoLayer(fromDoc, fromLayer, toLayer, ignoreWarnings, artboardRect);
-		if(doInnerPadding)this.innerPadLayer(toLayer, artboardRect, rulerOrigin);
+		if(doInnerPadding)this.innerPadLayer(toLayer, toArtboard);
 		if(outlineText)this.doOutlineLayer(toLayer);
 		if(ungroup)this.doUngroupLayer(toLayer);
 
@@ -232,7 +232,8 @@
 		toLayer.visible = visWas;
 	}
 
-	DocUtils.innerPadLayer = function(layer, rect, rulerOrigin){
+	DocUtils.innerPadLayer = function(layer, artboard){
+		var rect = artboard.artboardRect;
 		var artL = this.precision(rect[0], 0.01);
 		var artB = this.precision(rect[1], 0.01);
 		var artR = this.precision(rect[2], 0.01);
@@ -264,13 +265,13 @@
 
 				var w = r - l;
 				var h = b - t;
-				var scaleX = (artW-gap) / w * 100; // resize takes percentage values
-				var scaleY = (artH-gap) / h * 100;
+				var scaleX = (artW-gap*2) / w * 100; // resize takes percentage values
+				var scaleY = (artH-gap*2) / h * 100;
 				item.resize(scaleX, scaleY, true, true, true, true, null, Transformation.CENTER);
 			}
 		}
 		for(var i=0; i<layer.layers.length; ++i){
-			innerPadLayer(layer.layers[i], docW, docH);
+			DocUtils.innerPadLayer(layer.layers[i], artboard);
 		}
 	}
 
@@ -297,21 +298,53 @@
 		if(layer.pageItems.length==0){
 			return layer.layers;
 		}
-		if(!this.layerItemWarned && !ignoreWarnings){
-			this.layerItemWarned = true;
-			alert("To improve output performance, avoid using child layers (groups can do the same thing).");
+		if(!this.layerItems){
+			if(!this.layerItemWarned && !ignoreWarnings){
+				this.layerItemWarned = true;
+				alert("To improve output performance, avoid using child layers (groups can do the same thing).");
+			}
+			//var items = [];
+			//var layers = layer.layers;
+			this.layerItems = [];
+			var docLayers = doc.layers;
+			var pageItems = doc.pageItems;
+		    for(var i=0; i<pageItems.length; i++){
+		    	var pageItem = pageItems[i];
+		    	if(pageItem.parent.typename!="Layer" && (pageItem.guides || pageItem.hidden)) continue;
+
+		    	var parIndex = -1;
+		    	var checkInd = false;
+		    	var ind = DocUtils.indexOf(docLayers, pageItem.parent);
+		    	if(ind !=-1){
+		    		parIndex = ind;
+		    	}else if(pageItem.parent.typename=="Layer"){
+		    		var ind = DocUtils.indexOf(docLayers, pageItem.parent.parent);
+		    		if( ind!=-1 ){
+		    			parIndex = ind;
+		    			pageItem = pageItem.parent;
+		    			checkInd = true;
+		    		}
+		    	}
+		    	if(parIndex!=-1){
+		    		var par = doc.layers[parIndex];
+		    		var items = this.layerItems[parIndex];
+		    		if(!items){
+		    			items = [pageItem];
+		    			this.layerItems[parIndex] = items;
+		    		}else if(!checkInd || DocUtils.indexOf(items, pageItem)==-1){
+		    			items.push(pageItem);
+		    		}
+		    	}
+		    }
+
+		    /*var msg = "";
+		    for(var i=0; i<docLayers.length; i++){
+		    	msg += docLayers[i].name +" - "+this.layerItems[i].length+"\n";
+		    }
+		    alert(msg);*/
 		}
-		var items = [];
-		var layers = layer.layers;
-	    for(var i=0; i<doc.pageItems.length; i++){
-	    	var pageItem = doc.pageItems[i];
-	    	if(pageItem.parent == layer){
-	    		items.push(pageItem);
-	    	}else if(pageItem.parent.typename=="Layer" && pageItem.parent.parent==layer && this.indexOf(items, pageItem.parent)==-1){
-	    		items.push(pageItem.parent);
-	    	}
-	    }
-	    return items;
+		var ind = DocUtils.indexOf(doc.layers, layer);
+	    return this.layerItems[ind];
 	}
 
 	

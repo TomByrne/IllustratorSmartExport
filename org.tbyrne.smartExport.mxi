@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<macromedia-extension id="org.tbyrne.smartExport" name="Smart Layer Export" version="3.9.0">
+<macromedia-extension id="org.tbyrne.smartExport" name="Smart Layer Export" version="3.10.0">
   <description><![CDATA[<h3>Features:</h3>
 - Ability to scale output files for HiDPI (Retina) displays, or any other scale factor.
 - Can set up multiple export formats for a single file for easy regeneration of multiple asset sizes/types.
@@ -26,6 +26,9 @@
 To use, go to File > Scripts > Smart Layer Export
 
 <h3>Change Log:</h3>
+
+<h3>29/07/2015 - v3.10</h3>
+- Improved performance with nested layers (depth search)
 
 <h3>26/05/2015 - v3.9</h3>
 - Trim mode now works for Artboard exports also
@@ -133,9 +136,7 @@ This Agreement shall be governed by the laws of the State of New South Wales, an
 ]]></license-agreement>
   <author name="Thomas Byrne"/>
   <products>
-    <product version="16.0" primary="true" name="Illustrator"/>
-    <product version="16.0" primary="true" name="Illustrator32"/>
-    <product version="16.0" primary="true" name="Illustrator64"/>
+    <product familyname="Illustrator" primary="true" version="16.0"/>
   </products>
   <files>
     <file source="Smart Layer Export.jsx" destination="$presets/$locale/Scripts/" shared="true" minVersion="17.0"/>
