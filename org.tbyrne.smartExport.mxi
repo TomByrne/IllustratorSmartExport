@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<macromedia-extension id="org.tbyrne.smartExport" name="Smart Layer Export" version="3.10.0">
+<macromedia-extension id="org.tbyrne.smartExport" name="Smart Layer Export" version="3.11.0">
   <description><![CDATA[<h3>Features:</h3>
 - Ability to scale output files for HiDPI (Retina) displays, or any other scale factor.
 - Can set up multiple export formats for a single file for easy regeneration of multiple asset sizes/types.
@@ -27,8 +27,12 @@ To use, go to File > Scripts > Smart Layer Export
 
 <h3>Change Log:</h3>
 
+<h3>13/08/2015 - v3.11</h3>
+- Added Bleed options to PDF export
+
 <h3>29/07/2015 - v3.10</h3>
 - Improved performance with nested layers (depth search)
+- Fixed inner padding mode
 
 <h3>26/05/2015 - v3.9</h3>
 - Trim mode now works for Artboard exports also

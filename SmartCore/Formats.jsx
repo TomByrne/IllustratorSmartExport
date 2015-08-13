@@ -40,6 +40,14 @@
 			}
 		}
 	}
+
+	var checkRect = function(rect){
+		if(typeof(rect)=="string"){
+			rect = rect.split(",");
+			rect = [parseFloat(rect[0]), parseFloat(rect[1]), parseFloat(rect[2]), parseFloat(rect[3])];
+		}
+		return rect;
+	}
 		
 	// Format specific functionality
 	var getPng8Options = function ( formatSettings ) {
@@ -68,6 +76,8 @@
 		options.generateThumbnails = true;
 		options.preserveEditability = false;
 		fillOptions(options, formatSettings);
+		options.bleedOffsetRect = checkRect(options.bleedOffsetRect);
+		alert("rect: "+options.bleedOffsetRect);
 		return options;
 	}
 	var getJpgOptions = function ( formatSettings ) {
@@ -178,8 +188,8 @@
 	var opt = function(key, name){
 		return {key:key, name:name};
 	}
-	var margin = function(id, name, def, optional, linkedProp){
-		return {type:"margin", id:id, name:name, def:def, optional:optional, linkedProp:linkedProp};
+	var margin = function(id, name, def, optionalProp, linkedProp){
+		return {type:"margin", id:id, name:name, def:def ? def.join(",") : null, optionalProp:optionalProp, linkedProp:linkedProp};
 	}
 	var string = function(id, name, def, optionalProp){
 		return {type:"string", id:id, name:name, def:def, optionalProp:optionalProp};
@@ -241,7 +251,7 @@
 	// PDF
 	var pdfCompatibility = list("compatibility", "Version Compatibility", 1, [opt(PDFCompatibility.ACROBAT4, "Acrobat 4"), opt(PDFCompatibility.ACROBAT4, "Acrobat 5"), opt(PDFCompatibility.ACROBAT4, "Acrobat 6"), opt(PDFCompatibility.ACROBAT4, "Acrobat 7"), opt(PDFCompatibility.ACROBAT4, "Acrobat 8")]);
 	var acrobatLayers = bool("acrobatLayers", "Acrobat Layers", false);
-	//var bleedOffsetRect = margin("bleedOffsetRect", "Bleed Offset", null, true, "bleedLink");
+	var bleedOffsetRect = margin("bleedOffsetRect", "Bleed Offset (px)", null, true, "bleedLink");
 	//var colorBars = bool("colorBars", "Color Bars", false);
 	var documentPassword = string("documentPassword", "Open Password", null, "requireDocumentPassword");
 	var permissionPassword = string("permissionPassword", "Permission Password", null, "requirePermissionPassword");
@@ -345,7 +355,7 @@
 						{name:"PDF", ext:'pdf', defaultDir:'pdf', copyBehaviour:true, getOptions:getPdfOptions, saveFile:savePdf, props:["trimEdges","fontOutline","ungroup"],
 							more:[	pdfCompatibility, acrobatLayers, documentPassword, permissionPassword,
 							fontSubsetThreshold, compressArt, generateThumbnails, optimization, pageInformation, preserveEditability, printerResolution,
-							registrationMarks, trimMarks, trimMarkWeight ]}];
+							registrationMarks, trimMarks, trimMarkWeight, bleedOffsetRect ]}];
 
 	if(parseFloat(app.version) < 17){
 		// FXG not available in CC and above

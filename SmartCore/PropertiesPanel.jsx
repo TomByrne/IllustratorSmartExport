@@ -6,17 +6,18 @@
 	PropertiesPanel.prototype={
 
 		controls:null,
+		labelColumnW:130,
 
 		init:function(formatSettings){
 			var scopedThis = this;
 
 			this.dialog = new Window('dialog', formatSettings.formatRef.name+" Settings");
 			this.dialog.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
+			this.dialog.spacing = 9;
 
 			this.formatSettings = formatSettings;
 
 			this.controls = [];
-			var labelColumnW = 130;
 
 			var settings = this.formatSettings.options;
 			var properties = formatSettings.formatRef.more;
@@ -31,26 +32,26 @@
 				var value = (settings[prop.id]!=null ? settings[prop.id] : prop.def);
 				switch(prop.type){
 					case "boolean":
-						row.add("statictext", [0,0,labelColumnW, 20], "");
+						row.add("statictext", [0,0,this.labelColumnW, 20], "");
 						control = row.add('checkbox', undefined, prop.name);
 						if(value!=null)control.value = value;
 						this.controls.push(control);
 						break;
 
 					case "number":
-						row.add("statictext", [0,0,labelColumnW, 20], prop.name+":");
+						row.add("statictext", [0,0,this.labelColumnW, 20], prop.name+":");
 						control = new pack.NumberControl(row, value, prop.optionalProp!=null, prop.unit);
 						this.controls.push(control);
 						break;
 
 					case "string":
-						row.add("statictext", [0,0,labelColumnW, 20], prop.name+":");
+						row.add("statictext", [0,0,this.labelColumnW, 20], prop.name+":");
 						control = new pack.StringControl(row, value, prop.optionalProp!=null);
 						this.controls.push(control);
 						break;
 
 					case "list":
-						row.add("statictext", [0,0,labelColumnW, 20], prop.name+":");
+						row.add("statictext", [0,0,this.labelColumnW, 20], prop.name+":");
 						var names = [];
 						for(var j=0; j<prop.options.length; j++){
 							names.push(prop.options[j].name);
@@ -62,20 +63,43 @@
 						break;
 
 					case "range":
-						row.add("statictext", [0,0,labelColumnW, 20], prop.name+":");
+						row.add("statictext", [0,0,this.labelColumnW, 20], prop.name+":");
 						control = new pack.RangeControl(row, prop.min, prop.max, value);
 						this.controls.push(control);
 						break;
 
 					case "percent":
-						row.add("statictext", [0,0,labelColumnW, 20], prop.name+":");
+						row.add("statictext", [0,0,this.labelColumnW, 20], prop.name+":");
 						control = new pack.RangeControl(row, 0, 100, value, "%");
 						this.controls.push(control);
 						break;
 
 					case "color":
-						row.add("statictext", [0,0,labelColumnW, 20], prop.name+":");
+						row.add("statictext", [0,0,this.labelColumnW, 20], prop.name+":");
 						control = new pack.ColorPicker(row, value, prop.optional);
+						this.controls.push(control);
+						break;
+
+					case "margin":
+						if(typeof(value)=="string"){
+							value = value.split(",");
+							settings[prop.id] = value;
+						}
+						var linkable;
+						var isLinked;
+						if(prop.linkedProp){
+							linkable = true;
+							isLinked = settings[prop.linkedProp];
+						}else{
+							linkable = false;
+							isLinked = false;
+						}
+						if(prop.optionalProp){
+							this.createOptionalCheckbox(row, prop, value, i);
+						}else{
+							row.add("statictext", [0,0,this.labelColumnW, 20], prop.name+":");
+						}
+						control = new pack.MarginControl(row, linkable, value, isLinked);
 						this.controls.push(control);
 						break;
 				}
@@ -96,6 +120,21 @@
 			};
 
 			this.dialog.show();
+		},
+
+		createOptionalCheckbox:function(row, prop, isActive, ind){
+			var checkbox = row.add("checkbox", [0,0,this.labelColumnW, 20], prop.name+":");
+			checkbox.value = isActive;
+			checkbox.onClick = closure(this, this.onOptionalClick, [checkbox, prop, ind]);
+		},
+
+		onOptionalClick:function(checkbox, prop, ind){
+			var control = this.controls[ind];
+			if(control.setEnabled!=null){
+				control.setEnabled(checkbox.value);
+			}else{
+				control.enabled = checkbox.value;
+			}
 		},
 
 		onCancelClicked:function(){
@@ -128,6 +167,18 @@
 
 					case "color":
 						value = control.getColorStr();
+						break;
+
+					case "margin":
+						value = control.getMargins();
+						if(value){
+							value = value.join(",");
+							if(prop.linkedProp){
+								settings[prop.linkedProp] = control.getLinked();
+							}
+						}else{
+							delete settings[prop.linkedProp];
+						}
 						break;
 				}
 				if(value==prop.def){
