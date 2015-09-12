@@ -412,7 +412,7 @@
 					}
 				}
 			}
-			if(maskRect){
+			if(maskRect && rect){
 				if(rect[0]<maskRect[0]){
 					rect[0] = maskRect[0];
 				}

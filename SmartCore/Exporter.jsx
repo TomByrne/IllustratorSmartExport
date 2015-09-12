@@ -34,11 +34,13 @@
 
 
 			if(!this.num_to_export){
+				this.running = false;
 				alert('Please select valid artboards / layers');
 				return;
 			}
 
 			if(!directory){
+				this.running = false;
 				alert('Please select select a destination');
 				return;
 			}
