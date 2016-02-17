@@ -28,18 +28,20 @@ try{
 	else alert("Error initialising:\n"+e);
 }
 
-if(!app.activeDocument){
+var doc;
+try{
+	doc = app.activeDocument;
+}catch(e){}
+
+if(!doc || !app.documents.length){
 	alert("Please open a document before running this command");
 }else{
 
 	try{
-		if(!app.documents.length){
-			alert("Please open a document before running this command");
-		}else{
-			var toolBuilder = new smartExport.ExportToolBuilder(app.activeDocument, "Smart Layer Export");
-			var loadSuccess = toolBuilder.loadPrefLayer("Export Settings", "nyt_exporter_info");
-			if (loadSuccess) toolBuilder.showDialog(true, true, false);
-		}
+		var toolBuilder = new smartExport.ExportToolBuilder(app.activeDocument, "Smart Layer Export");
+		var loadSuccess = toolBuilder.loadPrefLayer("Export Settings", "nyt_exporter_info");
+		if (loadSuccess) toolBuilder.showDialog(true, true, false);
+		
 	}catch(e){
 		alert("Error opening panel:\n"+e);
 	}

@@ -195,6 +195,19 @@
 		return {type:"string", id:id, name:name, def:def, optionalProp:optionalProp};
 	}
 
+	var enumMap = function(enumType, mapping){
+		var ret = [];
+		for(var i in mapping){
+			try{
+				var val = enumType[i];
+				ret.push(opt(val, mapping[i]));
+			}catch(e){
+				// enum value deprecated
+			}
+		}
+		return ret;
+	}
+
 	var antiAliasing = bool("antiAliasing", "Anti-aliasing", true);
 	var transparency = bool("transparency", "Transparency", true);
 	var colorCount = range("colorCount", "Color Count", 2, 256, 128);
@@ -210,11 +223,7 @@
 	var qualitySetting = percent("qualitySetting", "Quality", 30);
 	var infoLossPercent = percent("infoLossPercent", "Info Loss Percent", 0);
 
-	var compatList = [opt(Compatibility.ILLUSTRATOR8, "Illustrator 8"), opt(Compatibility.ILLUSTRATOR9, "Illustrator 9"), opt(Compatibility.ILLUSTRATOR10, "Illustrator 10"), opt(Compatibility.ILLUSTRATOR11, "Illustrator 11 (CS)"), opt(Compatibility.ILLUSTRATOR12, "Illustrator 12 (CS2)"), opt(Compatibility.ILLUSTRATOR13, "Illustrator 13 (CS3)"), opt(Compatibility.ILLUSTRATOR14, "Illustrator 14 (CS4)"), opt(Compatibility.ILLUSTRATOR15, "Illustrator 15 (CS5)"), opt(Compatibility.ILLUSTRATOR16, "Illustrator 16 (CS6)")]
-	if(parseFloat(app.version) >= 17){
-		compatList.push(opt(Compatibility.ILLUSTRATOR17, "Illustrator 17 (CC)"));
-	}
-	compatList.push(opt(Compatibility.JAPANESEVERSION3, "Japanese Version 3"));
+	var compatList = enumMap(Compatibility, {ILLUSTRATOR8:"Illustrator 8", ILLUSTRATOR9:"Illustrator 9", ILLUSTRATOR10:"Illustrator 10", ILLUSTRATOR11:"Illustrator 11 (CS)", ILLUSTRATOR12:"Illustrator 12 (CS2)", ILLUSTRATOR13:"Illustrator 13 (CS3)", ILLUSTRATOR14:"Illustrator 14 (CS4)", ILLUSTRATOR15:"Illustrator 15 (CS5)", ILLUSTRATOR16:"Illustrator 16 (CS6)", ILLUSTRATOR17:"Illustrator 17 (CC)", JAPANESEVERSION3:"Japanese Version 3"});
 	var compatibility = list("compatibility", "Compatibility", 9, compatList);
 
 	var fontSubsetThreshold = percent("fontSubsetThreshold", "Font Subset Threshold", 100);
@@ -229,8 +238,8 @@
 	var cssProperties = list("cssProperties", "CSS Properties", 1, [opt(SVGCSSPropertyLocation.ENTITIES, "Entities"), opt(SVGCSSPropertyLocation.STYLEATTRIBUTES, "Style Attributes"), opt(SVGCSSPropertyLocation.PRESENTATIONATTRIBUTES, "Presentation Attributes"), opt(SVGCSSPropertyLocation.STYLEELEMENTS, "Style Elements")]);
 	var documentEncoding = list("documentEncoding", "Document Encoding", 0, [opt(SVGDocumentEncoding.ASCII, "ASCII"), opt(SVGDocumentEncoding.UTF8, "UTF-8"), opt(SVGDocumentEncoding.UTF16, "UTF-16")]);
 	var DTD = list("DTD", "DTD Version", 1, [opt(SVGDTDVersion.SVG1_0, "SVG 1.0"), opt(SVGDTDVersion.SVG1_1, "SVG 1.1"), opt(SVGDTDVersion.SVGBASIC1_1, "SVG Basic 1.1"), opt(SVGDTDVersion.SVGTINY1_1, "SVG Tiny 1.1"), opt(SVGDTDVersion.SVGTINY1_1PLUS, "SVG Tiny 1.1+"), opt(SVGDTDVersion.SVGTINY1_2, "SVG Tiny 1.2")]);
-	var fontSubsetting = list("fontSubsetting", "Font Subsetting", 0, [opt(SVGFontSubsetting.ALLGLYPHS, "All Glyphs"), opt(SVGFontSubsetting.COMMONENGLISH, "Common English"), opt(SVGFontSubsetting.COMMONROMAN, "Common Roman"), opt(SVGFontSubsetting.GLYPHSUSED, "Glyphs Used"), opt(SVGFontSubsetting.GLYPHSUSEDPLUSENGLISH, "Glyphs used plus English"), opt(SVGFontSubsetting.GLYPHSUSEDPLUSROMAN, "Glyphs used plus Roman"), opt(SVGFontSubsetting.None, "None")]);
-	var fontType = list("fontType", "Font Type", 0, [opt(SVGFontType.CEFFONT, "CEF Fonts"), opt(SVGFontType.SVGFONT, "SVG Fonts"), opt(SVGFontType.OUTLINEFONT, "Outline Fonts")]);
+	var fontSubsetting = list("fontSubsetting", "Font Subsetting", 0, enumMap(SVGFontSubsetting, {ALLGLYPHS:"All Glyphs", COMMONENGLISH:"Common English", COMMONROMAN:"Common Roman", GLYPHSUSED:"Glyphs Used", GLYPHSUSEDPLUSENGLISH:"Glyphs used plus English", GLYPHSUSEDPLUSROMAN:"Glyphs used plus Roman", None:"None"}));
+	var fontType = list("fontType", "Font Type", 0, enumMap(SVGFontType, {CEFFONT:"CEF Fonts", SVGFONT:"SVG Fonts", OUTLINEFONT:"Outline Fonts"}));
 	var includeFileInfo = bool("includeFileInfo", "Include File Info", false);
 	var includeUnusedStyles = bool("includeUnusedStyles", "Include Unused Styles", false);
 	var includeVariablesAndDatasets = bool("includeVariablesAndDatasets", "Include Variables and Data", false);
@@ -249,7 +258,7 @@
 	var epsPreview = list("preview", "Preview Format", 3, [opt(EPSPreview.BWTIFF, "TIFF (B&W)"), opt(EPSPreview.COLORTIFF, "TIFF (Color)"), opt(EPSPreview.TRANSPARENTCOLORTIFF, "TIFF (Color w/ Transparency)"), opt(EPSPreview.None, "None")]);
 	
 	// PDF
-	var pdfCompatibility = list("compatibility", "Version Compatibility", 1, [opt(PDFCompatibility.ACROBAT4, "Acrobat 4"), opt(PDFCompatibility.ACROBAT4, "Acrobat 5"), opt(PDFCompatibility.ACROBAT4, "Acrobat 6"), opt(PDFCompatibility.ACROBAT4, "Acrobat 7"), opt(PDFCompatibility.ACROBAT4, "Acrobat 8")]);
+	var pdfCompatibility = list("compatibility", "Version Compatibility", 1, [opt(PDFCompatibility.ACROBAT4, "Acrobat 4"), opt(PDFCompatibility.ACROBAT5, "Acrobat 5"), opt(PDFCompatibility.ACROBAT6, "Acrobat 6"), opt(PDFCompatibility.ACROBAT7, "Acrobat 7"), opt(PDFCompatibility.ACROBAT8, "Acrobat 8")]);
 	var acrobatLayers = bool("acrobatLayers", "Acrobat Layers", false);
 	var bleedOffsetRect = margin("bleedOffsetRect", "Bleed Offset (px)", null, true, "bleedLink");
 	//var colorBars = bool("colorBars", "Color Bars", false);

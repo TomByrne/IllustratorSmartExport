@@ -28,18 +28,20 @@ try{
 	else alert("Error initialising:\n"+e);
 }
 
-if(!app.activeDocument){
+var doc;
+try{
+	doc = app.activeDocument;
+}catch(e){}
+
+if(!doc || !app.documents.length){
 	alert("Please open a document before running this command");
 }else{
 
 	try{
-		if(!app.documents.length){
-			alert("Please open a document before running this command");
-		}else{
-			var toolBuilder = new smartExport.ExportToolBuilder(app.activeDocument, "Smart Symbol Export");
-			var loadSuccess = toolBuilder.loadPrefLayer("Export Symbol Settings");
-			if (loadSuccess) toolBuilder.showDialog(false, false, true);
-		}
+		var toolBuilder = new smartExport.ExportToolBuilder(app.activeDocument, "Smart Symbol Export");
+		var loadSuccess = toolBuilder.loadPrefLayer("Export Symbol Settings");
+		if (loadSuccess) toolBuilder.showDialog(false, false, true);
+		
 	}catch(e){
 		alert("Error opening panel:\n"+e);
 	}
