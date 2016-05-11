@@ -36,7 +36,7 @@
 					var format = formatSettings.formatRef;
 
 
-					var bundle = this.getBundle(bundleMap, artI, layI, formatSettings.innerPadding, formatSettings.scaling, formatSettings.trimEdges, format.copyBehaviour, formatSettings.fontHandling=="outline", formatSettings.ungroup, j==0, j==layerInd.length-1, layerVis);
+					var bundle = this.getBundle(bundleMap, artI, layI, formatSettings.innerPadding, formatSettings.scaling, formatSettings.trimEdges, format.copyBehaviour, formatSettings.fontHandling=="outline", formatSettings.ungroup, j==0, j==layerInd.length-1, layerVis, formatSettings.colorSpace);
 					var item = new pack.ExportItem(formatSettings, LayerBundler.makeFileName(formatSettings.patterns[patternName], docRef.fullName.name, formatSettings.formatRef.ext, artI, artboard.name, layI, layer.name));
 					item.names = ["Artboard "+(artI+1), "Layer "+(layI+1)];
 					bundle.items.push(item);
@@ -51,14 +51,14 @@
 			}
 		}
 	}
-	LayerBundler.getBundle = function(bundleMap, artI, layI, padding, scaling, trim, forceCopy, doOutline, ungroup, isFirst, isLast, layerVis){
-		if(trim || doOutline || padding)forceCopy = true;
+	LayerBundler.getBundle = function(bundleMap, artI, layI, padding, scaling, trim, forceCopy, doOutline, ungroup, isFirst, isLast, layerVis, colorSpace){
+		if(trim || doOutline || padding || colorSpace)forceCopy = true;
 
 		var key;
 		if(!forceCopy){
 			key = this.NO_COPY;
 		}else{
-			key = (trim?"trim":"notrim")+"_"+(doOutline?"outline":"nooutline")+"_"+(padding?"pad":"nopad")+(ungroup?"_ungroup":"");
+			key = (trim?"trim":"notrim")+"_"+(doOutline?"outline":"nooutline")+"_"+(padding?"pad":"nopad")+(ungroup?"_ungroup":"") + (colorSpace==null ? "" : "_"+colorSpace);
 		}
 		var bundle = bundleMap[key];
 		if(bundle){
@@ -72,13 +72,13 @@
 		}else if(!trim){
 			// non-trimmed export types can simply create a new document once for each artboard. (no trim, vector exports)
 			bundle = new pack.ExportBundle();
-			bundle.prepareHandler = isFirst ? closure(LayerBundler, LayerBundler.prepareCopyDoc, [artI, layI, padding, doOutline, ungroup, layerVis], true) : closure(LayerBundler, LayerBundler.prepareCopyLayer, [artI, layI, padding, doOutline, ungroup, false, layerVis], true);
+			bundle.prepareHandler = isFirst ? closure(LayerBundler, LayerBundler.prepareCopyDoc, [artI, layI, padding, doOutline, ungroup, layerVis, colorSpace], true) : closure(LayerBundler, LayerBundler.prepareCopyLayer, [artI, layI, padding, doOutline, ungroup, false, layerVis, null, colorSpace], true);
 			bundle.cleanupHandler = isLast ? LayerBundler.cleanupCopyDoc : LayerBundler.cleanupCopyLayer;
 
 		}else{
 			// trimmed export types must create a new document for each artboard/layer pair. (No pad, trim, vector exports)
 			bundle = new pack.ExportBundle();
-			bundle.prepareHandler = closure(LayerBundler, LayerBundler.prepareCopyLayer, [artI, layI, padding, doOutline, ungroup, true, layerVis], true);
+			bundle.prepareHandler = closure(LayerBundler, LayerBundler.prepareCopyLayer, [artI, layI, padding, doOutline, ungroup, true, layerVis, null, colorSpace], true);
 			bundle.cleanupHandler = LayerBundler.cleanupCopyDoc;
 
 		}
@@ -86,7 +86,7 @@
 		return bundle;
 	}
 
-	LayerBundler.prepareCopyDoc = function(docRef, exportSettings, exportBundle, artI, layI, padding, doOutline, ungroup, layerVis){
+	LayerBundler.prepareCopyDoc = function(docRef, exportSettings, exportBundle, artI, layI, padding, doOutline, ungroup, layerVis, colorSpace){
 		var artboard = docRef.artboards[artI];
 		docRef.artboards.setActiveArtboardIndex(artI);
 		
@@ -97,13 +97,12 @@
 
 		//var offset = {x:0, y:0};
 		LayerBundler.layerDepths = [];
-		LayerBundler.copyDoc = pack.DocUtils.copyDocument(docRef, artboard, rect, artW, artH, padding, pack.DocUtils.isAdditionalLayer, LayerBundler.layerDepths, doOutline, ungroup, layerVis, exportSettings.ignoreWarnings, LayerBundler.hasBoundErrorRef);
+		LayerBundler.copyDoc = pack.DocUtils.copyDocument(docRef, artboard, rect, artW, artH, padding, pack.DocUtils.isAdditionalLayer, LayerBundler.layerDepths, doOutline, ungroup, layerVis, exportSettings.ignoreWarnings, LayerBundler.hasBoundErrorRef, null, colorSpace);
 		LayerBundler.hasAdditLayers = LayerBundler.copyDoc.layers.length > 0 && (LayerBundler.copyDoc.layers.length!=1 || LayerBundler.copyDoc.layers[0].pageItems.length || LayerBundler.copyDoc.layers[0].layers.length);
-		return this.prepareCopyLayer(docRef, exportSettings, exportBundle, artI, layI, padding, doOutline, ungroup, false, layerVis, rect);
+		return this.prepareCopyLayer(docRef, exportSettings, exportBundle, artI, layI, padding, doOutline, ungroup, false, layerVis, rect, colorSpace);
 	}
-	LayerBundler.prepareCopyLayer = function(docRef, exportSettings, exportBundle, artI, layI, padding, doOutline, ungroup, createDoc, layerVis, rect){
+	LayerBundler.prepareCopyLayer = function(docRef, exportSettings, exportBundle, artI, layI, padding, doOutline, ungroup, createDoc, layerVis, rect, colorSpace){
 		//docRef.artboards.setActiveArtboardIndex(artI); // throws an error if new doc has already been created (can't change artboard when doc isn't in focus)
-
 
 		var doc = LayerBundler.copyDoc || docRef;
 
@@ -152,7 +151,7 @@
 
 				layOffset = {x:layerOffsetX, y:layerOffsetY};
 				LayerBundler.layerDepths = [];
-				doc = pack.DocUtils.copyDocument(doc, artboard, rect, docW, docH, padding, pack.DocUtils.isAdditionalLayer, LayerBundler.layerDepths, doOutline, ungroup, layerVis, exportSettings.ignoreWarnings, null, layOffset);
+				doc = pack.DocUtils.copyDocument(doc, artboard, rect, docW, docH, padding, pack.DocUtils.isAdditionalLayer, LayerBundler.layerDepths, doOutline, ungroup, layerVis, exportSettings.ignoreWarnings, null, layOffset, colorSpace);
 				LayerBundler.copyDoc = doc;
 			
 				LayerBundler.hasAdditLayers = doc.layers.length > 0 && (doc.layers.length!=1 || doc.layers[0].pageItems.length || doc.layers[0].layers.length);

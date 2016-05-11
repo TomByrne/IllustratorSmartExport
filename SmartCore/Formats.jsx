@@ -220,7 +220,7 @@
 	var webSnap = percent("webSnap", "Web Snap", 0);
 	var blurAmount = range("blurAmount", "Blur Amount", 0, 2, 0);
 	var optimization = bool("optimization", "Optimization", true);
-	var qualitySetting = percent("qualitySetting", "Quality", 30);
+	var qualitySetting = percent("qualitySetting", "Quality", 70);
 	var infoLossPercent = percent("infoLossPercent", "Info Loss Percent", 0);
 
 	var compatList = enumMap(Compatibility, {ILLUSTRATOR8:"Illustrator 8", ILLUSTRATOR9:"Illustrator 9", ILLUSTRATOR10:"Illustrator 10", ILLUSTRATOR11:"Illustrator 11 (CS)", ILLUSTRATOR12:"Illustrator 12 (CS2)", ILLUSTRATOR13:"Illustrator 13 (CS3)", ILLUSTRATOR14:"Illustrator 14 (CS4)", ILLUSTRATOR15:"Illustrator 15 (CS5)", ILLUSTRATOR16:"Illustrator 16 (CS6)", ILLUSTRATOR17:"Illustrator 17 (CC)", JAPANESEVERSION3:"Japanese Version 3"});

@@ -20,6 +20,7 @@
 		embedImage:true,
 		ungroup:false,
 		fontHandling:"none",
+		colorSpace:null,
 		trimEdges:true,
 		innerPadding:false,
 		scaling:null,
@@ -41,6 +42,7 @@
 			if(this.hasProp("innerPadding"))ret.appendChild( new XML('<innerPadding>'+this.innerPadding+'</innerPadding>') );
 			if(this.directory)ret.appendChild( new XML('<directory>'+this.directory+'</directory>') );
 			if(this.fontHandling && this.fontHandling!="none")ret.appendChild( new XML('<fontHandling>'+this.fontHandling+'</fontHandling>') );
+			if(this.colorSpace && this.colorSpace!="none")ret.appendChild( new XML('<colorSpace>'+this.colorSpace+'</colorSpace>') );
 
 			if(includePatterns){
 				var patterns = new XML('<patterns/>');
@@ -96,6 +98,7 @@
 			this.innerPadding   = xml.innerPadding == "true";
 			this.scaling 		= parseFloat( xml.scaling.toString().replace( /\% /, '' )) || 100;
 			this.directory 		= xml.directory.toString();
+			this.colorSpace	    = xml.colorSpace.toString();
 
 			this.patterns = this.parseObjectNode(xml.patterns);
 			this.options = this.parseObjectNode(xml.options);

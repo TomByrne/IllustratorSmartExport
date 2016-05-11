@@ -3,16 +3,25 @@
 
 
 		
-	DocUtils.copyDocument = function(docRef, artboard, artboardRect, w, h, doInnerPadding, layerCheck, layerDepths, outlineText, ungroup, layerVis, ignoreWarnings, hasBoundErrorRef, offset) {
+	DocUtils.copyDocument = function(docRef, artboard, artboardRect, w, h, doInnerPadding, layerCheck, layerDepths, outlineText, ungroup, layerVis, ignoreWarnings, hasBoundErrorRef, offset, colorSpace) {
 		if(w<1)w = 1;
 		if(h<1)h = 1;
 		var preset = new DocumentPreset();
 		preset.width = w;
 		preset.height = h;
-		preset.colorMode = docRef.documentColorSpace;
 		preset.units = docRef.rulerUnits;
 
-		var copyDoc = app.documents.addDocument(docRef.documentColorSpace, preset);
+		if(colorSpace == "cmyk"){
+			preset.colorMode = DocumentColorSpace.CMYK;
+
+		}else if(colorSpace == "rgb"){
+			preset.colorMode = DocumentColorSpace.RGB;
+
+		}else{
+			preset.colorMode = docRef.documentColorSpace;
+		}
+
+		var copyDoc = app.documents.addDocument(preset.colorMode, preset);
 		var copyArtboard = copyDoc.artboards[0];
 		copyArtboard.shift = null; // Illustrator seems to reuse instances behind the scenes
 		app.coordinateSystem = CoordinateSystem.ARTBOARDCOORDINATESYSTEM;

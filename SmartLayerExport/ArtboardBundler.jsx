@@ -20,7 +20,7 @@
 			for (var x = 0; x < exportSettings.formats.length; x++ ) {
 				var formatSettings = exportSettings.formats[x];
 				var format = formatSettings.formatRef;
-				var bundle = this.getBundle(bundleMap, artI, formatSettings.innerPadding, formatSettings.scaling, formatSettings.trimEdges, format.copyBehaviour, formatSettings.fontHandling=="outline", formatSettings.ungroup);
+				var bundle = this.getBundle(bundleMap, artI, formatSettings.innerPadding, formatSettings.scaling, formatSettings.trimEdges, format.copyBehaviour, formatSettings.fontHandling=="outline", formatSettings.ungroup, formatSettings.colorSpace);
 
 				var item = new pack.ExportItem(formatSettings, ArtboardBundler.makeFileName(formatSettings.patterns[patternName], docRef.fullName.name, formatSettings.formatRef.ext, i, artboardName));
 				item.names = ["Artboard "+(artI+1)];
@@ -35,10 +35,10 @@
 			}
 		}
 	}
-	ArtboardBundler.getBundle = function(bundleMap, artI, padding, scaling, trim, forceCopy, doOutline, ungroup){
-		if(doOutline || padding || trim)forceCopy = true;
+	ArtboardBundler.getBundle = function(bundleMap, artI, padding, scaling, trim, forceCopy, doOutline, ungroup, colorSpace){
+		if(doOutline || padding || trim || colorSpace) forceCopy = true;
 
-		var key = (padding?"pad":"nopad")+"_"+(forceCopy?"copy":"nocopy")+"_"+(doOutline?"outline":"nooutline")+"_"+(trim?"trim":"notrim");
+		var key = (padding?"pad":"nopad")+"_"+(forceCopy?"copy":"nocopy")+"_"+(doOutline?"outline":"nooutline")+"_"+(trim?"trim":"notrim") + (colorSpace==null ? "" : "_"+colorSpace);
 		var bundle = bundleMap[key];
 		if(bundle){
 			return bundle;
@@ -49,7 +49,7 @@
 
 		}else{
 			bundle = new pack.ExportBundle();
-			bundle.prepareHandler = closure(ArtboardBundler, ArtboardBundler.prepareCopy, [artI, trim, padding, doOutline, ungroup], true);
+			bundle.prepareHandler = closure(ArtboardBundler, ArtboardBundler.prepareCopy, [artI, trim, padding, doOutline, ungroup, colorSpace], true);
 			bundle.cleanupHandler = ArtboardBundler.cleanupCopy;
 
 		}
@@ -60,7 +60,7 @@
 		docRef.artboards.setActiveArtboardIndex(artI);
 		return docRef;
 	}
-	ArtboardBundler.prepareCopy = function(docRef, exportSettings, exportBundle, artI, trim, padding, doOutline, ungroup){
+	ArtboardBundler.prepareCopy = function(docRef, exportSettings, exportBundle, artI, trim, padding, doOutline, ungroup, colorSpace){
 		var artboard = docRef.artboards[artI];
 		docRef.artboards.setActiveArtboardIndex(artI);
 		
@@ -121,7 +121,7 @@
 		var artH = rect[1]-rect[3];
 
 		
-		exportBundle.copyDoc = pack.DocUtils.copyDocument(docRef, artboard, rect, artW, artH, padding, layerCheck, null, doOutline, ungroup, null, exportSettings.ignoreWarnings, ArtboardBundler.hasBoundErrorRef, offset);
+		exportBundle.copyDoc = pack.DocUtils.copyDocument(docRef, artboard, rect, artW, artH, padding, layerCheck, null, doOutline, ungroup, null, exportSettings.ignoreWarnings, ArtboardBundler.hasBoundErrorRef, offset, colorSpace);
 		
 		return exportBundle.copyDoc;
 	}

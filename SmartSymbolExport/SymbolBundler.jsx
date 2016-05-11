@@ -20,7 +20,7 @@
 				var format = formatSettings.formatRef;
 
 
-				var bundle = this.getBundle(bundleMap, symbol, formatSettings.innerPadding, formatSettings.scaling, formatSettings.trimEdges, formatSettings.fontHandling=="outline", formatSettings.ungroup, j==symbolNames.length-1 && x==exportSettings.formats.length-1);
+				var bundle = this.getBundle(bundleMap, symbol, formatSettings.innerPadding, formatSettings.scaling, formatSettings.trimEdges, formatSettings.fontHandling=="outline", formatSettings.ungroup, formatSettings.colorSpace, j==symbolNames.length-1 && x==exportSettings.formats.length-1);
 				var item = new pack.ExportItem(formatSettings, SymbolBundler.makeFileName(formatSettings.patterns[patternName], formatSettings.formatRef.ext, symbol.name));
 				item.names = [symbol.name];
 				bundle.items.push(item);
@@ -34,7 +34,7 @@
 			}
 		}
 	}
-	SymbolBundler.getBundle = function(bundleMap, symbol, padding, scaling, trim, doOutline, ungroup, isLast){
+	SymbolBundler.getBundle = function(bundleMap, symbol, padding, scaling, trim, doOutline, ungroup, colorSpace, isLast){
 		if(trim || doOutline || padding)forceCopy = true;
 
 		var key = (doOutline?"outline":"nooutline")+"_"+(padding?"pad":"nopad")+(ungroup?"_ungroup":"");
@@ -44,14 +44,14 @@
 		}else{
 			// trimmed export types must create a new document for each symbol.
 			bundle = new pack.ExportBundle();
-			bundle.prepareHandler = closure(SymbolBundler, SymbolBundler.prepareCopyLayer, [symbol, padding, doOutline, ungroup], true);
+			bundle.prepareHandler = closure(SymbolBundler, SymbolBundler.prepareCopyLayer, [symbol, padding, doOutline, ungroup, colorSpace], true);
 			bundle.cleanupHandler = !isLast ? SymbolBundler.cleanupCopyDoc : SymbolBundler.cleanupTempLayer;
 
 		}
 		bundleMap[key] = bundle;
 		return bundle;
 	}
-	SymbolBundler.prepareCopyLayer = function(docRef, exportSettings, exportBundle, symbol, padding, doOutline, ungroup){
+	SymbolBundler.prepareCopyLayer = function(docRef, exportSettings, exportBundle, symbol, padding, doOutline, ungroup, colorSpace){
 
 		docRef.artboards.setActiveArtboardIndex(0);
 		var artboard = docRef.artboards[0];
@@ -78,7 +78,7 @@
 			docW = layerRect[2]-layerRect[0];
 			docH = layerRect[1]-layerRect[3];
 
-			doc = pack.DocUtils.copyDocument(docRef, artboard, rect, docW, docH, padding, pack.DocUtils.isAdditionalLayer, null, doOutline, ungroup, exportSettings.ignoreWarnings, SymbolBundler.hasBoundErrorRef);
+			doc = pack.DocUtils.copyDocument(docRef, artboard, rect, docW, docH, padding, pack.DocUtils.isAdditionalLayer, null, doOutline, ungroup, exportSettings.ignoreWarnings, SymbolBundler.hasBoundErrorRef, null, colorSpace);
 			exportBundle.copyDoc = doc;
 		
 			exportBundle.hasAdditLayers = doc.layers.length > 0 && (doc.layers.length!=1 || doc.layers[0].pageItems.length || doc.layers[0].layers.length);

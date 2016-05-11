@@ -91,7 +91,7 @@
 				}
 			}
 
-			// scaling row
+			// scaling & color space row
 			var scalingRow = this.formatColumn.add('group', undefined, '')
 			scalingRow.orientation = 'row';
 			scalingRow.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP]
@@ -129,6 +129,26 @@
 				}
 			});
 
+			this.colorSpaceLabel = scalingRow.add('statictext', undefined, 'Color Space:');
+			this.colorSpaceLabel.enabled = false;
+			this.colorSpaceLabel.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.CENTER];
+
+			this.colorSpaceOptions = [{name:"Same as Document", key:null}, {name:"RGB", key:"rgb"}, {name:"CMYK", key:"cmyk"}];
+
+			this.colorSpaceList = scalingRow.add('dropdownlist', undefined);
+			this.colorSpaceList.enabled = false;
+			this.colorSpaceList.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.CENTER];
+			this.colorSpaceList.size = [ 105,20 ];
+			this.colorSpaceList.onChange = function() {
+				scopedThis.currentFormatSettings.colorSpace = scopedThis.colorSpaceOptions[scopedThis.colorSpaceList.selection.index].key;
+				scopedThis.onFormatsChanged();
+			};
+			for(var i=0; i<this.colorSpaceOptions.length; i++){
+				var item = this.colorSpaceOptions[i];
+				this.colorSpaceList.add("item", item.name);
+			}
+
+			// font row
 			var fontRow = this.formatColumn.add('group', undefined, '')
 			fontRow.orientation = 'row';
 			fontRow.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP]
@@ -278,6 +298,8 @@
 			this.ungroupCheckBox.enabled = enabled;
 			this.fontHandlingList.enabled = enabled;
 			this.fontHandlingLabel.enabled = enabled;
+			this.colorSpaceList.enabled = enabled;
+			this.colorSpaceLabel.enabled = enabled;
 			this.moreButton.enabled = enabled;
 			this.removeButton.enabled = enabled;
 
@@ -334,6 +356,16 @@
 			}else{
 				this.ungroupCheckBox.value = false;
 			}
+
+
+			var selection = 0;
+			for(var i=0; i<this.colorSpaceOptions.length; i++){
+				var item = this.colorSpaceOptions[i];
+				if(item.key==this.currentFormatSettings.colorSpace){
+					selection = i;
+				}
+			}
+			this.colorSpaceList.selection = selection;
 
 			if(this.currentFormatSettings.hasProp("fontEmbed")){
 				this.fontHandlingOptions = [{name:"No Embed", key:"none"}, {name:"Embed", key:"embed"}];
@@ -402,8 +434,15 @@
 		checkSettingsName:function(formatSettings, updateHeading, updateList){
 			var format = formatSettings.formatRef;
 			var name = format.name;
+			var additional = [];
 			if(formatSettings.scaling && formatSettings.scaling!=100){
-				name += " ("+formatSettings.scaling+"%)";
+				additional.push(formatSettings.scaling+"%");
+			}
+			if(formatSettings.colorSpace){
+				additional.push(formatSettings.colorSpace.toUpperCase());
+			}
+			if(additional.length){
+				name += " ("+additional.join(",")+")";
 			}
 			formatSettings.name = name;
 			if(updateHeading)this.setPanelHeading();

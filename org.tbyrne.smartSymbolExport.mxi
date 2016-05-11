@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<macromedia-extension id="org.tbyrne.smartSymbolExport" name="Smart Symbol Export" version="3.13.0">
+<macromedia-extension id="org.tbyrne.smartSymbolExport" name="Smart Symbol Export" version="3.14.0">
   <description><![CDATA[<h3>Features:</h3>
 - Ability to scale output files for HiDPI (Retina) displays, or any other scale factor.
 - Can set up multiple export formats for a single file for easy regeneration of multiple asset sizes/types.
@@ -24,6 +24,10 @@
 To use, go to File > Scripts > Smart Symbol Export
 
 <h3>Change Log:</h3>
+
+<h3>11/05/2016 - v3.14</h3>
+- Added Color Space option.
+- Bumped up default quality from 30% to 70%.
 
 <h3>12/09/2015 - v3.12</h3>
 - Fixed issue with trim mode.
