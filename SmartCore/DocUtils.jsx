@@ -497,6 +497,7 @@
 		}
 	}
 	DocUtils.isAdditionalLayer = function(layer, vis) {
+		if(vis == null) vis = layer.visible;
 		return ( layer.name.match( /^\+/ ) && vis);
 	},
 

@@ -77,7 +77,6 @@
 		options.preserveEditability = false;
 		fillOptions(options, formatSettings);
 		options.bleedOffsetRect = checkRect(options.bleedOffsetRect);
-		alert("rect: "+options.bleedOffsetRect);
 		return options;
 	}
 	var getJpgOptions = function ( formatSettings ) {
