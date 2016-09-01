@@ -27,6 +27,7 @@
 		directory:null,
 		options:null,
 		patterns:null,
+		preset:null,
 
 		formatRef:null,
 		saveOptions:null, // for save/export call, generated at runtime, no need to store
@@ -43,6 +44,7 @@
 			if(this.directory)ret.appendChild( new XML('<directory>'+this.directory+'</directory>') );
 			if(this.fontHandling && this.fontHandling!="none")ret.appendChild( new XML('<fontHandling>'+this.fontHandling+'</fontHandling>') );
 			if(this.colorSpace && this.colorSpace!="none")ret.appendChild( new XML('<colorSpace>'+this.colorSpace+'</colorSpace>') );
+			if(this.preset)ret.appendChild( new XML('<preset>'+this.preset+'</preset>') );
 
 			if(includePatterns){
 				var patterns = new XML('<patterns/>');
@@ -99,6 +101,7 @@
 			this.scaling 		= parseFloat( xml.scaling.toString().replace( /\% /, '' )) || 100;
 			this.directory 		= xml.directory.toString();
 			this.colorSpace	    = xml.colorSpace.toString();
+			this.preset	        = xml.preset.toString();
 
 			this.patterns = this.parseObjectNode(xml.patterns);
 			this.options = this.parseObjectNode(xml.options);

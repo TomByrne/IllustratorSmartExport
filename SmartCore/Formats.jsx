@@ -1,37 +1,54 @@
 (function(pack){
 
-	var fillOptions = function(options, formatSettings){
+	var fillOptions = function(options, formatSettings, presetProp){
 		var props = formatSettings.formatRef.more;
 		var values = formatSettings.options;
-		for(var i=0; i<props.length; i++){
-			var prop = props[i];
-			var value = values[prop.id];
-			if(value==null)value = prop.def;
-			if(value==null){
-				if(prop.optionalProp){
-					options[prop.optionalProp] = false;
-				}
-				continue;
-			}else{
-				if(prop.optionalProp){
-					options[prop.optionalProp] = true;
-				}
-				if(prop.type=="list"){
-					value = value==-1 ? null : prop.options[value].key;
-				}else if(prop.type=="color"){
-					if(typeof(value)=="string"){
-						value = value.split("#").join("");
-						if(value.length>6)value = value.substr(value.length - 6, value.length);
-						value = parseInt(value, 16);
+		if(presetProp != null && formatSettings.preset != "" && formatSettings.preset!= null){
+			options[presetProp] = formatSettings.preset;
+		}else{
+			for(var i=0; i<props.length; i++){
+				var prop = props[i];
+				var value = values[prop.id];
+				if(value==null)value = prop.def;
+				if(value==null){
+					if(prop.optionalProp){
+						options[prop.optionalProp] = false;
 					}
-					var color = new RGBColor();
-					color.red = ((value >> 16) & 0xff);
-					color.green = ((value >> 8) & 0xff);
-					color.blue =  (value & 0xff);
-					value = color;
+					continue;
+				}else{
+					if(prop.optionalProp){
+						options[prop.optionalProp] = true;
+					}
+					if(prop.type=="list"){
+						if(value == -1){
+							value = null;
+						}else if(typeof(value)=="string"){
+							var parts = value.split(",");
+							var option = prop.options[parseInt(parts[0])];
+							if(option.type != "list"){
+								value = option.key;
+							}else{
+								var subOption = option.options[parseInt(parts[1])];
+								value = subOption.key;
+							}
+						}else{
+							value = prop.options[value].key;
+						}
+					}else if(prop.type=="color"){
+						if(typeof(value)=="string"){
+							value = value.split("#").join("");
+							if(value.length>6)value = value.substr(value.length - 6, value.length);
+							value = parseInt(value, 16);
+						}
+						var color = new RGBColor();
+						color.red = ((value >> 16) & 0xff);
+						color.green = ((value >> 8) & 0xff);
+						color.blue =  (value & 0xff);
+						value = color;
+					}
 				}
+				options[prop.id] = value;
 			}
-			options[prop.id] = value;
 		}
 		var extra = formatSettings.formatRef.extra;
 		if(extra){
@@ -75,7 +92,7 @@
 		options.compatibility = PDFCompatibility.ACROBAT5;
 		options.generateThumbnails = true;
 		options.preserveEditability = false;
-		fillOptions(options, formatSettings);
+		fillOptions(options, formatSettings, "pDFPreset");
 		options.bleedOffsetRect = checkRect(options.bleedOffsetRect);
 		return options;
 	}
@@ -225,7 +242,7 @@
 	var compatList = enumMap(Compatibility, {ILLUSTRATOR8:"Illustrator 8", ILLUSTRATOR9:"Illustrator 9", ILLUSTRATOR10:"Illustrator 10", ILLUSTRATOR11:"Illustrator 11 (CS)", ILLUSTRATOR12:"Illustrator 12 (CS2)", ILLUSTRATOR13:"Illustrator 13 (CS3)", ILLUSTRATOR14:"Illustrator 14 (CS4)", ILLUSTRATOR15:"Illustrator 15 (CS5)", ILLUSTRATOR16:"Illustrator 16 (CS6)", ILLUSTRATOR17:"Illustrator 17 (CC)", JAPANESEVERSION3:"Japanese Version 3"});
 	var compatibility = list("compatibility", "Compatibility", 9, compatList);
 
-	var fontSubsetThreshold = percent("fontSubsetThreshold", "Font Subset Threshold", 100);
+	var fontSubsetThreshold = percent("fontSubsetThreshold", "Font Subset Threshold", 100, "%");
 
 	// AI
 	var compressed = bool("compressed", "Compressed", true);
@@ -260,19 +277,138 @@
 	var pdfCompatibility = list("compatibility", "Version Compatibility", 1, [opt(PDFCompatibility.ACROBAT4, "Acrobat 4"), opt(PDFCompatibility.ACROBAT5, "Acrobat 5"), opt(PDFCompatibility.ACROBAT6, "Acrobat 6"), opt(PDFCompatibility.ACROBAT7, "Acrobat 7"), opt(PDFCompatibility.ACROBAT8, "Acrobat 8")]);
 	var acrobatLayers = bool("acrobatLayers", "Acrobat Layers", false);
 	var bleedOffsetRect = margin("bleedOffsetRect", "Bleed Offset (px)", null, true, "bleedLink");
-	//var colorBars = bool("colorBars", "Color Bars", false);
-	var documentPassword = string("documentPassword", "Open Password", null, "requireDocumentPassword");
-	var permissionPassword = string("permissionPassword", "Permission Password", null, "requirePermissionPassword");
-	/*var enableAccess = bool("enableAccess", "Enable 128bit Access", true);
-	var enableCopy = bool("enableCopy", "Enable 128bit Copy", true);
-	var enablePlainText = bool("enableCopy", "Enable 128bit Plaintext Metadata", false);
-	var enableCopyAccess = bool("enableCopyAccess", "Enable 40bit Copy and Access", true);*/
+	var colorBars = bool("colorBars", "Color Bars", false);
+	var outputCondition = string("outputCondition", "Output Condition");
+	var outputConditionID = string("outputConditionID", "Output Condition ID");
 	var compressArt = bool("compressArt", "Compress Art", true);
 	var generateThumbnails = bool("generateThumbnails", "Generate Thumbnails", true);
-	//var offset = num("offset", "Custom Paper Offset", 0, "pts");
+	var offset = num("offset", "Custom Paper Offset", 0, "pts");
 	var optimization = bool("optimization", "Optimization", false);
 	var pageInformation = bool("pageInformation", "Include Page Information", false);
-	/*var pDFAllowPrinting = list("pDFAllowPrinting", "Allow Printing", 0, [	opt(PDFPrintAllowedEnum.PRINT128HIGHRESOLUTION, "High Resolution (128bit)"),
+	var printerResolution = num("printerResolution", "Printer Resolution", 800, "dpi");
+	//var trapped = bool("trapped", "Manual Trapping Prepared", true);
+
+	var pageMarksType = list("pageMarksType", "Page Marks", 0, [opt(PageMarksTypes.Roman, "Roman"), opt(PageMarksTypes.Japanese, "Japanese")]);
+	var registrationMarks = bool("registrationMarks", "Registration Marks", false);
+	var trimMarks = bool("trimMarks", "Trim Marks", false);
+	var trimMarkWeight = list("trimMarkWeight", "Trim Mark Weight", 0, [opt(PDFTrimMarkWeight.TRIMMARKWEIGHT0125, "0.125"), opt(PDFTrimMarkWeight.TRIMMARKWEIGHT025, "0.25"), opt(PDFTrimMarkWeight.TRIMMARKWEIGHT05, "0.5")]);
+	
+	var compressionQuality = [		opt(CompressionQuality.None, "None"),
+									sublist("Automatic (JPEG)", 2,     [opt(CompressionQuality.AUTOMATICJPEGMINIMUM, "Minimum"),
+																		opt(CompressionQuality.AUTOMATICJPEGLOW, "Low"),
+																		opt(CompressionQuality.AUTOMATICJPEGMEDIUM, "Medium"),
+																		opt(CompressionQuality.AUTOMATICJPEGHIGH, "High"),
+																		opt(CompressionQuality.AUTOMATICJPEGMAXIMUM, "Maximum")]),
+
+									sublist("Automatic (JPEG2000)", 2, [opt(CompressionQuality.AUTOMATICJPEG2000MINIMUM, "Minimum"),
+																		opt(CompressionQuality.AUTOMATICJPEG2000LOW, "Low"),
+																		opt(CompressionQuality.AUTOMATICJPEG2000MEDIUM, "Medium"),
+																		opt(CompressionQuality.AUTOMATICJPEG2000HIGH, "High"),
+																		opt(CompressionQuality.AUTOMATICJPEG2000MAXIMUM, "Maximum"),
+																		opt(CompressionQuality.AUTOMATICJPEG2000LOSSLESS, "Lossless")]),
+
+									sublist("JPEG", 2, [				opt(CompressionQuality.JPEGMINIMUM, "Minimum"),
+																		opt(CompressionQuality.JPEGLOW, "Low"),
+																		opt(CompressionQuality.JPEGMEDIUM, "Medium"),
+																		opt(CompressionQuality.JPEGHIGH, "High"),
+																		opt(CompressionQuality.JPEGMAXIMUM, "Maximum")]),
+
+									sublist("JPEG2000", 2, [			opt(CompressionQuality.JPEG2000MINIMUM, "Minimum"),
+																		opt(CompressionQuality.JPEG2000LOW, "Low"),
+																		opt(CompressionQuality.JPEG2000MEDIUM, "Medium"),
+																		opt(CompressionQuality.JPEG2000HIGH, "High"),
+																		opt(CompressionQuality.JPEG2000MAXIMUM, "Maximum"),
+																		opt(CompressionQuality.JPEG2000LOSSLESS, "Lossless")])
+									];
+
+
+	var colorConversionID = list("colorConversionID", "Color Conversion", 0, [opt(ColorConversion.None, "None"), opt(ColorConversion.COLORCONVERSIONREPURPOSE, "Convert to Destination, Preserve Numbers (Select Below)"), opt(ColorConversion.COLORCONVERSIONTODEST, "Convert to Destination (Select Below)")]);
+	var colorDestinationID = list("colorDestinationID", "Color Destination", 0, [	opt(ColorDestination.None, "None"),
+																					opt(ColorDestination.COLORDESTINATIONDOCCMYK, "Document CMYK"), 
+																					opt(ColorDestination.COLORDESTINATIONDOCRGB, "Document RGB"), 
+																					opt(ColorDestination.COLORDESTINATIONWORKINGCMYK, "Working CMYK"), 
+																					opt(ColorDestination.COLORDESTINATIONWORKINGRGB, "Working RGB"), 
+																					opt(ColorDestination.COLORDESTINATIONPROFILE, "Profile (Select Below)")]);
+	
+	var colorProfileID = list("colorProfileID", "Include Color Profile", 0, [
+							opt(ColorProfile.None, "None"),
+							opt(ColorProfile.LEAVEPROFILEUNCHANGED, "Leave Unchanged"),
+							opt(ColorProfile.INCLUDEALLPROFILE, "Include All Profiles"),
+							opt(ColorProfile.INCLUDEDESTPROFILE, "Include Destination Profile"),
+							opt(ColorProfile.INCLUDERGBPROFILE, "Include RGB Profile")
+							]);
+
+	var colorDownsampling = num("colorDownsampling", "Downsampling", 150, "ppi");
+	var colorDownsamplingImageThreshold = num("colorDownsamplingImageThreshold", "Threshold", 225, "ppi");
+	var colorDownsamplingMethod = list("colorDownsamplingMethod", "Downsample Method", 0, [opt(DownsampleMethod.NODOWNSAMPLE, "None"), opt(DownsampleMethod.AVERAGEDOWNSAMPLE, "Average"), opt(DownsampleMethod.BICUBICDOWNSAMPLE, "Bicubic"), opt(DownsampleMethod.SUBSAMPLE, "Subpixel")]);
+	var colorCompression = list("colorCompression", "Compression", 0, compressionQuality);
+	var colorTileSize = num("colorTileSize", "Color Tile Size (JPEG 2000)", 256, "px");
+
+
+
+	var grayscaleDownsampling = num("grayscaleDownsampling", "Downsampling", 150, "ppi");
+	var grayscaleDownsamplingImageThreshold = num("grayscaleDownsamplingImageThreshold", "Threshold", 225, "ppi");
+	var grayscaleDownsamplingMethod = list("grayscaleDownsamplingMethod", "Downsample Method", 0, [opt(DownsampleMethod.NODOWNSAMPLE, "None"), opt(DownsampleMethod.AVERAGEDOWNSAMPLE, "Average"), opt(DownsampleMethod.BICUBICDOWNSAMPLE, "Bicubic"), opt(DownsampleMethod.SUBSAMPLE, "Subpixel")]);
+	var grayscaleCompression = list("grayscaleCompression", "Compression", 0, compressionQuality);
+	var grayscaleTileSize = num("grayscaleTileSize", "Tile Size (JPEG 2000)", 256, "px");
+	
+	var monochromeDownsampling = num("monochromeDownsampling", "Downsampling", 150, "ppi");
+	var monochromeDownsamplingImageThreshold = num("monochromeDownsamplingImageThreshold", "Threshold", 225, "ppi");
+	var monochromeDownsamplingMethod = list("monochromeDownsamplingMethod", "Downsample Method", 0, [opt(DownsampleMethod.NODOWNSAMPLE, "None"), opt(DownsampleMethod.AVERAGEDOWNSAMPLE, "Average"), opt(DownsampleMethod.BICUBICDOWNSAMPLE, "Bicubic"), opt(DownsampleMethod.SUBSAMPLE, "Subpixel")]);
+	var monochromeCompression = list("monochromeCompression", "Compression", 0, [
+							opt(MonochromeCompression.None, "None"),
+							opt(MonochromeCompression.CCIT3, "CCITT Group 3"),
+							opt(MonochromeCompression.CCIT4, "CCITT Group 4"),
+							opt(MonochromeCompression.MONOZIP, "ZIP"),
+							opt(MonochromeCompression.RUNLENGTH, "Run Length")
+							]);
+	
+
+	var flatteners = [opt(null, "None")];
+	if(app.flattenerPresetList != null){
+		for(var i=0; i<app.flattenerPresetList.length; i++){
+			var preset = app.flattenerPresetList[i];
+			flatteners.push(opt(preset, preset));
+		}
+	}
+	var flattenerPreset = list("flattenerPreset", "Flattener Preset (PDF 1.3 Only)", 0, flatteners);
+
+
+	// var pdfPresets = [opt(null, "None")];
+	// if(app.PDFPresetsList != null){
+	// 	for(var i=0; i<app.PDFPresetsList.length; i++){
+	// 		var preset = app.PDFPresetsList[i];
+	// 		pdfPresets.push(opt(preset, preset));
+	// 	}
+	// }
+	// var pDFPreset = list("pDFPreset", "PDF Preset", 0, pdfPresets);
+
+	
+	var pdfPresets;
+	if(app.PDFPresetsList != null){
+		pdfPresets = [];
+	 	for(var i=0; i<app.PDFPresetsList.length; i++){
+	 		var preset = app.PDFPresetsList[i];
+	 		pdfPresets.push(opt(preset, preset));
+	 	}
+	}
+
+
+	var pDFXStandard = list("pDFXStandard", "PDFX Standard", 0, [
+							opt(PDFXStandard.PDFXNONE, "None"),
+							opt(PDFXStandard.PDFX1A2001, "1A 2001"),
+							opt(PDFXStandard.PDFX1A2003, "1A 2003"),
+							opt(PDFXStandard.PDFX32002, "3 2002"),
+							opt(PDFXStandard.PDFX32003, "3 2003"),
+							opt(PDFXStandard.PDFX42007, "4 2007")
+							]);
+
+
+
+	var documentPassword = string("documentPassword", "Open Password", null, "requireDocumentPassword");
+	var permissionPassword = string("permissionPassword", "Permission Password", null, "requirePermissionPassword");
+
+	var pDFAllowPrinting = list("pDFAllowPrinting", "Allow Printing", 0, [	opt(PDFPrintAllowedEnum.PRINT128HIGHRESOLUTION, "High Resolution (128bit)"),
 																			opt(PDFPrintAllowedEnum.PRINT128LOWRESOLUTION, "Low Resolution (128bit)"),
 																			opt(PDFPrintAllowedEnum.PRINT128NONE, "None (128bit)"),
 																			opt(PDFPrintAllowedEnum.PRINT40HIGHRESOLUTION, "High Resolution (40bit)"),
@@ -285,85 +421,60 @@
 																				opt(PDFChangesAllowedEnum.CHANGE40ANYCHANGES, "Any Changes (40bit)"),
 																				opt(PDFChangesAllowedEnum.CHANGE40COMMENTING, "Commenting (40bit)"),
 																				opt(PDFChangesAllowedEnum.CHANGE40PAGELAYOUT, "Page Layout (40bit)"),
-																				opt(PDFChangesAllowedEnum.CHANGE40NONE, "None (40bit)")]);*/
-	var printerResolution = num("printerResolution", "Printer Resolution", 800, "dpi");
-	//var trapped = bool("trapped", "Manual Trapping Prepared", true);
-
-	//var pageMarksType = list("pageMarksType", "Page Marks", 0, [opt(PageMarksTypes.Roman, "Roman"), opt(PageMarksTypes.Japanese, "Japanese")]);
-	var registrationMarks = bool("registrationMarks", "Registration Marks", false);
-	var trimMarks = bool("trimMarks", "Trim Marks", false);
-	var trimMarkWeight = list("trimMarkWeight", "Trim Mark Weight", 0, [opt(PDFTrimMarkWeight.TRIMMARKWEIGHT0125, "0.125"), opt(PDFTrimMarkWeight.TRIMMARKWEIGHT025, "0.25"), opt(PDFTrimMarkWeight.TRIMMARKWEIGHT05, "0.5")]);
+																				opt(PDFChangesAllowedEnum.CHANGE40NONE, "None (40bit)")]);
+	var enableAccess = bool("enableAccess", "Enable 128bit Access", true);
+	var enableCopy = bool("enableCopy", "Enable 128bit Copy", true);
+	var enablePlainText = bool("enablePlainText", "Enable 128bit Plaintext Metadata", false);
+	var enableCopyAccess = bool("enableCopyAccess", "Enable 40bit Copy and Access", true);
 	
-	/*var colorCompression = list("colorCompression", "Color Compression", 0, [		opt(CompressionQuality.None, "None"),
-																					sublist("Automatic (JPEG)", 0,     [opt(CompressionQuality.AUTOMATICJPEGMINIMUM, "Minimum"),
-																														opt(CompressionQuality.AUTOMATICJPEGLOW, "Low"),
-																														opt(CompressionQuality.AUTOMATICJPEGMEDIUM, "Medium"),
-																														opt(CompressionQuality.AUTOMATICJPEGHIGH, "High"),
-																														opt(CompressionQuality.AUTOMATICJPEGMAXIMUM, "Maximum")]),
-
-																					sublist("Automatic (JPEG2000)", 0, [opt(CompressionQuality.AUTOMATICJPEG2000MINIMUM, "Minimum"),
-																														opt(CompressionQuality.AUTOMATICJPEG2000LOW, "Low"),
-																														opt(CompressionQuality.AUTOMATICJPEG2000MEDIUM, "Medium"),
-																														opt(CompressionQuality.AUTOMATICJPEG2000HIGH, "High"),
-																														opt(CompressionQuality.AUTOMATICJPEG2000MAXIMUM, "Maximum"),
-																														opt(CompressionQuality.AUTOMATICJPEG2000LOSSLESS, "Lossless")]),
-
-																					sublist("JPEG", 0, [				opt(CompressionQuality.JPEGMINIMUM, "Minimum"),
-																														opt(CompressionQuality.JPEGLOW, "Low"),
-																														opt(CompressionQuality.JPEGMEDIUM, "Medium"),
-																														opt(CompressionQuality.JPEGHIGH, "High"),
-																														opt(CompressionQuality.JPEGMAXIMUM, "Maximum")]),
-
-																					sublist("JPEG2000", 0, [			opt(CompressionQuality.JPEG2000MINIMUM, "Minimum"),
-																														opt(CompressionQuality.JPEG2000LOW, "Low"),
-																														opt(CompressionQuality.JPEG2000MEDIUM, "Medium"),
-																														opt(CompressionQuality.JPEG2000HIGH, "High"),
-																														opt(CompressionQuality.JPEG2000MAXIMUM, "Maximum"),
-																														opt(CompressionQuality.JPEG2000LOSSLESS, "Lossless")])
-																					]);
-	var colorConversionID = list("colorConversionID", "Color Conversion", 0, [opt(ColorConversion.None, "None"), opt(ColorConversion.COLORCONVERSIONREPURPOSE, "Convert to Destination, Preserve Numbers (Select Below)"), opt(ColorConversion.COLORCONVERSIONTODEST, "Convert to Destination (Select Below)")]);
-	var colorDestinationID = list("colorDestinationID", "Color Destination", 0, [	opt(ColorDestination.None, "None"),
-																					opt(ColorDestination.COLORDESTINATIONDOCCMYK, "Document CMYK"), 
-																					opt(ColorDestination.COLORDESTINATIONDOCRGB, "Document RGB"), 
-																					opt(ColorDestination.COLORDESTINATIONWORKINGCMYK, "Working CMYK"), 
-																					opt(ColorDestination.COLORDESTINATIONWORKINGRGB, "Working RGB"), 
-																					opt(ColorDestination.COLORDESTINATIONPROFILE, "Profile (Select Below)")]);
-	var colorDownsampling = num("colorDownsampling", "Color Downsampling", 150, "dpi");
-	var colorDownsamplingImageThreshold = num("colorDownsamplingImageThreshold", "Color Downsampling Threshold", 225, "dpi");
-	var colorDownsamplingMethod = list("colorDownsamplingMethod", "Color Downsample Method", 0, [opt(DownsampleMethod.NODOWNSAMPLE, "None"), opt(DownsampleMethod.AVERAGEDOWNSAMPLE, "Average"), opt(DownsampleMethod.BICUBICDOWNSAMPLE, "Bicubic"), opt(DownsampleMethod.SUBSAMPLE, "Subpixel")]);
-	*/
-
 
 	// copyBehaviour - for vector outputs the output must be done from a copy of the document (to avoid hidden layers being included in output)
 	pack.formats =  [   {name:"PNG 8", ext:'png', defaultDir:'png8', copyBehaviour:false, getOptions:getPng8Options, saveFile:savePng8, props:["scaling","trimEdges","innerPadding"],
-							more:[	transparency, antiAliasing, colorCount, colorDither, colorReduction, ditherPercent, interlaced, matteColor, webSnap]},
+							more:[	{options:[transparency, antiAliasing, colorCount, colorDither, colorReduction, ditherPercent, interlaced, matteColor, webSnap]}]},
 
 						{name:"PNG 24", ext:'png', defaultDir:'png24', copyBehaviour:false, getOptions:getPng24Options, saveFile:savePng24, props:["scaling","trimEdges","innerPadding"],
-							more:[	transparency, antiAliasing, matteColor]},
+							more:[	{options:[transparency, antiAliasing, matteColor]}]},
 
 						{name:"JPG", ext:'jpg', defaultDir:'jpg', copyBehaviour:false, getOptions:getJpgOptions, saveFile:saveJpg, props:["scaling","trimEdges","innerPadding"],
-							more:[	antiAliasing, blurAmount, matteColor, optimization, qualitySetting]},
+							more:[	{options:[antiAliasing, blurAmount, matteColor, optimization, qualitySetting]}]},
 
 						{name:"GIF", ext:'gif', defaultDir:'gif', copyBehaviour:false, getOptions:getGifOptions, saveFile:saveGif, props:["scaling","trimEdges","innerPadding"],
-							more:[	transparency, antiAliasing, colorCount, colorDither, colorReduction, ditherPercent, infoLossPercent, interlaced, matteColor, webSnap]},
+							more:[	{options:[transparency, antiAliasing, colorCount, colorDither, colorReduction, ditherPercent, infoLossPercent, interlaced, matteColor, webSnap]}]},
 
 						{name:"EPS", ext:'eps', defaultDir:'eps', copyBehaviour:true, getOptions:getEpsOptions, saveFile:saveEps, props:["embedImage","fontEmbed","fontOutline","trimEdges","ungroup"],
-							more:[	cmykPostScript, compatibility, flattenOuput, includeDocumentThumbnails, overprint, epsVersion, epsPreview ]},
+							more:[	{options:[cmykPostScript, compatibility, flattenOuput, includeDocumentThumbnails, overprint, epsVersion, epsPreview]} ]},
 
 						{name:"SVG", ext:'svg', defaultDir:'svg', copyBehaviour:true, getOptions:getSvgOptions, saveFile:saveSvg, props:["embedImage","fontOutline","trimEdges","ungroup"],
-							more:[	coordinatePrecision, cssProperties, documentEncoding, DTD, fontSubsetting, fontType, includeFileInfo, includeUnusedStyles, preserveEditability, slices, sVGAutoKerning, sVGTextOnPath ]},
+							more:[	{options:[coordinatePrecision, cssProperties, documentEncoding, DTD, fontSubsetting, fontType, includeFileInfo, includeUnusedStyles, preserveEditability, slices, sVGAutoKerning, sVGTextOnPath]} ]},
 
 						{name:"SVGZ", ext:'svgz', defaultDir:'svgz', copyBehaviour:true, getOptions:getSvgOptions, saveFile:saveSvg, props:["embedImage","fontOutline","trimEdges","ungroup"],
-							more:[	coordinatePrecision, cssProperties, documentEncoding, DTD, fontSubsetting, fontType, includeFileInfo, includeUnusedStyles, preserveEditability, slices, sVGAutoKerning, sVGTextOnPath ],
+							more:[	{options:[coordinatePrecision, cssProperties, documentEncoding, DTD, fontSubsetting, fontType, includeFileInfo, includeUnusedStyles, preserveEditability, slices, sVGAutoKerning, sVGTextOnPath]} ],
 							extra:{ compressed:true }},
 
 						{name:"AI", ext:'ai', defaultDir:'ai', copyBehaviour:true, getOptions:getAiOptions, saveFile:saveAi, props:["embedImage","fontOutline","trimEdges","ungroup"],
-							more:[	compatibility, compressed, embedICCProfile, fontSubsetThreshold, pdfCompatible ]},
+							more:[	{options:[compatibility, compressed, embedICCProfile, fontSubsetThreshold, pdfCompatible]} ]},
 
-						{name:"PDF", ext:'pdf', defaultDir:'pdf', copyBehaviour:true, getOptions:getPdfOptions, saveFile:savePdf, props:["trimEdges","fontOutline","ungroup"],
-							more:[	pdfCompatibility, acrobatLayers, documentPassword, permissionPassword,
-							fontSubsetThreshold, compressArt, generateThumbnails, optimization, pageInformation, preserveEditability, printerResolution,
-							registrationMarks, trimMarks, trimMarkWeight, bleedOffsetRect ]}];
+						{name:"PDF", ext:'pdf', defaultDir:'pdf', copyBehaviour:true, getOptions:getPdfOptions, saveFile:savePdf, props:["trimEdges","fontOutline","ungroup"], presets:pdfPresets,
+							more:[
+								{options:[pDFXStandard, pdfCompatibility]},
+
+								{name:"General", options:[preserveEditability, generateThumbnails, acrobatLayers]},
+
+								{name:"Color Compression", options:[colorDownsamplingMethod, colorDownsampling, colorDownsamplingImageThreshold, colorCompression, colorTileSize]},
+
+								{name:"Grayscale Compression", options:[grayscaleDownsamplingMethod, grayscaleDownsampling, grayscaleDownsamplingImageThreshold, grayscaleCompression, grayscaleTileSize]},
+
+								{name:"Monochrome Compression", options:[monochromeDownsamplingMethod, monochromeDownsampling, monochromeDownsamplingImageThreshold, monochromeCompression]},
+
+								{name:"Masks and Bleeds", options:[pageMarksType, registrationMarks, trimMarks, trimMarkWeight, colorBars, offset, pageInformation, bleedOffsetRect]},
+
+								{name:"Output", options:[colorConversionID, colorDestinationID, colorProfileID]},
+
+								{name:"Advanced", options:[fontSubsetThreshold, flattenerPreset]},
+
+								{name:"Security", options:[documentPassword, permissionPassword, pDFAllowPrinting, pDFChangesAllowed, enableAccess, enableCopy, enablePlainText, enableCopyAccess]}
+							]}
+					];
 
 	if(parseFloat(app.version) < 17){
 		// FXG not available in CC and above

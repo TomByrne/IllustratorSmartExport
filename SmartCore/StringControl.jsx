@@ -26,6 +26,9 @@
 				this.checkbox = row.add('checkbox');
 				this.checkbox.value = (value!=null && value!="");
 				this.checkbox.size = [16, 16];
+				this.checkbox.onClick = function(){
+					scopedThis.input.enabled = scopedThis.checkbox.value;
+				}
 				inputW = 175;
 			}else{
 				inputW = 200;
@@ -36,11 +39,17 @@
 			this.input.onChange = function(){
 				scopedThis.setValue(scopedThis.input.text);
 			}
+			if(optional){
+				this.input.enabled = this.checkbox.value;
+			}
 		},
 		setValue : function(value){
 			this.value = value;
 			this.input.text = value;
-			if(this.optional)this.checkbox.value = (value!="");
+			if(this.optional){
+				this.checkbox.value = (value!="");
+				this.input.enabled = this.checkbox.value;
+			}
 			if(onChange)onChange();
 		},
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<macromedia-extension id="org.tbyrne.smartSymbolExport" name="Smart Symbol Export" version="3.15.0">
+<macromedia-extension id="org.tbyrne.smartSymbolExport" name="Smart Symbol Export" version="3.17.0">
   <description><![CDATA[<h3>Features:</h3>
 - Ability to scale output files for HiDPI (Retina) displays, or any other scale factor.
 - Can set up multiple export formats for a single file for easy regeneration of multiple asset sizes/types.
@@ -24,6 +24,10 @@
 To use, go to File > Scripts > Smart Symbol Export
 
 <h3>Change Log:</h3>
+
+<h3>31/07/2016 - v3.16</h3>
+- Added PDF Preset functionality
+- Expanded PDF settings panel greatly to allow many more settings
 
 <h3>06/07/2016 - v3.15</h3>
 - Fixed issue with persistant layers feature when not trimming (persistant layers start with '+').
@@ -144,5 +148,20 @@ This Agreement shall be governed by the laws of the State of New South Wales, an
     <file source="SmartSymbolExport" destination="$presets/da_DK" shared="true" maxVersion="16.9"/>
     <file source="SmartSymbolExport" destination="$presets/nl_NL" shared="true" maxVersion="16.9"/>
     <file source="SmartSymbolExport" destination="$presets/pt_BR" shared="true" maxVersion="16.9"/>
+
+    <file source="SmartSymbolExport" destination="$presets/ja_JP" shared="true" maxVersion="16.9"/>
+    <file source="SmartSymbolExport" destination="$presets/de_DE" shared="true" maxVersion="16.9"/>
+    <file source="SmartSymbolExport" destination="$presets/es_ES" shared="true" maxVersion="16.9"/>
+    <file source="SmartSymbolExport" destination="$presets/es_MX" shared="true" maxVersion="16.9"/>
+    <file source="SmartSymbolExport" destination="$presets/it_IT" shared="true" maxVersion="16.9"/>
+    <file source="SmartSymbolExport" destination="$presets/cs_CZ" shared="true" maxVersion="16.9"/>
+    <file source="SmartSymbolExport" destination="$presets/uk_UA" shared="true" maxVersion="16.9"/>
+    <file source="SmartSymbolExport" destination="$presets/zh_CN" shared="true" maxVersion="16.9"/>
+    <file source="SmartSymbolExport" destination="$presets/zh_TW" shared="true" maxVersion="16.9"/>
+    <file source="SmartSymbolExport" destination="$presets/ko_KR" shared="true" maxVersion="16.9"/>
+    <file source="SmartSymbolExport" destination="$presets/sv_SE" shared="true" maxVersion="16.9"/>
+    <file source="SmartSymbolExport" destination="$presets/tr_TR" shared="true" maxVersion="16.9"/>
+    <file source="SmartSymbolExport" destination="$presets/hu_HU" shared="true" maxVersion="16.9"/>
+    <file source="SmartSymbolExport" destination="$presets/pl_PL" shared="true" maxVersion="16.9"/>
   </files>
 </macromedia-extension>

@@ -138,7 +138,7 @@
 			this.colorSpaceList = scalingRow.add('dropdownlist', undefined);
 			this.colorSpaceList.enabled = false;
 			this.colorSpaceList.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.CENTER];
-			this.colorSpaceList.size = [ 105,20 ];
+			this.colorSpaceList.size = [ 148,20 ];
 			this.colorSpaceList.onChange = function() {
 				scopedThis.currentFormatSettings.colorSpace = scopedThis.colorSpaceOptions[scopedThis.colorSpaceList.selection.index].key;
 				scopedThis.onFormatsChanged();
@@ -166,6 +166,32 @@
 				scopedThis.onFormatsChanged();
 			};
 
+
+			// preset row
+			var presetRow = this.formatColumn.add('group', undefined, '')
+			presetRow.orientation = 'row';
+			presetRow.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP]
+
+			this.presetsLabel = presetRow.add('statictext', undefined, 'Preset:');
+			this.presetsLabel.enabled = false;
+			this.presetsLabel.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.CENTER];
+
+			this.presetsList = presetRow.add('dropdownlist', undefined);
+			this.presetsList.enabled = false;
+			this.presetsList.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.CENTER];
+			this.presetsList.size = [ 290,20 ];
+			this.presetsList.onChange = function() {
+				if(scopedThis.currentFormat.presets == null) return;
+				if(scopedThis.presetsList.selection.index == 0){
+					scopedThis.currentFormatSettings.preset = null;
+				}else{
+					scopedThis.currentFormatSettings.preset = scopedThis.currentFormat.presets[scopedThis.presetsList.selection.index-1].key;
+				}
+				scopedThis.checkOptionsButton();
+				scopedThis.onFormatsChanged();
+			};
+
+			// embed row
 			var embedRow = this.formatColumn.add('group', undefined, '')
 			embedRow.orientation = 'row';
 			embedRow.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP]
@@ -174,7 +200,7 @@
 			this.embedImageCheckBox.value = false;
 			this.embedImageCheckBox.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
 			this.embedImageCheckBox.enabled = false;
-			this.embedImageCheckBox.size = [ 180,20 ];
+			//this.embedImageCheckBox.size = [ 180,20 ];
 			this.embedImageCheckBox.onClick = function(){
 				scopedThis.currentFormatSettings.embedImage = scopedThis.embedImageCheckBox.value;
 				scopedThis.onFormatsChanged();
@@ -190,7 +216,7 @@
 			}
 
 			if(this.allowTrim){
-				this.trimEdgesCheckBox = this.formatColumn.add('checkbox', undefined, 'Trim Edges');
+				this.trimEdgesCheckBox = embedRow.add('checkbox', undefined, 'Trim Edges');
 				this.trimEdgesCheckBox.value = false;
 				this.trimEdgesCheckBox.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
 				this.trimEdgesCheckBox.enabled = false;
@@ -298,6 +324,8 @@
 			this.ungroupCheckBox.enabled = enabled;
 			this.fontHandlingList.enabled = enabled;
 			this.fontHandlingLabel.enabled = enabled;
+			this.presetsLabel.enabled = enabled;
+			this.presetsList.enabled = enabled;
 			this.colorSpaceList.enabled = enabled;
 			this.colorSpaceLabel.enabled = enabled;
 			this.moreButton.enabled = enabled;
@@ -395,6 +423,25 @@
 				this.fontHandlingList.enabled = false;
 			}
 
+			this.presetsList.removeAll();
+			if(this.currentFormat.presets != null && this.currentFormat.presets.length){
+				var selection = 0;
+				this.presetsList.add("item", "None");
+				for(var i=0; i<this.currentFormat.presets.length; i++){
+					var item = this.currentFormat.presets[i];
+					this.presetsList.add("item", item.name);
+					if(item.key==this.currentFormatSettings.preset){
+						selection = i+1;
+					}
+				}
+				this.presetsList.selection = selection;
+				this.presetsLabel.enabled = true;
+				this.presetsList.enabled = true;
+			}else{
+				this.presetsLabel.enabled = false;
+				this.presetsList.enabled = false;
+			}
+
 			this.innerPaddingCheckBox.enabled = this.currentFormatSettings.hasProp("innerPadding");
 			if(this.innerPaddingCheckBox.enabled){
 				this.innerPaddingCheckBox.value = this.currentFormatSettings.innerPadding;
@@ -402,11 +449,15 @@
 				this.innerPaddingCheckBox.value = false;
 			}
 
-			this.moreButton.enabled = (this.currentFormatSettings.formatRef.more!=null);
+			this.checkOptionsButton();
 			this.removeButton.enabled = true;
 
 			this.setPanelHeading();
 			this.ignoreChanges = false;
+		},
+		checkOptionsButton:function(){
+			if(this.currentFormatSettings.preset == "") this.currentFormatSettings.preset = null;
+			this.moreButton.enabled = (this.currentFormatSettings.formatRef.more!=null && this.currentFormatSettings.preset==null);
 		},
 		setPanelHeading:function(){
 			this.formatColumn.text = "Format Settings: "+this.currentFormatSettings.name;
