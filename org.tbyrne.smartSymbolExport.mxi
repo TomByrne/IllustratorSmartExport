@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<macromedia-extension id="org.tbyrne.smartSymbolExport" name="Smart Symbol Export" version="3.17.0">
+<macromedia-extension id="org.tbyrne.smartSymbolExport" name="Smart Symbol Export" version="3.19.0">
   <description><![CDATA[<h3>Features:</h3>
 - Ability to scale output files for HiDPI (Retina) displays, or any other scale factor.
 - Can set up multiple export formats for a single file for easy regeneration of multiple asset sizes/types.
@@ -110,16 +110,15 @@ This Agreement shall be governed by the laws of the State of New South Wales, an
     <product familyname="Illustrator" primary="true" version="16.0"/>
   </products>
   <files>
-    <file source="Smart Symbol Export.jsx" destination="$presets/$locale/Scripts/" shared="true" minVersion="17.0"/>
 
-    <file source="Smart Symbol Export.jsx" destination="$presets/en_US/Scripts/" shared="true" maxVersion="16.9"/>
-    <file source="Smart Symbol Export.jsx" destination="$presets/en_GB/Scripts/" shared="true" maxVersion="16.9"/>
-    <file source="Smart Symbol Export.jsx" destination="$presets/fr_FR/Scripts/" shared="true" maxVersion="16.9"/>
-    <file source="Smart Symbol Export.jsx" destination="$presets/fr_CA/Scripts/" shared="true" maxVersion="16.9"/>
-    <file source="Smart Symbol Export.jsx" destination="$presets/fr_MA/Scripts/" shared="true" maxVersion="16.9"/>
-    <file source="Smart Symbol Export.jsx" destination="$presets/da_DK/Scripts/" shared="true" maxVersion="16.9"/>
-    <file source="Smart Symbol Export.jsx" destination="$presets/nl_NL/Scripts/" shared="true" maxVersion="16.9"/>
-    <file source="Smart Symbol Export.jsx" destination="$presets/pt_BR/Scripts/" shared="true" maxVersion="16.9"/>
+    <file source="Smart Symbol Export.jsx" destination="$presets/en_US/Scripts/" shared="true"/>
+    <file source="Smart Symbol Export.jsx" destination="$presets/en_GB/Scripts/" shared="true"/>
+    <file source="Smart Symbol Export.jsx" destination="$presets/fr_FR/Scripts/" shared="true"/>
+    <file source="Smart Symbol Export.jsx" destination="$presets/fr_CA/Scripts/" shared="true"/>
+    <file source="Smart Symbol Export.jsx" destination="$presets/fr_MA/Scripts/" shared="true"/>
+    <file source="Smart Symbol Export.jsx" destination="$presets/da_DK/Scripts/" shared="true"/>
+    <file source="Smart Symbol Export.jsx" destination="$presets/nl_NL/Scripts/" shared="true"/>
+    <file source="Smart Symbol Export.jsx" destination="$presets/pt_BR/Scripts/" shared="true"/>
 
     <file source="Smart Symbol Export.jsx" destination="$presets/ja_JP/スクリプト/" shared="true"/> 
     <file source="Smart Symbol Export.jsx" destination="$presets/de_DE/Skripten/" shared="true"/> 
@@ -137,31 +136,28 @@ This Agreement shall be governed by the laws of the State of New South Wales, an
     <file source="Smart Symbol Export.jsx" destination="$presets/hu_HU/Parancsfájlok/" shared="true"/>
     <file source="Smart Symbol Export.jsx" destination="$presets/pl_PL/Skrypty/" shared="true"/>
 
-    
-    <file source="SmartSymbolExport" destination="$presets/$locale" shared="true" minVersion="17.0"/>
+    <file source="SmartSymbolExport" destination="$presets/en_US" shared="true"/>
+    <file source="SmartSymbolExport" destination="$presets/en_GB" shared="true"/>
+    <file source="SmartSymbolExport" destination="$presets/fr_FR" shared="true"/>
+    <file source="SmartSymbolExport" destination="$presets/fr_CA" shared="true"/>
+    <file source="SmartSymbolExport" destination="$presets/fr_MA" shared="true"/>
+    <file source="SmartSymbolExport" destination="$presets/da_DK" shared="true"/>
+    <file source="SmartSymbolExport" destination="$presets/nl_NL" shared="true"/>
+    <file source="SmartSymbolExport" destination="$presets/pt_BR" shared="true"/>
 
-    <file source="SmartSymbolExport" destination="$presets/en_US" shared="true" maxVersion="16.9"/>
-    <file source="SmartSymbolExport" destination="$presets/en_GB" shared="true" maxVersion="16.9"/>
-    <file source="SmartSymbolExport" destination="$presets/fr_FR" shared="true" maxVersion="16.9"/>
-    <file source="SmartSymbolExport" destination="$presets/fr_CA" shared="true" maxVersion="16.9"/>
-    <file source="SmartSymbolExport" destination="$presets/fr_MA" shared="true" maxVersion="16.9"/>
-    <file source="SmartSymbolExport" destination="$presets/da_DK" shared="true" maxVersion="16.9"/>
-    <file source="SmartSymbolExport" destination="$presets/nl_NL" shared="true" maxVersion="16.9"/>
-    <file source="SmartSymbolExport" destination="$presets/pt_BR" shared="true" maxVersion="16.9"/>
-
-    <file source="SmartSymbolExport" destination="$presets/ja_JP" shared="true" maxVersion="16.9"/>
-    <file source="SmartSymbolExport" destination="$presets/de_DE" shared="true" maxVersion="16.9"/>
-    <file source="SmartSymbolExport" destination="$presets/es_ES" shared="true" maxVersion="16.9"/>
-    <file source="SmartSymbolExport" destination="$presets/es_MX" shared="true" maxVersion="16.9"/>
-    <file source="SmartSymbolExport" destination="$presets/it_IT" shared="true" maxVersion="16.9"/>
-    <file source="SmartSymbolExport" destination="$presets/cs_CZ" shared="true" maxVersion="16.9"/>
-    <file source="SmartSymbolExport" destination="$presets/uk_UA" shared="true" maxVersion="16.9"/>
-    <file source="SmartSymbolExport" destination="$presets/zh_CN" shared="true" maxVersion="16.9"/>
-    <file source="SmartSymbolExport" destination="$presets/zh_TW" shared="true" maxVersion="16.9"/>
-    <file source="SmartSymbolExport" destination="$presets/ko_KR" shared="true" maxVersion="16.9"/>
-    <file source="SmartSymbolExport" destination="$presets/sv_SE" shared="true" maxVersion="16.9"/>
-    <file source="SmartSymbolExport" destination="$presets/tr_TR" shared="true" maxVersion="16.9"/>
-    <file source="SmartSymbolExport" destination="$presets/hu_HU" shared="true" maxVersion="16.9"/>
-    <file source="SmartSymbolExport" destination="$presets/pl_PL" shared="true" maxVersion="16.9"/>
+    <file source="SmartSymbolExport" destination="$presets/ja_JP" shared="true"/>
+    <file source="SmartSymbolExport" destination="$presets/de_DE" shared="true"/>
+    <file source="SmartSymbolExport" destination="$presets/es_ES" shared="true"/>
+    <file source="SmartSymbolExport" destination="$presets/es_MX" shared="true"/>
+    <file source="SmartSymbolExport" destination="$presets/it_IT" shared="true"/>
+    <file source="SmartSymbolExport" destination="$presets/cs_CZ" shared="true"/>
+    <file source="SmartSymbolExport" destination="$presets/uk_UA" shared="true"/>
+    <file source="SmartSymbolExport" destination="$presets/zh_CN" shared="true"/>
+    <file source="SmartSymbolExport" destination="$presets/zh_TW" shared="true"/>
+    <file source="SmartSymbolExport" destination="$presets/ko_KR" shared="true"/>
+    <file source="SmartSymbolExport" destination="$presets/sv_SE" shared="true"/>
+    <file source="SmartSymbolExport" destination="$presets/tr_TR" shared="true"/>
+    <file source="SmartSymbolExport" destination="$presets/hu_HU" shared="true"/>
+    <file source="SmartSymbolExport" destination="$presets/pl_PL" shared="true"/>
   </files>
 </macromedia-extension>

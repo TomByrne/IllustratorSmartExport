@@ -1,53 +1,56 @@
 (function(pack){
 
 	var fillOptions = function(options, formatSettings, presetProp){
-		var props = formatSettings.formatRef.more;
+		var propLists = formatSettings.formatRef.more;
 		var values = formatSettings.options;
-		if(presetProp != null && formatSettings.preset != "" && formatSettings.preset!= null){
-			options[presetProp] = formatSettings.preset;
-		}else{
-			for(var i=0; i<props.length; i++){
-				var prop = props[i];
-				var value = values[prop.id];
-				if(value==null)value = prop.def;
-				if(value==null){
-					if(prop.optionalProp){
-						options[prop.optionalProp] = false;
-					}
-					continue;
-				}else{
-					if(prop.optionalProp){
-						options[prop.optionalProp] = true;
-					}
-					if(prop.type=="list"){
-						if(value == -1){
-							value = null;
-						}else if(typeof(value)=="string"){
-							var parts = value.split(",");
-							var option = prop.options[parseInt(parts[0])];
-							if(option.type != "list"){
-								value = option.key;
+		for(var j=0; j<propLists.length; j++){
+			var props = propLists[j].options;
+			if(presetProp != null && formatSettings.preset != "" && formatSettings.preset!= null){
+				options[presetProp] = formatSettings.preset;
+			}else{
+				for(var i=0; i<props.length; i++){
+					var prop = props[i];
+					var value = values[prop.id];
+					if(value==null)value = prop.def;
+					if(value==null){
+						if(prop.optionalProp){
+							options[prop.optionalProp] = false;
+						}
+						continue;
+					}else{
+						if(prop.optionalProp){
+							options[prop.optionalProp] = true;
+						}
+						if(prop.type=="list"){
+							if(value == -1){
+								value = null;
+							}else if(typeof(value)=="string"){
+								var parts = value.split(",");
+								var option = prop.options[parseInt(parts[0])];
+								if(option.type != "list"){
+									value = option.key;
+								}else{
+									var subOption = option.options[parseInt(parts[1])];
+									value = subOption.key;
+								}
 							}else{
-								var subOption = option.options[parseInt(parts[1])];
-								value = subOption.key;
+								value = prop.options[value].key;
 							}
-						}else{
-							value = prop.options[value].key;
+						}else if(prop.type=="color"){
+							if(typeof(value)=="string"){
+								value = value.split("#").join("");
+								if(value.length>6)value = value.substr(value.length - 6, value.length);
+								value = parseInt(value, 16);
+							}
+							var color = new RGBColor();
+							color.red = ((value >> 16) & 0xff);
+							color.green = ((value >> 8) & 0xff);
+							color.blue =  (value & 0xff);
+							value = color;
 						}
-					}else if(prop.type=="color"){
-						if(typeof(value)=="string"){
-							value = value.split("#").join("");
-							if(value.length>6)value = value.substr(value.length - 6, value.length);
-							value = parseInt(value, 16);
-						}
-						var color = new RGBColor();
-						color.red = ((value >> 16) & 0xff);
-						color.green = ((value >> 8) & 0xff);
-						color.blue =  (value & 0xff);
-						value = color;
 					}
+					options[prop.id] = value;
 				}
-				options[prop.id] = value;
 			}
 		}
 		var extra = formatSettings.formatRef.extra;
