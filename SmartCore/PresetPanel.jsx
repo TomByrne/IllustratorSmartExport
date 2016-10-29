@@ -29,12 +29,13 @@
 			row.orientation = 'row';
 			row.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.BOTTOM];
 
-			this.presetList = row.add('dropdownlist', undefined);
-			this.presetList.preferredSize = [312, 22];
+			//this.presetList = row.add('dropdownlist', undefined);
+			this.presetList = new pack.Dropdown(row);
+			this.presetList.setSize(312, 22);
 			this.presetList.onChange = function() {
-				if(scopedThis.presetList.selection.index==0)return;
-				scopedThis.loadPreset(scopedThis.files[scopedThis.presetList.selection.index-1]);
-				scopedThis.presetList.selection = 0;
+				if(scopedThis.presetList.selection==0)return;
+				scopedThis.loadPreset(scopedThis.files[scopedThis.presetList.selection-1]);
+				scopedThis.presetList.setSelection(0);
 			};
 
 			var saveBtn = row.add('button', undefined, 'Add Preset');
@@ -113,8 +114,9 @@
 			}
 		},
 		buildPresetList:function(){
-			this.presetList.removeAll();
-			this.presetList.add("item", "--- Load Settings ---");
+			var items = ["--- Load Settings ---"];
+			//this.presetList.removeAll();
+			//this.presetList.add("item", "--- Load Settings ---");
 			var allFiles = this.presetDir.getFiles();
 			this.files = [];
 			for(var i=0; i<allFiles.length; ++i){
@@ -123,10 +125,12 @@
 				if(extIndex==-1)continue;
 				var fileName = file.name.substr(0, extIndex);
 				fileName = decodeURIComponent(fileName);
-				this.presetList.add("item", fileName);
+				//this.presetList.add("item", fileName);
+				items.push(fileName);
 				this.files.push(file);
 			}
-			this.presetList.selection = 0;
+			this.presetList.setItems(items);
+			this.presetList.setSelection(0);
 		},
 		saveCurrent:function(){
 			var nameDlg = new pack.SaveSettingsDialog();

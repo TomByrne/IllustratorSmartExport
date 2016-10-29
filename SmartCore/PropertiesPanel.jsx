@@ -140,22 +140,24 @@
 							}else{
 								container = row;
 							}
-							control = container.add('dropdownlist', undefined, names);
-							control.preferredSize = [200, 20];
+							//control = container.add('dropdownlist', undefined, names);
+							control = new pack.Dropdown(container, names);
+							control.setSize(200, 20);
 							if(addSublist){
-								subControl = container.add('dropdownlist', undefined, names);
-								subControl.preferredSize = [200, 20];
+								//subControl = container.add('dropdownlist', undefined, names);
+								subControl = new pack.Dropdown(container, names);
+								subControl.setSize(200, 20);
 								control.subControl = subControl;
 								control.onChange = closure(this, this.onSuboptionChange, [control, subControl, prop]);
 								if(settings[prop.id]!=null){
 									var parts = value.split(",");
-									control.selection = parts[0];
-									subControl.selection = parts[1];
+									control.setSelection(parts[0]);
+									subControl.setSelection(parts[1]);
 								}else{
-									if(value!=null)control.selection = value;
+									if(value!=null)control.setSelection(value);
 								}
 							}else{
-								if(value!=null)control.selection = value;
+								if(value!=null)control.setSelection(value);
 							}
 							this.controls.push(control);
 							break;
@@ -234,17 +236,20 @@
 		},
 
 		onSuboptionChange:function(dropdown, subDropdown, prop){
-			var option = prop.options[dropdown.selection.index];
-			subDropdown.removeAll();
+			var option = prop.options[dropdown.selection];
 			if(option.type != "list"){
-				subDropdown.enabled = false;
+				subDropdown.setEnabled(false);
+				subDropdown.setItems([]);
 			}else{
-				subDropdown.enabled = true;
+				var subOptions = [];
+				subDropdown.setEnabled(true);
 				for(var i=0; i<option.options.length; i++){
 					var subOption = option.options[i];
-					subDropdown.add("item", subOption.name);
+					//subDropdown.add("item", subOption.name);
+					subOptions.push(subOption.name);
 				}
-				subDropdown.selection = option.def;
+				subDropdown.setItems(subOptions);
+				subDropdown.setSelection(option.def);
 			}
 		},
 
@@ -280,9 +285,9 @@
 
 						case "list":
 							if(control.subControl){
-								value = control.selection.index + "," + (control.subControl.selection == null ? -1 : control.subControl.selection.index);
+								value = control.selection + "," + (control.subControl.selection == null ? -1 : control.subControl.selection);
 							}else{
-								value = control.selection.index;
+								value = control.selection;
 							}
 							break;
 
