@@ -33,8 +33,8 @@
 			for(var i=0; i<formats.length; ++i){
 				formatNames.push(formats[i].name)
 			}
-			this.formatChooser = column.add('dropdownlist', undefined, formatNames);
-			this.formatChooser.selection = 0;
+			this.formatChooser = new pack.Dropdown(column, formatNames);
+			this.formatChooser.setSelection(0);
 			this.formatChooser.onChange = function(){
 				if(scopedThis.formatChooser.selection > 0){
 					scopedThis.addFormatItem(formats[scopedThis.formatChooser.selection - 1]);
@@ -135,18 +135,19 @@
 
 			this.colorSpaceOptions = [{name:"Same as Document", key:null}, {name:"RGB", key:"rgb"}, {name:"CMYK", key:"cmyk"}];
 
-			this.colorSpaceList = scalingRow.add('dropdownlist', undefined);
-			this.colorSpaceList.enabled = false;
-			this.colorSpaceList.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.CENTER];
-			this.colorSpaceList.size = [ 148,20 ];
-			this.colorSpaceList.onChange = function() {
-				scopedThis.currentFormatSettings.colorSpace = scopedThis.colorSpaceOptions[scopedThis.colorSpaceList.selection.index].key;
-				scopedThis.onFormatsChanged();
-			};
+			this.colorSpaceList = new pack.Dropdown(scalingRow);
+			this.colorSpaceList.setEnabled(false);
+			this.colorSpaceList.setSize(148,20);
+			var colorList = [];
 			for(var i=0; i<this.colorSpaceOptions.length; i++){
 				var item = this.colorSpaceOptions[i];
-				this.colorSpaceList.add("item", item.name);
+				colorList.push(item.name);
 			}
+			this.colorSpaceList.setItems(colorList);
+			this.colorSpaceList.onChange = function() {
+				scopedThis.currentFormatSettings.colorSpace = scopedThis.colorSpaceOptions[scopedThis.colorSpaceList.selection].key;
+				if(scopedThis.onFormatsChanged) scopedThis.onFormatsChanged();
+			};
 
 			// font row
 			var fontRow = this.formatColumn.add('group', undefined, '')
@@ -157,12 +158,11 @@
 			this.fontHandlingLabel.enabled = false;
 			this.fontHandlingLabel.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.CENTER];
 
-			this.fontHandlingList = fontRow.add('dropdownlist', undefined);
-			this.fontHandlingList.enabled = false;
-			this.fontHandlingList.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.CENTER];
-			this.fontHandlingList.size = [ 105,20 ];
+			this.fontHandlingList = new pack.Dropdown(fontRow);
+			this.fontHandlingList.setEnabled(false);
+			this.fontHandlingList.setSize(105,20);
 			this.fontHandlingList.onChange = function() {
-				scopedThis.currentFormatSettings.fontHandling = scopedThis.fontHandlingOptions[scopedThis.fontHandlingList.selection.index].key;
+				scopedThis.currentFormatSettings.fontHandling = scopedThis.fontHandlingOptions[scopedThis.fontHandlingList.selection].key;
 				scopedThis.onFormatsChanged();
 			};
 
@@ -176,16 +176,17 @@
 			this.presetsLabel.enabled = false;
 			this.presetsLabel.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.CENTER];
 
-			this.presetsList = presetRow.add('dropdownlist', undefined);
-			this.presetsList.enabled = false;
-			this.presetsList.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.CENTER];
-			this.presetsList.size = [ 290,20 ];
+			//this.presetsList = presetRow.add('dropdownlist', undefined);
+			this.presetsList = new pack.Dropdown(presetRow);
+			this.presetsList.setEnabled(false);
+			//this.presetsList.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.CENTER];
+			this.presetsList.setSize(290,20);
 			this.presetsList.onChange = function() {
 				if(scopedThis.currentFormat.presets == null) return;
-				if(scopedThis.presetsList.selection.index == 0){
+				if(scopedThis.presetsList.selection <= 0){
 					scopedThis.currentFormatSettings.preset = null;
 				}else{
-					scopedThis.currentFormatSettings.preset = scopedThis.currentFormat.presets[scopedThis.presetsList.selection.index-1].key;
+					scopedThis.currentFormatSettings.preset = scopedThis.currentFormat.presets[scopedThis.presetsList.selection-1].key;
 				}
 				scopedThis.checkOptionsButton();
 				scopedThis.onFormatsChanged();
@@ -322,11 +323,11 @@
 			if(this.allowTrim)this.trimEdgesCheckBox.enabled = enabled;
 			this.embedImageCheckBox.enabled = enabled;
 			this.ungroupCheckBox.enabled = enabled;
-			this.fontHandlingList.enabled = enabled;
+			this.fontHandlingList.setEnabled(enabled);
 			this.fontHandlingLabel.enabled = enabled;
 			this.presetsLabel.enabled = enabled;
-			this.presetsList.enabled = enabled;
-			this.colorSpaceList.enabled = enabled;
+			this.presetsList.setEnabled(enabled);
+			this.colorSpaceList.setEnabled(enabled);
 			this.colorSpaceLabel.enabled = enabled;
 			this.moreButton.enabled = enabled;
 			this.removeButton.enabled = enabled;
@@ -393,7 +394,7 @@
 					selection = i;
 				}
 			}
-			this.colorSpaceList.selection = selection;
+			this.colorSpaceList.setSelection(selection);
 
 			if(this.currentFormatSettings.hasProp("fontEmbed")){
 				this.fontHandlingOptions = [{name:"No Embed", key:"none"}, {name:"Embed", key:"embed"}];
@@ -405,42 +406,48 @@
 			}else{
 				this.fontHandlingOptions = []
 			}
-			this.fontHandlingList.removeAll();
+			var fontList = [];
+			//this.fontHandlingList.removeAll();
 			if(this.fontHandlingOptions.length){
 				var selection = 0;
 				for(var i=0; i<this.fontHandlingOptions.length; i++){
 					var item = this.fontHandlingOptions[i];
-					this.fontHandlingList.add("item", item.name);
+					fontList.push(item.name);
 					if(item.key==this.currentFormatSettings.fontHandling){
 						selection = i;
 					}
 				}
-				this.fontHandlingList.selection = selection;
+				this.fontHandlingList.setSelection(selection);
 				this.fontHandlingLabel.enabled = true;
-				this.fontHandlingList.enabled = true;
+				this.fontHandlingList.setEnabled(true);
 			}else{
 				this.fontHandlingLabel.enabled = false;
-				this.fontHandlingList.enabled = false;
+				this.fontHandlingList.setEnabled(false);
 			}
+			this.fontHandlingList.setItems(fontList);
 
-			this.presetsList.removeAll();
+			//this.presetsList.removeAll();
+			var presetList = [];
 			if(this.currentFormat.presets != null && this.currentFormat.presets.length){
 				var selection = 0;
-				this.presetsList.add("item", "None");
+				presetList.push("None");
+				//this.presetsList.add("item", "None");
 				for(var i=0; i<this.currentFormat.presets.length; i++){
 					var item = this.currentFormat.presets[i];
-					this.presetsList.add("item", item.name);
+					//this.presetsList.add("item", item.name);
+					presetList.push(item.name);
 					if(item.key==this.currentFormatSettings.preset){
 						selection = i+1;
 					}
 				}
-				this.presetsList.selection = selection;
+				this.presetsList.setSelection(selection);
 				this.presetsLabel.enabled = true;
-				this.presetsList.enabled = true;
+				this.presetsList.setEnabled(true);
 			}else{
 				this.presetsLabel.enabled = false;
-				this.presetsList.enabled = false;
+				this.presetsList.setEnabled(false);
 			}
+			this.presetsList.setItems(presetList);
 
 			this.innerPaddingCheckBox.enabled = this.currentFormatSettings.hasProp("innerPadding");
 			if(this.innerPaddingCheckBox.enabled){

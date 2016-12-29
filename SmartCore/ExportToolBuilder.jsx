@@ -81,13 +81,14 @@
 
 
 			// Artboard/Layers & Preview tabbed panel
-			this.tabPanel = majRow.add("tabbedpanel");
-			this.tabPanel.orientation = 'row'
-			this.tabPanel.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
+			//this.tabPanel = majRow.add("tabbedpanel");
+			this.tabPanel = new pack.TabbedPanel( majRow );
+			//this.tabPanel.orientation = 'row'
+			//this.tabPanel.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
 
 			if(doArtboard || doLayer){
 
-				var tab = this.tabPanel.add("tab", undefined, "Artboards & Layers");
+				var tab = this.tabPanel.add("Artboards & Layers");
 				tab.orientation = "row";
 
 				if(doArtboard){
@@ -118,7 +119,7 @@
 			}
 
 			if(doSymbol){
-				var tab = this.tabPanel.add("tab", undefined, "Symbols");
+				var tab = this.tabPanel.add("Symbols");
 				tab.orientation = "row";
 
 				this.symbolPanel = new pack.SymbolPanel(tab, exSettings.symbolAll, exSettings.symbolNames);
@@ -129,7 +130,7 @@
 				};
 			}
 
-			var tab = this.tabPanel.add("tab", undefined, "Output Files");
+			var tab = this.tabPanel.add("Output Files");
 			this.previewPanel = new pack.PreviewFilesPanel(tab);
 
 			// Settings panels
@@ -172,7 +173,7 @@
 				scopedThis.toolPanel.close()
 			};
 			this.exportPanel.onExportClicked = function() {
-				scopedThis.tabPanel.selection = 1;
+				scopedThis.tabPanel.setSelection(1);
 				try{
 					scopedThis.hasBoundErrorRef.broken = 0;
 					scopedThis.saveOptions(); // save options before export in case of errors
