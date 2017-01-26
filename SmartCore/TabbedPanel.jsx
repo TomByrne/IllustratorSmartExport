@@ -4,7 +4,9 @@
 		return this;
 	}
 
-	TabbedPanel.useNative = (parseInt(app.version) > 20 && $.os.indexOf("Win")!=-1);
+	// The built-in "tabpanel" control crashes Illustrator
+	// Originally I thought it was Mac only, but it does affect Win too
+	TabbedPanel.useNative = (parseInt(app.version) < 20);
 
 	if(TabbedPanel.useNative){
 		TabbedPanel.prototype={

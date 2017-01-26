@@ -193,6 +193,11 @@
 				}
 				if(this.selection == selectedInd) return;
 
+
+				// I don't know why, but this line seems to avoid an exception in CC2017
+				this.items.length;
+				// end weirdness
+
 				this.selection = selectedInd;
 				if(selectedInd == null || selectedInd == -1){
 					this.button.text = "";

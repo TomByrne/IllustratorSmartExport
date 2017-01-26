@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<macromedia-extension id="org.tbyrne.smartExport" name="Smart Layer Export" version="3.20.1">
+<macromedia-extension id="org.tbyrne.smartExport" name="Smart Layer Export" version="3.22.0">
   <description><![CDATA[<h3>Features:</h3>
 - Ability to scale output files for HiDPI (Retina) displays, or any other scale factor.
 - Can set up multiple export formats for a single file for easy regeneration of multiple asset sizes/types.
@@ -155,7 +155,7 @@ This Agreement shall be governed by the laws of the State of New South Wales, an
 ]]></license-agreement>
   <author name="Thomas Byrne"/>
   <products>
-    <product familyname="Illustrator" primary="true" version="16.0"/>
+    <product familyname="Illustrator" primary="true" version="16.0" maxversion="21"/>
   </products>
   <files>
 
