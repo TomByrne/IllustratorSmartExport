@@ -79,6 +79,7 @@
 				try{
 					var i=0; // in case error is thrown
 					var copyDoc = bundle.prepareHandler(docRef, this.exportSettings, bundle);
+					var isWin = ($.os.indexOf("Win")!=-1);
 
 					for(var i=0; i<items.length; i++){
 						if(this.cancelled)return this.doFinish(false);
@@ -100,7 +101,19 @@
 						}else{
 							try{
 								var formatSettings = item.formatSettings;
-								var dir = this.directory + (formatSettings.directory?"/"+formatSettings.directory:"");
+								var dir;
+								if(formatSettings.directory && formatSettings.directory.length){
+
+									if((this.exportSettings.directory == null || this.exportSettings.directory == "") &&
+										((isWin && formatSettings.directory.charAt(1)==":") || (!isWin && formatSettings.directory.charAt(1)=="/"))){
+
+										dir = formatSettings.directory;
+									}else{
+										dir = this.directory + (formatSettings.directory?"/"+formatSettings.directory:"");
+									}
+								}else{
+									dir = this.directory;
+								}
 								var dirObj = Folder(dir);
 								if(!dirObj.exists){
 									dirObj.create();

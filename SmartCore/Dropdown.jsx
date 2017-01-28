@@ -91,10 +91,12 @@
 
 		Dropdown.prototype={
 		    onChange:null,
+		    selection:-1,
 
 			init:function(container, items, selectedInd){
 				var scopedThis = this;
 
+				this.selection = -1;
 				this.showing = false;
 
 				this.group = container.add("group");
@@ -117,6 +119,7 @@
 						scopedThis.open();
 					}
 				}
+
 
 				this.icon.onClick = this.button.onClick;
 
@@ -191,12 +194,9 @@
 				if(selectedInd > max){
 					selectedInd = max;
 				}
+				if(this.selection == null) this.selection = -1;
 				if(this.selection == selectedInd) return;
 
-
-				// I don't know why, but this line seems to avoid an exception in CC2017
-				this.items.length;
-				// end weirdness
 
 				this.selection = selectedInd;
 				if(selectedInd == null || selectedInd == -1){
