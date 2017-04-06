@@ -175,7 +175,7 @@
 				this.listbox.size = [maxWidth, stackHeight];
 				this.listWindow.size = [maxWidth, stackHeight];
 
-				this.setSelection(this.selection);
+				if(this.selection >= 0) this.setSelection(this.selection);
 			},
 			setSize:function(width, height){
 				this.width = width;
