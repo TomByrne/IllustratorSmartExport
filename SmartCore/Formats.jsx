@@ -138,6 +138,13 @@
 		fillOptions(options, formatSettings);
 		return options;
 	}
+	var getTiffOptions = function ( formatSettings ) {
+		var options = new ExportOptionsTIFF();
+		//options.antiAliasing = true;
+		options.saveMultipleArtboards = false;
+		fillOptions(options, formatSettings);
+		return options;
+	}
 	var getAiOptions = function ( formatSettings ) {
 		options = new IllustratorSaveOptions();
 		options.embedLinkedFiles = formatSettings.embedImage;
@@ -169,6 +176,10 @@
 	var saveEps = function ( doc, filePath, options ) {
 		var destFile = new File( filePath );
 		doc.saveAs( destFile, options )			
+	}
+	var saveTiff = function ( doc, filePath, options ) {
+		var destFile = new File( filePath );
+		doc.exportFile( destFile, ExportType.TIFF, options )			
 	}
 	var saveAi = function ( doc, filePath, options ) {
 		var destFile = new File( filePath );
@@ -276,6 +287,12 @@
 	var epsVersion = list("postScript", "Version", 0, [opt(EPSPostScriptLevelEnum.LEVEL2, "2"), opt(EPSPostScriptLevelEnum.LEVEL3, "3")]);
 	var epsPreview = list("preview", "Preview Format", 3, [opt(EPSPreview.BWTIFF, "TIFF (B&W)"), opt(EPSPreview.COLORTIFF, "TIFF (Color)"), opt(EPSPreview.TRANSPARENTCOLORTIFF, "TIFF (Color w/ Transparency)"), opt(EPSPreview.None, "None")]);
 	
+	// TIFF
+	var tiffByteOrder = list("byteOrder", "Byte Order", 0, [opt(TIFFByteOrder.IBMPC, "IBM PC"), opt(TIFFByteOrder.MACINTOSH, "Macintosh")]);
+	var tiffImageColorSpace = list("imageColorSpace", "Color Space", 0, enumMap(ImageColorSpace, {RGB:"RGB", CMYK:"CMYK", Grayscale:"Grayscale"/*, LAB:"LAB", Separation:"Separation", DeviceN:"DeviceN", Indexed:"Indexed"*/})); // These values create "internal exceptions"
+	var tiffIZWCompression = bool("IZWCompression", "IZW Compression", false);
+	var tiffResolution = range("resolution", "Resolution", 72, 2400, 150);
+
 	// PDF
 	var pdfCompatibility = list("compatibility", "Version Compatibility", 1, [opt(PDFCompatibility.ACROBAT4, "Acrobat 4"), opt(PDFCompatibility.ACROBAT5, "Acrobat 5"), opt(PDFCompatibility.ACROBAT6, "Acrobat 6"), opt(PDFCompatibility.ACROBAT7, "Acrobat 7"), opt(PDFCompatibility.ACROBAT8, "Acrobat 8")]);
 	var acrobatLayers = bool("acrobatLayers", "Acrobat Layers", false);
@@ -457,6 +474,9 @@
 						{name:"AI", ext:'ai', defaultDir:'ai', copyBehaviour:true, getOptions:getAiOptions, saveFile:saveAi, props:["embedImage","fontOutline","trimEdges","ungroup"],
 							more:[	{options:[compatibility, compressed, embedICCProfile, fontSubsetThreshold, pdfCompatible]} ]},
 
+						{name:"TIFF", ext:'tif', defaultDir:'tiff', copyBehaviour:false, getOptions:getTiffOptions, saveFile:saveTiff, props:["scaling","trimEdges","innerPadding"],
+							more:[	{options:[tiffByteOrder, tiffImageColorSpace, tiffIZWCompression, tiffResolution]} ]},
+
 						{name:"PDF", ext:'pdf', defaultDir:'pdf', copyBehaviour:true, getOptions:getPdfOptions, saveFile:savePdf, props:["trimEdges","fontOutline","ungroup"], presets:pdfPresets,
 							more:[
 								{options:[pDFXStandard, pdfCompatibility]},
@@ -469,7 +489,7 @@
 
 								{name:"Monochrome Compression", options:[monochromeDownsamplingMethod, monochromeDownsampling, monochromeDownsamplingImageThreshold, monochromeCompression]},
 
-								{name:"Masks and Bleeds", options:[pageMarksType, registrationMarks, trimMarks, trimMarkWeight, colorBars, offset, pageInformation, bleedOffsetRect]},
+								{name:"Marks and Bleeds", options:[pageMarksType, registrationMarks, trimMarks, trimMarkWeight, colorBars, offset, pageInformation, bleedOffsetRect]},
 
 								{name:"Output", options:[colorConversionID, colorDestinationID, colorProfileID]},
 

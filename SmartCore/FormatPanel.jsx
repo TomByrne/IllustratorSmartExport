@@ -318,10 +318,12 @@
 			this.enabled = enabled;
 			this.dirLabel.enabled = enabled;
 			this.dirInput.enabled = enabled;
+			this.scalingInput.enabled = enabled;
 			this.scalingLabel.enabled = enabled;
 			//this.transCheckBox.enabled = enabled;
 			if(this.allowTrim)this.trimEdgesCheckBox.enabled = enabled;
 			this.embedImageCheckBox.enabled = enabled;
+			this.innerPaddingCheckBox.enabled = enabled;
 			this.ungroupCheckBox.enabled = enabled;
 			this.fontHandlingList.setEnabled(enabled);
 			this.fontHandlingLabel.enabled = enabled;
