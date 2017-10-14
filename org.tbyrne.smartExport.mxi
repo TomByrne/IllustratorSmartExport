@@ -19,6 +19,7 @@
 - EPS
 - SVG
 - SVGZ
+- TIFF
 - AI
 - FXG (CS6 Only)
 </ul>
@@ -26,6 +27,9 @@
 To use, go to File > Scripts > Smart Layer Export
 
 <h3>Change Log:</h3>
+
+<h3>18/05/2017 - v3.27</h3>
+- Added TIFF support
 
 <h3>06/04/2017 - v3.26</h3>
 - Added support for Illustrator 21 Compatibility setting (when saving AI or EPS)
