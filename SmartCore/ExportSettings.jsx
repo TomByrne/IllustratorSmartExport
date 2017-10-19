@@ -12,34 +12,45 @@
 	ExportSettings.prototype={
 		DEFAULT_ARTBOARD_PATTERN:"<ArtboardName>.<Ext>",
 		DEFAULT_LAYER_PATTERN:"<ArtboardName>_<LayerName>.<Ext>",
+		DEFAULT_ELEMENT_PATTERN:"<ArtboardName>_<ElementName>.<Ext>",
 		DEFAULT_SYMBOL_PATTERN:"<SymbolName>.<Ext>",
 
 		type:ExportSettings,
 
-		//artboardPattern:"<ArtboardName>.<Ext>",
-		//layerPattern:"<ArtboardName>_<LayerName>.<Ext>",
-		//scaling:"",
-
+		selectedTab:0,
 		directory:"",
 		formats:[],
 
-		artboardAll:true,
+		artboardAll:false,
 		artboardInd:[],
+
 		layerAll:true,
 		layerInd:[],
+		artboardAll_layers:true,
+		artboardInd_layers:[],
+
 		symbolAll:true,
 		symbolNames:[],
-		exportArtboards:false,
+
+		elementPaths:[], // e.g. ["layerInd : rootElemInd : childElemInd", "layerInd : rootElemInd : childElemInd"]
+		elementOpenPaths:[], // e.g. ["layerInd : rootElemInd : childElemInd", "layerInd : rootElemInd : childElemInd"]
+		artboardAll_elements:true,
+		artboardInd_elements:[],
+
+		//exportArtboards:false,
 		ignoreWarnings:false,
-		ignoreOutOfBounds:true,
 		fontHandling:"none",
 
+		ignoreOutOfBounds_layers:true,
+		ignoreOutOfBounds_elements:true,
 
-		toXML:function(includePatterns, includeGeneralSettings, includeFormatSettings, includeArtboards, includeLayers, includeSymbols){
+
+		toXML:function(includePatterns, includeGeneralSettings, includeFormatSettings, includeArtboards, includeLayers, includeElements, includeSymbols){
 			if(includeGeneralSettings===undefined)includeGeneralSettings = true;
 			if(includeFormatSettings===undefined)includeFormatSettings = true;
 			if(includeArtboards===undefined)includeArtboards = true;
 			if(includeLayers===undefined)includeLayers = true;
+			if(includeElements===undefined)includeElements = true;
 			if(includeSymbols===undefined)includeSymbols = true;
 
 			var ret = new XML( '<prefs></prefs>' );
@@ -49,11 +60,11 @@
 				ret.appendChild( new XML('<layerPattern>'+this.xmlEncode(this.layerPattern)+'</layerPattern>') );
 			}*/
 			if(includeGeneralSettings){
+				ret.appendChild( new XML('<selectedTab>'+this.selectedTab+'</selectedTab>') );
 				ret.appendChild( new XML('<directory>'+this.directory+'</directory>') );
-				/*ret.appendChild( new XML('<scaling>'+this.scaling+'</scaling>') );*/
-				ret.appendChild( new XML('<exportArtboards>'+this.exportArtboards+'</exportArtboards>') );
 				ret.appendChild( new XML('<ignoreWarnings>'+this.ignoreWarnings+'</ignoreWarnings>') );
-				ret.appendChild( new XML('<ignoreOutOfBounds>'+this.ignoreOutOfBounds+'</ignoreOutOfBounds>') );
+				ret.appendChild( new XML('<ignoreOutOfBounds_layers>'+this.ignoreOutOfBounds_layers+'</ignoreOutOfBounds_layers>') );
+				ret.appendChild( new XML('<ignoreOutOfBounds_elements>'+this.ignoreOutOfBounds_elements+'</ignoreOutOfBounds_elements>') );
 			}
 
 			if(includeFormatSettings){
@@ -66,13 +77,26 @@
 			}
 
 			if(includeArtboards){
-				if(!this.artboardAll && this.artboardInd.length)ret.appendChild( new XML('<artboardInd>'+this.artboardInd+'</artboardInd>') );
+				if(!this.artboardAll && this.artboardInd.length) ret.appendChild( new XML('<artboardInd>'+this.artboardInd+'</artboardInd>') );
 				else ret.appendChild( new XML('<artboardAll>'+this.artboardAll+'</artboardAll>') );
 			}
 			
 			if(includeLayers){
-				if(!this.layerAll && this.layerInd.length)ret.appendChild( new XML('<layerInd>'+this.layerInd+'</layerInd>') );
+				if(!this.layerAll && this.layerInd.length) ret.appendChild( new XML('<layerInd>'+this.layerInd+'</layerInd>') );
 				else ret.appendChild( new XML('<layerAll>'+this.layerAll+'</layerAll>') );
+				if(!this.artboardAll_layers && this.artboardInd_layers.length) ret.appendChild( new XML('<artboardInd_layers>'+this.artboardInd_layers+'</artboardInd_layers>') );
+				else ret.appendChild( new XML('<artboardAll_layers>'+this.artboardAll_layers+'</artboardAll_layers>') );
+			}
+			
+			if(includeElements){
+				if(this.elementPaths.length){
+					ret.appendChild( new XML('<elementPaths>'+this.elementPaths.join(",")+'</elementPaths>') );
+				}
+				if(this.elementOpenPaths.length){
+					ret.appendChild( new XML('<elementOpenPaths>'+this.elementOpenPaths.join(",")+'</elementOpenPaths>') );
+				}
+				if(!this.artboardAll_elements && this.artboardInd_elements.length) ret.appendChild( new XML('<artboardInd_elements>'+this.artboardInd_elements+'</artboardInd_elements>') );
+				else ret.appendChild( new XML('<artboardAll_elements>'+this.artboardAll_elements+'</artboardAll_elements>') );
 			}
 			
 			if(includeSymbols){
@@ -101,12 +125,13 @@
 			}else{
 				formatSettings.scaling = null;
 			}
-			if(!defaultPatterns.artboard)defaultPatterns.artboard = this.DEFAULT_ARTBOARD_PATTERN;
-			if(!defaultPatterns.layer)defaultPatterns.layer = this.DEFAULT_LAYER_PATTERN;
-			if(!defaultPatterns.symbol)defaultPatterns.symbol = this.DEFAULT_SYMBOL_PATTERN;
+			if(!defaultPatterns.artboard) defaultPatterns.artboard = this.DEFAULT_ARTBOARD_PATTERN;
+			if(!defaultPatterns.layer) defaultPatterns.layer = this.DEFAULT_LAYER_PATTERN;
+			if(!defaultPatterns.element) defaultPatterns.element = this.DEFAULT_ELEMENT_PATTERN;
+			if(!defaultPatterns.symbol) defaultPatterns.symbol = this.DEFAULT_SYMBOL_PATTERN;
 
 			for(var j in defaultPatterns){
-				if(!formatSettings.patterns[j])formatSettings.patterns[j] = defaultPatterns[j];
+				if(!formatSettings.patterns[j]) formatSettings.patterns[j] = defaultPatterns[j];
 			}
 		},
 
@@ -115,10 +140,11 @@
 			
 			//if(xml.artboardPattern.length())this.artboardPattern = xml.artboardPattern.toString() || this.DEFAULT_ARTBOARD_PATTERN;
 			//if(xml.layerPattern.length())this.layerPattern	= xml.layerPattern.toString() || this.DEFAULT_LAYER_PATTERN;
+			if(xml.selectedTab.length())this.selectedTab	= parseInt(xml.selectedTab.toString());
 			if(xml.directory.length())this.directory		= xml.directory.toString();
-			if(xml.scaling.length())this.scaling 		= parseFloat( xml.scaling.toString().replace( /\% /, '' ));
+			if(xml.scaling.length())this.scaling 			= parseFloat( xml.scaling.toString().replace( /\% /, '' ));
 
-			var defaultPatterns = {artboard:this.DEFAULT_ARTBOARD_PATTERN, layer:this.DEFAULT_LAYER_PATTERN, symbol:this.DEFAULT_SYMBOL_PATTERN};
+			var defaultPatterns = {artboard:this.DEFAULT_ARTBOARD_PATTERN, layer:this.DEFAULT_LAYER_PATTERN, element:this.DEFAULT_ELEMENT_PATTERN, symbol:this.DEFAULT_SYMBOL_PATTERN};
 			var formatNodes = xml.formats.format;
 			if(formatNodes.length()){
 				this.formats = [];
@@ -140,15 +166,22 @@
 			if(xml.artboardAll.length())this.artboardAll	= xml.artboardAll == "true";
 			if(xml.layerAll.length())this.layerAll		= xml.layerAll == "true";
 			if(xml.symbolAll.length())this.symbolAll		= xml.symbolAll == "true";
-			if(xml.exportArtboards.length())this.exportArtboards = xml.exportArtboards == "true";
+			//if(xml.exportArtboards.length())this.exportArtboards = xml.exportArtboards == "true";
 			if(xml.ignoreWarnings.length())this.ignoreWarnings = xml.ignoreWarnings == "true";
 
-			if(xml.ignoreOutOfBounds.length())this.ignoreOutOfBounds = xml.ignoreOutOfBounds != "false";
+			if(xml.ignoreOutOfBounds.length()){
+				var ignoreOutOfBounds = xml.ignoreOutOfBounds != "false";
+				this.ignoreOutOfBounds_layers = ignoreOutOfBounds;
+				this.ignoreOutOfBounds_elements = ignoreOutOfBounds;
+			}
+			if(xml.ignoreOutOfBounds_layers.length()) this.ignoreOutOfBounds_layers = xml.ignoreOutOfBounds_layers != "false";
+			if(xml.ignoreOutOfBounds_elements.length()) this.ignoreOutOfBounds_elements = xml.ignoreOutOfBounds_elements != "false";
 
+			 // ARTBOARDS
 			if(xml.artboardInd.length()){
 				this.artboardInd	= xml.artboardInd.toString();
 				if(this.artboardInd.length){
-					this.artboardInd = this.artboardInd.split(",")
+					this.artboardInd = this.artboardInd.split(",");
 					var array = [];
 					for(var i=0; i<this.artboardInd.length; ++i){
 						array[i] = parseInt(this.artboardInd[i]);
@@ -159,10 +192,12 @@
 					this.artboardAll = true;
 				}
 			}
+
+			 // LAYERS
 			if(xml.layerInd.length()){
-				this.layerInd		= xml.layerInd.toString();
+				this.layerInd = xml.layerInd.toString();
 				if(this.layerInd.length){
-					this.layerInd = this.layerInd.split(",")
+					this.layerInd = this.layerInd.split(",");
 					var array = [];
 					for(var i=0; i<this.layerInd.length; ++i){
 						array[i] = parseInt(this.layerInd[i]);
@@ -173,6 +208,56 @@
 					this.layerAll = true;
 				}
 			}
+			if(xml.artboardInd_layers.length()){
+				this.artboardInd_layers	= xml.artboardInd_layers.toString();
+				if(this.artboardInd_layers.length){
+					this.artboardInd_layers = this.artboardInd_layers.split(",");
+					var array = [];
+					for(var i=0; i<this.artboardInd_layers.length; ++i){
+						array[i] = parseInt(this.artboardInd_layers[i]);
+					}
+					this.artboardInd_layers = array;
+					this.artboardAll_layers = false;
+
+				}
+			}else if(xml.artboardAll_layers.length()!=0){
+				this.artboardAll_layers = xml.artboardAll_layers.toString() == "true";
+			}else{
+				this.artboardAll_layers = this.artboardAll;
+			}
+
+			 // ELEMENTS
+			if(xml.elementPaths.length()){
+				this.elementPaths = xml.elementPaths.toString();
+				if(this.elementPaths.length){
+					this.elementPaths = this.elementPaths.split(",");
+				}
+			}
+			if(xml.elementOpenPaths.length()){
+				this.elementOpenPaths = xml.elementOpenPaths.toString();
+				if(this.elementOpenPaths.length){
+					this.elementOpenPaths = this.elementOpenPaths.split(",");
+				}
+			}
+			if(xml.artboardInd_elements.length()){
+				this.artboardInd_elements	= xml.artboardInd_elements.toString();
+				if(this.artboardInd_elements.length){
+					this.artboardInd_elements = this.artboardInd_elements.split(",");
+					var array = [];
+					for(var i=0; i<this.artboardInd_elements.length; ++i){
+						array[i] = parseInt(this.artboardInd_elements[i]);
+					}
+					this.artboardInd_elements = array;
+					this.artboardAll_elements = false;
+
+				}
+			}else if(xml.artboardAll_elements.length()!=0){
+				this.artboardAll_elements = xml.artboardAll_elements.toString() == "true";
+			}else{
+				this.artboardAll_elements = this.artboardAll;
+			}
+
+			// SYMBOLS
 			if(xml.symbolNames.length()){
 				this.symbolNames		= xml.symbolNames.toString();
 				if(this.symbolNames.length){
@@ -182,6 +267,12 @@
 					this.symbolAll = true;
 				}
 			}
+
+			if(xml.exportArtboards.length() && xml.exportArtboards.toString() == "false"){
+				this.artboardAll = false;
+				this.artboardInd = [];
+			}
+			
 			
 			if ( ! xml.scaling || xml.scaling == '' ) {
 			   this.scaling = 100;
@@ -232,6 +323,12 @@
 					node.layerInd = layers;
 				}
 				delete node.layers;
+			}
+			if(node.elementPaths == null){
+				node.elementPaths = [];
+			}
+			if(node.elementOpenPaths == null){
+				node.elementOpenPaths = [];
 			}
 			var format = node.format;
 			if(format.length()){

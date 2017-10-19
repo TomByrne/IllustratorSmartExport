@@ -7,6 +7,8 @@
 
 		var symbolNames = exportSettings.symbolNames;
 
+		var hasExports = false;
+
 		if(!symbolNames.length)return;
 
 		for ( var j=0; j < symbolNames.length; j++ ) {
@@ -17,6 +19,8 @@
 
 			for (var x = 0; x < exportSettings.formats.length; x++ ) {
 				var formatSettings = exportSettings.formats[x];
+				if(!formatSettings.active) continue;
+				
 				var format = formatSettings.formatRef;
 
 
@@ -24,6 +28,8 @@
 				var item = new pack.ExportItem(formatSettings, SymbolBundler.makeFileName(formatSettings.patterns[patternName], formatSettings.formatRef.ext, symbol.name));
 				item.names = [symbol.name];
 				bundle.items.push(item);
+
+				hasExports = true;
 			}
 
 			for(var k in bundleMap){
@@ -33,6 +39,8 @@
 				}
 			}
 		}
+
+		return hasExports;
 	}
 	SymbolBundler.getBundle = function(bundleMap, symbol, padding, scaling, trim, doOutline, ungroup, colorSpace, isLast){
 		if(trim || doOutline || padding)forceCopy = true;

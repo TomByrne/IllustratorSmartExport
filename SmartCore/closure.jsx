@@ -5,6 +5,7 @@ closure = function(scope, meth, args, passArgs, passMethod){
 			return meth.apply(scope, args2.concat(args));
 		}
 	}else{
+		if(!args) args = [];
 		var ret = function(){
 			return meth.apply(scope, args);
 		}

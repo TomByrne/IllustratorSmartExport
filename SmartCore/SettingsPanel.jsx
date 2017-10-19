@@ -33,7 +33,7 @@
 			}
 
 			this.directoryInput = row.add('edittext', undefined, exportSettings.directory); 
-			this.directoryInput.size = [ 354,20 ];
+			this.directoryInput.size = [ 440,20 ];
 			this.directoryInput.onChange = function(){
 				scopedThis.exportSettings.directory = scopedThis.directoryInput.text;
 				if(scopedThis.onDirectoryChanged)scopedThis.onDirectoryChanged();

@@ -48,6 +48,7 @@
 
 		TabbedPanel.prototype={
 		    onChange:null,
+		    selection:0,
 
 			init:function(container){
 				var scopedThis = this;
@@ -79,7 +80,7 @@
 					var button = this.buttons[i];
 					var panel = this.panels[i];
 
-					button.value = (selectedInd == i);
+					button.active = (selectedInd == i);
 					panel.visible = (selectedInd == i);
 				}
 
@@ -99,6 +100,10 @@
 
 				var panel = this.container.add("panel");
 				this.panels.push(panel);
+
+				if(this.selection == this.buttons.length - 1){
+					button.active = true;
+				}
 
 				if(this.panels.length == 1){
 					this.setSelection(0);

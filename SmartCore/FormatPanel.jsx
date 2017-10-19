@@ -1,6 +1,6 @@
 (function(pack){
-	function FormatPanel(container, formats, exportSettings, doArtboard, doLayer, doSymbol){
-		this.init(container, formats, exportSettings, doArtboard, doLayer, doSymbol);
+	function FormatPanel(container, formats, exportSettings, doArtboard, doLayer, doElement, doSymbol){
+		this.init(container, formats, exportSettings, doArtboard, doLayer, doElement, doSymbol);
 		return this;
 	}
 
@@ -11,7 +11,7 @@
 	    formatPanels:null,
 	    ignoreChanges:false,
 
-		init:function(container, formats, exportSettings, doArtboard, doLayer, doSymbol){
+		init:function(container, formats, exportSettings, doArtboard, doLayer, doElement, doSymbol){
 			var scopedThis = this;
 
 			this.formatPanels = [];
@@ -19,8 +19,10 @@
 			this.exportSettings = exportSettings;
 			this.allowTrim = doArtboard || doLayer;
 
+			var masterCol = container.add('group', undefined, '')
+			masterCol.orientation = 'column';
 
-			var row = container.add("group");
+			var row = masterCol.add("group");
 			row.orientation = "row";
 			row.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
 
@@ -44,7 +46,7 @@
 				}
 			}
 
-			this.formatList = column.add ('ListBox', [0, 0, 110, 332], '', 
+			this.formatList = column.add ('ListBox', [0, 0, 140, 240], '', 
 									{numberOfColumns: 1, showHeaders: false, multiselect:false,
 									columnTitles: ['Format'] });
 			this.formatList.onChange = function(){
@@ -57,46 +59,33 @@
 
 			this.formatColumn = row.add("panel", undefined, 'Format Settings:');
 			this.formatColumn.orientation = "column";
-			this.formatColumn.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP]
-			this.formatColumn.size = [374, 367]
+			this.formatColumn.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
+			//this.formatColumn.size = [374, 367]
 
-			if(doArtboard){
-				//artboard pattern
-				this.artboardPattern = new pack.FilePatternControl(this.formatColumn, 'Artboard Filename Pattern:', null, pack.tokens.ARTBOARD_TOKENS);
-				this.artboardPattern.onChange = function(){
-					if(scopedThis.ignoreChanges)return;
-					scopedThis.currentFormatSettings.patterns["artboard"] = scopedThis.artboardPattern.getValue();
-					scopedThis.onFormatsChanged();
-				}
-				this.artboardPattern.setEnabled(this.exportSettings.exportArtboards);
+			// active row
+			var activeRow = this.formatColumn.add('group', undefined, '')
+			activeRow.orientation = 'row';
+			activeRow.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.BOTTOM];
+			activeRow.margins = [0, 10, 0, 0];
+
+			this.activeCheckBox = activeRow.add('checkbox', undefined, 'Include this format in export');
+			this.activeCheckBox.value = false;
+			this.activeCheckBox.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
+			this.activeCheckBox.enabled = false;
+			//this.activeCheckBox.size = [ 180,20 ];
+			this.activeCheckBox.onClick = function(){
+				scopedThis.currentFormatSettings.active = scopedThis.activeCheckBox.value;
+				scopedThis.onFormatsChanged();
+				scopedThis.checkSettingsActive(scopedThis.currentFormatSettings);
 			}
 
-			if(doLayer){
-				//layer pattern
-				this.layerPattern = new pack.FilePatternControl(this.formatColumn, 'Layer Filename Pattern:', null, pack.tokens.LAYER_TOKENS);
-				this.layerPattern.onChange = function(){
-					if(scopedThis.ignoreChanges)return;
-					scopedThis.currentFormatSettings.patterns["layer"] = scopedThis.layerPattern.getValue();
-					scopedThis.onFormatsChanged();
-				}
-			}
-
-			if(doSymbol){
-				//layer pattern
-				this.symbolPattern = new pack.FilePatternControl(this.formatColumn, 'Symbol Filename Pattern:', null, pack.tokens.SYMBOL_TOKENS);
-				this.symbolPattern.onChange = function(){
-					if(scopedThis.ignoreChanges)return;
-					scopedThis.currentFormatSettings.patterns["symbol"] = scopedThis.symbolPattern.getValue();
-					scopedThis.onFormatsChanged();
-				}
-			}
-
-			// scaling & color space row
+			// scaling row
 			var scalingRow = this.formatColumn.add('group', undefined, '')
 			scalingRow.orientation = 'row';
-			scalingRow.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP]
+			scalingRow.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
 
 			this.scalingLabel = scalingRow.add('statictext', undefined, 'Scaling:');
+			this.scalingLabel.size = [100, 22];
 			this.scalingLabel.enabled = false;
 
 			this.scalingInput = scalingRow.add('edittext', undefined, ""); 
@@ -129,15 +118,21 @@
 				}
 			});
 
-			this.colorSpaceLabel = scalingRow.add('statictext', undefined, 'Color Space:');
+			// color space row
+			var colorRow = this.formatColumn.add('group', undefined, '')
+			colorRow.orientation = 'row';
+			colorRow.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
+
+			this.colorSpaceLabel = colorRow.add('statictext', undefined, 'Color Space:');
+			this.colorSpaceLabel.size = [100, 22];
 			this.colorSpaceLabel.enabled = false;
-			this.colorSpaceLabel.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.CENTER];
+			this.colorSpaceLabel.alignment = [ScriptUI.Alignment.RIGHT, ScriptUI.Alignment.CENTER];
 
 			this.colorSpaceOptions = [{name:"Same as Document", key:null}, {name:"RGB", key:"rgb"}, {name:"CMYK", key:"cmyk"}];
 
-			this.colorSpaceList = new pack.Dropdown(scalingRow);
+			this.colorSpaceList = new pack.Dropdown(colorRow);
 			this.colorSpaceList.setEnabled(false);
-			this.colorSpaceList.setSize(148,20);
+			this.colorSpaceList.setSize(290,20);
 			var colorList = [];
 			for(var i=0; i<this.colorSpaceOptions.length; i++){
 				var item = this.colorSpaceOptions[i];
@@ -149,18 +144,20 @@
 				if(scopedThis.onFormatsChanged) scopedThis.onFormatsChanged();
 			};
 
+
 			// font row
 			var fontRow = this.formatColumn.add('group', undefined, '')
 			fontRow.orientation = 'row';
-			fontRow.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP]
+			fontRow.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
 
 			this.fontHandlingLabel = fontRow.add('statictext', undefined, 'Fonts:');
+			this.fontHandlingLabel.size = [100, 22];
 			this.fontHandlingLabel.enabled = false;
-			this.fontHandlingLabel.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.CENTER];
+			this.fontHandlingLabel.alignment = [ScriptUI.Alignment.RIGHT, ScriptUI.Alignment.CENTER];
 
 			this.fontHandlingList = new pack.Dropdown(fontRow);
 			this.fontHandlingList.setEnabled(false);
-			this.fontHandlingList.setSize(105,20);
+			this.fontHandlingList.setSize(290,20);
 			this.fontHandlingList.onChange = function() {
 				scopedThis.currentFormatSettings.fontHandling = scopedThis.fontHandlingOptions[scopedThis.fontHandlingList.selection].key;
 				scopedThis.onFormatsChanged();
@@ -172,7 +169,8 @@
 			presetRow.orientation = 'row';
 			presetRow.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP]
 
-			this.presetsLabel = presetRow.add('statictext', undefined, 'Preset:');
+			this.presetsLabel = presetRow.add('statictext', undefined, 'PDF Preset:');
+			this.presetsLabel.size = [100, 22];
 			this.presetsLabel.enabled = false;
 			this.presetsLabel.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.CENTER];
 
@@ -274,10 +272,63 @@
 				if(scopedThis.onFormatsChanged)scopedThis.onFormatsChanged();
 			}
 
+
+			// Patterns
+			this.patternsColumn = masterCol.add("panel", undefined, 'Filename Patterns:');
+			this.patternsColumn.orientation = "column";
+			this.patternsColumn.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
+
+			this.patternInputs = {};
+
+			if(doArtboard){
+				//artboard pattern
+				this.artboardPattern = new pack.FilePatternControl(this.patternsColumn, 'Artboards:', null, pack.tokens.ARTBOARD_TOKENS);
+				this.artboardPattern.onChange = function(){
+					if(scopedThis.ignoreChanges)return;
+					scopedThis.currentFormatSettings.patterns["artboard"] = scopedThis.artboardPattern.getValue();
+					scopedThis.onFormatsChanged();
+				}
+				this.patternInputs["artboard"] = this.artboardPattern;
+			}
+
+			if(doLayer){
+				//layer pattern
+				this.layerPattern = new pack.FilePatternControl(this.patternsColumn, 'Layers:', null, pack.tokens.LAYER_TOKENS);
+				this.layerPattern.onChange = function(){
+					if(scopedThis.ignoreChanges)return;
+					scopedThis.currentFormatSettings.patterns["layer"] = scopedThis.layerPattern.getValue();
+					scopedThis.onFormatsChanged();
+				}
+				this.patternInputs["layer"] = this.layerPattern;
+			}
+
+			if(doElement){
+				//element pattern
+				this.elementPattern = new pack.FilePatternControl(this.patternsColumn, 'Elements:', null, pack.tokens.ELEMENT_TOKENS);
+				this.elementPattern.onChange = function(){
+					if(scopedThis.ignoreChanges)return;
+					scopedThis.currentFormatSettings.patterns["element"] = scopedThis.elementPattern.getValue();
+					scopedThis.onFormatsChanged();
+				}
+				this.patternInputs["element"] = this.elementPattern;
+			}
+
+			if(doSymbol){
+				//symbol pattern
+				this.symbolPattern = new pack.FilePatternControl(this.patternsColumn, 'Symbols:', null, pack.tokens.SYMBOL_TOKENS);
+				this.symbolPattern.onChange = function(){
+					if(scopedThis.ignoreChanges)return;
+					scopedThis.currentFormatSettings.patterns["symbol"] = scopedThis.symbolPattern.getValue();
+					scopedThis.onFormatsChanged();
+				}
+				this.patternInputs["symbol"] = this.symbolPattern;
+			}
+
 			this.updateFormats();
 		},
-		updateArtboardsEnabled:function(){
-			if(this.artboardPattern)this.artboardPattern.setEnabled(this.enabled && this.exportSettings.exportArtboards);
+		setPatternActive:function(type, active){
+			var pattern = this.patternInputs[type];
+			pattern.setEnabled(active);
 		},
 		updateSettings:function(){
 			this.updateFormats();
@@ -320,7 +371,6 @@
 			this.dirInput.enabled = enabled;
 			this.scalingInput.enabled = enabled;
 			this.scalingLabel.enabled = enabled;
-			//this.transCheckBox.enabled = enabled;
 			if(this.allowTrim)this.trimEdgesCheckBox.enabled = enabled;
 			this.embedImageCheckBox.enabled = enabled;
 			this.innerPaddingCheckBox.enabled = enabled;
@@ -333,10 +383,7 @@
 			this.colorSpaceLabel.enabled = enabled;
 			this.moreButton.enabled = enabled;
 			this.removeButton.enabled = enabled;
-
-			if(this.layerPattern) this.layerPattern.setEnabled(enabled);
-			if(this.symbolPattern) this.symbolPattern.setEnabled(enabled);
-			this.updateArtboardsEnabled();
+			this.activeCheckBox.enabled = enabled;
 		},
 		setCurrentFormat:function(index){
 
@@ -344,6 +391,8 @@
 			this.currentIndex = index;
 			this.currentFormatSettings = this.exportSettings.formats[index];
 			this.currentFormat = this.currentFormatSettings.formatRef;
+
+			this.activeCheckBox.value = this.currentFormatSettings.active;
 
 			this.setEnabled(true);
 
@@ -356,6 +405,7 @@
 			if(this.artboardPattern) this.artboardPattern.setValue(this.currentFormatSettings.patterns["artboard"]);
 			if(this.layerPattern) this.layerPattern.setValue(this.currentFormatSettings.patterns["layer"]);
 			if(this.symbolPattern) this.symbolPattern.setValue(this.currentFormatSettings.patterns["symbol"]);
+			if(this.elementPattern) this.elementPattern.setValue(this.currentFormatSettings.patterns["element"]);
 
 			this.scalingInput.enabled = this.currentFormatSettings.hasProp("scaling");
 			this.scalingLabel.enabled = this.scalingInput.enabled;
@@ -470,6 +520,7 @@
 		},
 		setPanelHeading:function(){
 			this.formatColumn.text = "Format Settings: "+this.currentFormatSettings.name;
+			this.patternsColumn.text = "Filename Patterns: "+this.currentFormatSettings.name;
 		},
 		addFormatItem:function(format, formatSettings){
 			var item = this.formatList.add("item");
@@ -483,6 +534,7 @@
 				if(this.layerPattern) formatSettings.patterns.layer = this.layerPattern.getValue();
 				if(this.artboardPattern) formatSettings.patterns.artboard = this.artboardPattern.getValue();
 				if(this.symbolPattern) formatSettings.patterns.symbol = this.symbolPattern.getValue();
+				if(this.elementPattern) formatSettings.patterns.element = this.elementPattern.getValue();
 
 				this.exportSettings.addNewFormat(formatSettings);
 			}
@@ -490,6 +542,7 @@
 				this.checkSettingsName(formatSettings);
 			}
 			item.text = formatSettings.name;
+			item.checked = formatSettings.active;
 		},
 		checkSettingsName:function(formatSettings, updateHeading, updateList){
 			var format = formatSettings.formatRef;
@@ -515,6 +568,15 @@
 				var item = this.formatList.add("item");
 				this.formatList.remove(item);
 			}
+		},
+		checkSettingsActive:function(formatSettings){
+			var index = this.indexOf(this.exportSettings.formats, formatSettings);
+			var item = this.formatList.items[index];
+			item.checked = formatSettings.active;
+
+			// This is to force a refresh (an issue in CC 2014)
+			var item = this.formatList.add("item");
+			this.formatList.remove(item);
 		},
 		indexOf: function ( array, element ) {
 			for(var i=0; i<array.length; i++){

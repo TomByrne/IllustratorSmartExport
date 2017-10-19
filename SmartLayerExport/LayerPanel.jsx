@@ -18,7 +18,7 @@
 			column.orientation = 'column';
 			column.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
 
-			this.layerList = column.add ('ListBox', [0, 0, 210, 410], '', 
+			this.layerList = column.add ('ListBox', [0, 0, 420, 450], '', 
 									{numberOfColumns: 3, showHeaders: false, multiselect:true,
 									columnTitles: ['', '', 'Layer'] });
 			this.layerList.onChange = function(){
@@ -61,7 +61,7 @@
 				scopedThis.selectByVisible();
 			};
 
-			this.ignoreOutOfBoundsInput = column.add("checkbox", undefined, "Ignore layers out of artboard");
+			this.ignoreOutOfBoundsInput = column.add("checkbox", undefined, "Skip layers out of artboard");
 			this.ignoreOutOfBoundsInput.value = ignoreOutOfBounds;
 			this.ignoreOutOfBoundsInput.onClick = function(){
 				scopedThis.ignoreOutOfBounds = scopedThis.ignoreOutOfBoundsInput.value;

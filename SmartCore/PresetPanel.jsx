@@ -27,7 +27,7 @@
 			// buttons row
 			row = container.add('group', undefined, ''); 
 			row.orientation = 'row';
-			row.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.BOTTOM];
+			row.alignment = [ScriptUI.Alignment.RIGHT, ScriptUI.Alignment.BOTTOM];
 
 			//this.presetList = row.add('dropdownlist', undefined);
 			this.presetList = new pack.Dropdown(row);
@@ -147,7 +147,7 @@
 			if(file.exists){
 				file.remove();
 			}
-			var settingsXml = this.exportSettings.toXML(patterns, generalSettings, formatSettings, false, false);
+			var settingsXml = this.exportSettings.toXML(patterns, generalSettings, formatSettings, false, false, false);
 			var save = settingsXml.toXMLString();
 			file.open("w");
 			file.write(save);

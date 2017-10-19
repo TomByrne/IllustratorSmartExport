@@ -17,20 +17,24 @@
 			this.value = value;
 			this.tokens = tokens;
 
-			if(container.orientation == "column"){
-				var column = container;
-			}else{
-				var column = container.add('group');
-				column.orientation = "column";
-				row.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
-			}
+			// if(container.orientation == "column"){
+			// 	var column = container;
+			// }else{
+			// 	var column = container.add('group');
+			// 	column.orientation = "column";
+			// 	row.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
+			// }
+			var column = container;
 
 			var row = column.add('group', undefined, '')
 			row.orientation = 'row';
 			row.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
 
 			this.label = row.add('statictext', undefined, label); 
-			this.label.size = [220,20];
+			this.label.size = [60,20];
+
+			this.input = row.add('edittext', undefined, value); 
+			this.input.size = [ 360,20 ];
 
 			this.dropdown = new pack.Dropdown(row, tokens);
 			//this.dropdown = row.add('dropdownlist', undefined, tokens);
@@ -40,12 +44,12 @@
 			this.dropdown.setSize(110,20);
 			this.dropdown.setSelection(0);
 
-			row = column.add('group', undefined, '')
-			row.orientation = 'row';
-			row.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
+			// row = column.add('group', undefined, '')
+			// row.orientation = 'row';
+			// row.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
 
-			this.input = row.add('edittext', undefined, value); 
-			this.input.size = [ 340,20 ];
+			// this.input = row.add('edittext', undefined, value); 
+			// this.input.size = [ 340,20 ];
 
 			this.input.onChange = function() {
 				scopedThis.setValue(scopedThis.input.text);

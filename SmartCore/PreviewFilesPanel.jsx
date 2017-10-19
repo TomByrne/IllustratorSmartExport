@@ -6,20 +6,25 @@
 
 	PreviewFilesPanel.prototype={
 	    onPatternChanged:null,
+	    shown:false,
+	    invalid:false,
 
 		init:function(container){
 
-			this.list = container.add ('ListBox', [0, 0, 410, 470], 'asd', 
+			this.list = container.add ('ListBox', [0, 0, 630, 470], 'asd', 
 									{numberOfColumns: 4, showHeaders: true,
 									columnTitles: ['', '', '', 'Filename'] }); 
-
-			//container.margins =  [5,5,0,0];
 		},
 		updateList:function(bundleList){
 			this.bundleList = bundleList;
 			this.refreshList();
 		},
 		refreshList:function(){
+			if(!this.shown){
+				this.invalid = true;
+				return;
+			}
+
 			var lastArtboard;
 			this.list.removeAll();
 			var docRef = app.activeDocument;
@@ -42,21 +47,6 @@
 				}
 			}
 		},
-		/*setItemState:function(index, state){
-			switch(state){
-				case "success":
-					icon = "tick";
-					break;
-				case "failed":
-					icon = "cross";
-					break;
-				case "waiting":
-					icon = "null";
-					break;
-			}
-			var item = this.list.items[index];
-			item.image = File(smartExport.directory+"/icons/"+icon+".png");
-		},*/
 
 		indexOf: function ( array, element ) {
 			for(var i=0; i<array.length; i++){
@@ -90,6 +80,16 @@
 			}
 			item.image = File(pack.directory+"/icons/"+icon+".png");
 			item.subItems[2].text = itemData.fileName;
+		},
+		show:function(){
+			this.shown = true;
+			if(this.invalid){
+				this.invalid = false;
+				this.refreshList();
+			}
+		},
+		hide:function(){
+			this.shown = false;
 		}
 	};
 	pack.PreviewFilesPanel = PreviewFilesPanel;

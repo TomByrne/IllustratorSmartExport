@@ -16,7 +16,7 @@
 			column.orientation = 'column';
 			column.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
 
-			this.listbox = column.add ('ListBox', [0, 0, 400, 410], '', 
+			this.listbox = column.add ('ListBox', [0, 0, 630, 450], '', 
 									{numberOfColumns: 3, showHeaders: false, multiselect:true,
 									columnTitles: ['', '', 'Symbol'] });
 			this.listbox.onChange = function(){

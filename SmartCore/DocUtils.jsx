@@ -40,7 +40,7 @@
 				
 				var vis = (layerVis ? layerVis[j] : layer.visible );
 				if (layerCheck==null || layerCheck(layer, vis)) {
-					//var layerBounds = this.getLayerBounds(layer);
+					//var layerBounds = this.getLayerBounds(docRef, layer);
 					//if(layerBounds && this.intersects(artboardRect, layerBounds)){
 						var newLayer = this.copyLayer(docRef, copyDoc, artboard, copyArtboard, artboardRect, layer, copyDoc.layers.add(), doInnerPadding, outlineText, ungroup, docRef.rulerOrigin, ignoreWarnings, hasBoundErrorRef, offset);
 						this.setLayerDepth(newLayer, count);
@@ -69,8 +69,16 @@
 		var toRect = toArtboard.artboardRect;
 		return {x:toRect[0] - artboardRect[0], y:toRect[3] - artboardRect[3]};
 	}
+
+	DocUtils.getLayerIndex = function(layers, layer){
+		for(var i=0; i<layers.length; i++)
+		{
+			if(layers[i] == layer) return i;
+		}
+		return -1;
+	}
 		
-	DocUtils.copyLayer = function(fromDoc, toDoc, fromArtboard, toArtboard, artboardRect, fromLayer, toLayer, doInnerPadding, outlineText, ungroup, rulerOrigin, ignoreWarnings, hasBoundErrorRef, offset) {
+	DocUtils.copyLayer = function(fromDoc, toDoc, fromArtboard, toArtboard, artboardRect, fromLayer, toLayer, doInnerPadding, outlineText, ungroup, rulerOrigin, ignoreWarnings, hasBoundErrorRef, offset, elemFilter) {
 		app.coordinateSystem = CoordinateSystem.ARTBOARDCOORDINATESYSTEM;
 
 		toLayer.artworkKnockout = fromLayer.artworkKnockout;
@@ -108,7 +116,8 @@
 			}
 		}
 
-		this.copyIntoLayer(fromDoc, fromLayer, toLayer, ignoreWarnings, artboardRect);
+		var layerPath = (DocUtils.getLayerIndex(fromDoc.layers, fromLayer) + 1) + "";
+		this.copyIntoLayer(fromDoc, fromLayer, toLayer, ignoreWarnings, artboardRect, layerPath, elemFilter);
 		if(doInnerPadding)this.innerPadLayer(toLayer, toArtboard);
 		if(outlineText)this.doOutlineLayer(toLayer);
 		if(ungroup)this.doUngroupLayer(toLayer);
@@ -143,62 +152,54 @@
 			item.remove();
 		}
 	}
-	DocUtils.getLayerBounds = function(layer, artboardRect) {
+	DocUtils.getLayerBounds = function(doc, layer, artboardRect, elemFilter, parentPath) {
 		var rect;
-		var items = layer.pageItems;
+		var items = DocUtils.getAllPageItems(doc, layer, true);
+
+		if(parentPath == null) parentPath = (DocUtils.getLayerIndex(doc.layers, layer) + 1) + "";
+		parentPath += ":";
+
+		var childFilter = elemFilter;
 		for(var i=0; i<items.length; ++i){
 			var item = items[i];
+			var path = parentPath + (i+1);
 
-			if(item.guides || item.hidden){
-				continue;
+			if(elemFilter){
+				var filter = elemFilter(item, path);
+				if(!filter) continue;
+				if(filter != 'explore') childFilter = null; // clear so all descendants get included
 			}
-			var visBounds = this.getItemBounds(item);
-			if(visBounds==null)continue;
 
-			if(artboardRect && !DocUtils.intersects(artboardRect, visBounds))continue;
+			var isLayer = (item.typename=="Layer");
+			var itemBounds;
+			if(isLayer){
+				if(!item.visible)continue;
+				itemBounds = this.getLayerBounds(doc, item, artboardRect, childFilter, path);
+			}else{
+				if(item.guides || item.hidden) continue;
+				itemBounds = this.getItemBounds(item, childFilter, path);
+			}
+			if(itemBounds == null) continue;
+			if(artboardRect && !DocUtils.intersects(artboardRect, itemBounds)) continue;
 
 			if(rect==null){
-				rect = visBounds;
+				rect = itemBounds;
 			}else{
-				if(rect[0]>visBounds[0]){
-					rect[0] = visBounds[0];
+				if(rect[0]>itemBounds[0]){
+					rect[0] = itemBounds[0];
 				}
-				if(rect[1]<visBounds[1]){
-					rect[1] = visBounds[1];
+				if(rect[1]<itemBounds[1]){
+					rect[1] = itemBounds[1];
 				}
-				if(rect[2]<visBounds[2]){
-					rect[2] = visBounds[2];
+				if(rect[2]<itemBounds[2]){
+					rect[2] = itemBounds[2];
 				}
-				if(rect[3]>visBounds[3]){
-					rect[3] = visBounds[3];
+				if(rect[3]>itemBounds[3]){
+					rect[3] = itemBounds[3];
 				}
 			}
 		}
-		for(var i=0; i<layer.layers.length; ++i){
-			var childLayer = layer.layers[i];
 
-			if(!childLayer.visible)continue;
-
-			var childRect = this.getLayerBounds(childLayer, artboardRect);
-			if(childRect==null)continue;
-
-			if(rect==null){
-				rect = childRect;
-			}else{
-				if(rect[0]>childRect[0]){
-					rect[0] = childRect[0];
-				}
-				if(rect[1]<childRect[1]){
-					rect[1] = childRect[1];
-				}
-				if(rect[2]<childRect[2]){
-					rect[2] = childRect[2];
-				}
-				if(rect[3]>childRect[3]){
-					rect[3] = childRect[3];
-				}
-			}
-		}
 		if(rect && rect[0]<rect[2] && rect[1]>rect[3]){
 			return rect;
 		}else{
@@ -213,24 +214,39 @@
 		return this.intersects(artRect, rect);
 	}
 
-	DocUtils.copyIntoLayer = function(doc, fromLayer, toLayer, ignoreWarnings, artboardRect) {
+	DocUtils.copyIntoLayer = function(doc, fromLayer, toLayer, ignoreWarnings, artboardRect, parentPath, elemFilter) {
 		var items = this.getAllPageItems(doc, fromLayer, ignoreWarnings);
 		try{
-			this.copyItems(doc, items, toLayer, ignoreWarnings, artboardRect);
+			this.copyItems(doc, items, toLayer, ignoreWarnings, artboardRect, parentPath, elemFilter);
 		}catch(e){
 			alert("Copy items failed: "+e);
 		}
 	}
 		
-	DocUtils.copyItems = function(doc, fromList, toLayer, ignoreWarnings, artboardRect) {
+	DocUtils.copyItems = function(doc, fromList, toLayer, ignoreWarnings, artboardRect, parentPath, elemFilter) {
+		parentPath += ":";
 		var visWas = toLayer.visible;
 		toLayer.visible = true;
 		for(var i=0; i<fromList.length; ++i){
 			var item = fromList[i];
-			if(item.typename=="Layer"){
+			var path = parentPath + (i+1);
+			var isLayer = (item.typename=="Layer");
+			if(isLayer){
 				if(item.visible && (item.pageItems.length || item.layers.length)){
-					this.copyIntoLayer(doc, item, toLayer, ignoreWarnings, artboardRect)
+					this.copyIntoLayer(doc, item, toLayer, ignoreWarnings, artboardRect, path, elemFilter)
 				}
+			}else if(elemFilter != null){
+					
+				var filter = elemFilter(item, path);
+				if(!filter) continue;
+
+				if(item.typename == "GroupItem" && filter == 'explore'){
+					DocUtils.copyItems(doc, item.pageItems, toLayer, ignoreWarnings, artboardRect, path, elemFilter);
+				}else{
+					item.duplicate(toLayer, ElementPlacement.PLACEATEND);
+				}
+
+
 			}else{
 				if(item.hidden || !DocUtils.intersects(artboardRect, item.visibleBounds)){
 					continue;
@@ -386,18 +402,28 @@
 		}
 	}
 
-	DocUtils.getItemBounds = function(parent){
+	DocUtils.getItemBounds = function(parent, elemFilter, parentPath){
 		if(parent.typename=="GroupItem"){
+			parentPath += ":";
 			var rect;
 			var maskRect;
 			var items = parent.pageItems;
+			var childFilter = elemFilter;
 			for(var i=0; i<items.length; ++i){
 				var item = items[i];
+				var path = parentPath + (i + 1);
+
+				if(elemFilter){
+					var filter = elemFilter(item, path);
+					if(!filter) continue;
+					if(filter != 'explore') childFilter = null; // clear so all descendants get included
+				}
 
 				if(item.guides || item.hidden){
 					continue;
 				}
-				var visBounds = item.visibleBounds;
+				//var visBounds = item.visibleBounds;
+				var visBounds = DocUtils.getItemBounds(item, childFilter, path);
 				if(visBounds==null)continue;
 				else if(parent.clipped && item.clipping){
 					maskRect = visBounds;
@@ -435,6 +461,7 @@
 					rect[3] = maskRect[3];
 				}
 			}
+
 			return rect;
 		}else{
 			return parent.visibleBounds.concat();

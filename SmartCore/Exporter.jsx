@@ -11,8 +11,8 @@
 		onExportFinished:null,
 		cancelled:false,
 		running:false,
-		
-		runExport: function(bundleList, exportSettings, directory) {
+
+		checkValid: function(bundleList, exportSettings, directory) {
 			this.bundleList = bundleList;
 			this.exportSettings = exportSettings;
 			this.directory = directory;
@@ -27,32 +27,38 @@
 				this.num_to_export += this.bundleList[x].items.length;
 			}
 
-			for (var x = 0; x < exportSettings.formats.length; x++ ) {
-				var formatSettings = exportSettings.formats[x];
-				formatSettings.saveOptions = formatSettings.formatRef.getOptions(formatSettings);
+			if(exportSettings.formats.length == 0){
+				this.running = false;
+				alert('No exports settings added.\n\nPlease use the Export Settings tab to add export settings.');
+				return false;
+			}else{
+				for (var x = 0; x < exportSettings.formats.length; x++ ) {
+					var formatSettings = exportSettings.formats[x];
+					formatSettings.saveOptions = formatSettings.formatRef.getOptions(formatSettings);
+				}
 			}
 
 
 			if(!this.num_to_export){
 				this.running = false;
-				alert('Please select valid artboards / layers');
-				return;
+				alert('No items selected for export.\n\nPlease use Artboards / Layers / Elements / Symbols tabs to select which items to export.');
+				return false;
 			}
 
 			if(!directory){
 				this.running = false;
 				alert('Please select select a destination');
-				return;
+				return false;
 			}
 			if(!Folder(directory).exists){
 				if(confirm("Output directory doesn't exist.\nCreate it now?")){
 					Folder(directory).create();
 				}else{
-					return this.doFinish(false);
+					this.doFinish(false);
+					return false;
 				}
 			}
-
-			this.doRun();
+			return true;
 		},
 
 		doRun:function(){

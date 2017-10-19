@@ -9,6 +9,9 @@
 	tokens.LAYER_NUM_TOKEN = "<LayerNum>",
 	tokens.LAYER_NAME_TOKEN = "<LayerName>";
 
+	tokens.ELEMENT_PATH_TOKEN = "<ElementPath>",
+	tokens.ELEMENT_NAME_TOKEN = "<ElementName>";
+
 	tokens.SYMBOL_NAME_TOKEN = "<SymbolName>";
 
 	tokens.FILE_EXT_TOKEN = "<Ext>";
@@ -27,6 +30,17 @@
 								tokens.ARTBOARD_NAME_TOKEN,
 								tokens.LAYER_NUM_TOKEN,
 								tokens.LAYER_NAME_TOKEN,
+								tokens.FILE_EXT_TOKEN,
+								tokens.DOC_NAME_TOKEN
+							];
+
+	tokens.ELEMENT_TOKENS = [	heading,
+								tokens.ARTBOARD_NUM_TOKEN,
+								tokens.ARTBOARD_NAME_TOKEN,
+								tokens.LAYER_NUM_TOKEN,
+								tokens.LAYER_NAME_TOKEN,
+								tokens.ELEMENT_PATH_TOKEN,
+								tokens.ELEMENT_NAME_TOKEN,
 								tokens.FILE_EXT_TOKEN,
 								tokens.DOC_NAME_TOKEN
 							];

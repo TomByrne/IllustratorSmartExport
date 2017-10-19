@@ -7,10 +7,11 @@
 		ArtboardBundler.hasBoundErrorRef = hasBoundErrorRef;
 
 		var artboardInd = exportSettings.artboardInd;
+		var hasExports = false;
 
 		for (var i = 0; i < artboardInd.length; i++ ) {
 			var artI = artboardInd[i];
-			if(artI >= docRef.artboards.length)continue;
+			if(artI >= docRef.artboards.length) continue;
 
 			var artboard = docRef.artboards[artI];
 			var artboardName = artboard.name;
@@ -19,12 +20,16 @@
 
 			for (var x = 0; x < exportSettings.formats.length; x++ ) {
 				var formatSettings = exportSettings.formats[x];
+				if(!formatSettings.active) continue;
+				
 				var format = formatSettings.formatRef;
 				var bundle = this.getBundle(bundleMap, artI, formatSettings.innerPadding, formatSettings.scaling, formatSettings.trimEdges, format.copyBehaviour, formatSettings.fontHandling=="outline", formatSettings.ungroup, formatSettings.colorSpace);
 
 				var item = new pack.ExportItem(formatSettings, ArtboardBundler.makeFileName(formatSettings.patterns[patternName], docRef.fullName.name, formatSettings.formatRef.ext, i, artboardName));
 				item.names = ["Artboard "+(artI+1)];
 				bundle.items.push(item);
+
+				hasExports = true;
 			}
 
 			for(var j in bundleMap){
@@ -34,6 +39,8 @@
 				}
 			}
 		}
+		
+		return hasExports;
 	}
 	ArtboardBundler.getBundle = function(bundleMap, artI, padding, scaling, trim, forceCopy, doOutline, ungroup, colorSpace){
 		if(doOutline || padding || trim || colorSpace) forceCopy = true;
@@ -78,7 +85,7 @@
 				var layer = docRef.layers[i];
 				if(!layerCheck(layer))continue;
 
-				var layerBounds = pack.DocUtils.getLayerBounds(layer, rect);
+				var layerBounds = pack.DocUtils.getLayerBounds(docRef, layer, rect);
 				if(!layerBounds)continue;
 
 				if(allLayerBounds==null){

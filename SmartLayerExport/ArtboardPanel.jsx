@@ -1,14 +1,13 @@
 (function(pack){
-	function ArtboardPanel(container, selectAll, selectedIndices, wholeArtboardMode){
-		this.init(container, selectAll, selectedIndices, wholeArtboardMode);
+	function ArtboardPanel(container, selectAll, selectedIndices, halfWidth){
+		this.init(container, selectAll, selectedIndices, halfWidth);
 		return this;
 	}
 
 	ArtboardPanel.prototype={
-	    onWholeArtboardModeChanged:null,
 	    onSelectedChanged:null,
 
-		init:function(container, selectAll, selectedIndices, wholeArtboardMode){
+		init:function(container, selectAll, selectedIndices, halfWidth){
 			this.selectAll = selectAll;
 			this.selectedIndices = selectedIndices;
 
@@ -17,7 +16,7 @@
 			column.orientation = 'column';
 			column.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
 
-			this.artboardList = column.add ('ListBox', [0, 0, 200, 380], '', 
+			this.artboardList = column.add ('ListBox', [0, 0, halfWidth ? 200 : 630, 450], '', 
 									{numberOfColumns: 3, showHeaders: false, multiselect:true,
 									columnTitles: ['', '', 'Artboard'] });
 			this.artboardList.onChange = function(){
@@ -44,14 +43,6 @@
 				this.selectArtboards.value = true;
 				this.doArtboardSelect(true);
 			}
-
-			this.exportArtboardsCheckBox = column.add("checkbox", undefined, "Export Artboard Images");
-			this.exportArtboardsCheckBox.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
-			this.exportArtboardsCheckBox.value = wholeArtboardMode;
-			this.exportArtboardsCheckBox.onClick = function() {
-				scopedThis.wholeArtboardMode  = scopedThis.exportArtboardsCheckBox.value;
-				if(scopedThis.onWholeArtboardModeChanged)scopedThis.onWholeArtboardModeChanged();
-			};
 
 			var key;
 			if($.os.toLowerCase().indexOf("mac")!=-1){

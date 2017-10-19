@@ -16,6 +16,7 @@
 	}
 
 	FormatSettings.prototype={
+		active:true,
 		format:null,
 		embedImage:true,
 		ungroup:false,
@@ -45,6 +46,7 @@
 			if(this.fontHandling && this.fontHandling!="none")ret.appendChild( new XML('<fontHandling>'+this.fontHandling+'</fontHandling>') );
 			if(this.colorSpace && this.colorSpace!="none")ret.appendChild( new XML('<colorSpace>'+this.colorSpace+'</colorSpace>') );
 			if(this.preset)ret.appendChild( new XML('<preset>'+this.preset+'</preset>') );
+			if(this.active != null)ret.appendChild( new XML('<active>'+this.active+'</active>') );
 
 			if(includePatterns){
 				var patterns = new XML('<patterns/>');
@@ -102,6 +104,8 @@
 			this.directory 		= xml.directory.toString();
 			this.colorSpace	    = xml.colorSpace.toString();
 			this.preset	        = xml.preset.toString();
+
+			if(xml.active.length()) this.active	= xml.active == "true";
 
 			this.patterns = this.parseObjectNode(xml.patterns);
 			this.options = this.parseObjectNode(xml.options);
