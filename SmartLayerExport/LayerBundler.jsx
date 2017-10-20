@@ -34,8 +34,17 @@
 
 				var layer = docRef.layers[layI];
 
-				var element = LayerBundler.findElement(layI + 1, layer.pageItems, path);
-				if(element == null) continue;
+				var layerPath = (layI + 1) + "";
+
+				var element;
+				var searchPath;
+				if(layerPath == path){
+					element = layer;
+				}else{
+					searchPath = path;
+					element = LayerBundler.findElement(layerPath, layer.pageItems, path);
+					if(element == null) continue;
+				}
 
 				var bundleMap = {};
 
@@ -46,7 +55,7 @@
 					var format = formatSettings.formatRef;
 
 
-					var bundle = this.getBundle(bundleMap, artI, layI, formatSettings.innerPadding, formatSettings.scaling, formatSettings.trimEdges, format.copyBehaviour, formatSettings.fontHandling=="outline", exportSettings.ignoreOutOfBounds_elements, formatSettings.ungroup, j==0, j==elementPaths.length-1, layerVis, formatSettings.colorSpace, path);
+					var bundle = this.getBundle(bundleMap, artI, layI, formatSettings.innerPadding, formatSettings.scaling, formatSettings.trimEdges, format.copyBehaviour, formatSettings.fontHandling=="outline", exportSettings.ignoreOutOfBounds_elements, formatSettings.ungroup, j==0, j==elementPaths.length-1, layerVis, formatSettings.colorSpace, searchPath);
 					var elemName = (element.name || path);
 					var name = LayerBundler.makeElemFileName(formatSettings.patterns[patternName], docRef.fullName.name, formatSettings.formatRef.ext, artI, artboard.name, layI, layer.name, path, elemName);
 					var item = new pack.ExportItem(formatSettings, name);
@@ -102,7 +111,7 @@
 					var format = formatSettings.formatRef;
 
 
-					var bundle = this.getBundle(bundleMap, artI, layI, null, formatSettings.innerPadding, formatSettings.scaling, formatSettings.trimEdges, format.copyBehaviour, formatSettings.fontHandling=="outline", exportSettings.ignoreOutOfBounds_layers, formatSettings.ungroup, j==0, j==layerInd.length-1, layerVis, formatSettings.colorSpace);
+					var bundle = this.getBundle(bundleMap, artI, layI, formatSettings.innerPadding, formatSettings.scaling, formatSettings.trimEdges, format.copyBehaviour, formatSettings.fontHandling=="outline", exportSettings.ignoreOutOfBounds_layers, formatSettings.ungroup, j==0, j==layerInd.length-1, layerVis, formatSettings.colorSpace);
 					var item = new pack.ExportItem(formatSettings, LayerBundler.makeFileName(formatSettings.patterns[patternName], docRef.fullName.name, formatSettings.formatRef.ext, artI, artboard.name, layI, layer.name));
 					item.names = ["Artboard "+(artI+1), "Layer "+(layI+1)];
 					bundle.items.push(item);

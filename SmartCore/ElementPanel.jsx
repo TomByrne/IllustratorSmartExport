@@ -201,7 +201,16 @@
 					this.baseSelectedPaths.splice(index, 1);
 				}
 				item.image = File(pack.directory+"/icons/checkbox_"+(item.selected?"":"un")+"selected.png");
-				item.text = pageItem.name == "" ? (isLayer ? "Layer: " : "Element: ") + path : pageItem.name ;
+
+				if(pageItem.name == ""){
+					var type = pageItem.typename;
+					if(type.lastIndexOf("Item") == type.length - 4){
+						type = type.substr(0, type.length - 4);
+					}
+					item.text += type + ": " + path;
+				}else{
+					item.text = pageItem.name;
+				}
 
 				var index = this.indexOf(this.baseOpenPaths, path);
 				var expanded = false;

@@ -257,11 +257,16 @@
 			if(this.symbolPanel) this.symbolPanel.onSelectedChanged();
 
 			this.tabPanel.setSelection(exSettings.selectedTab);
+
+			this.finishedBuilding = true;
+			this.updatePreviewList();
+
 			this.toolPanel.show();
 		},
 
 
 		updatePreviewList:function(){
+			if(!this.finishedBuilding) return;
 			try{
 				this.bundleList = [];
 				this.hasBoundErrorRef = {};
@@ -282,6 +287,37 @@
 					var hasExports = pack.SymbolBundler.add(this.docRef, this.bundleList, this.exportSettings, "symbol");
 					this.formatPanel.setPatternActive("symbol", hasExports);
 				}
+				var windowsFS = (Folder.fs=="Windows");
+				if(windowsFS){
+					for(var i=0; i<this.bundleList.length; i++){
+						var bundle = this.bundleList[i];
+						for(var j=0; j<bundle.items.length; j++){
+							var item = bundle.items[j];
+							var path = item.fileName;
+							path = path.split(":").join("-");
+							path = path.split("|").join("-");
+							path = path.split("?").join("-");
+							path = path.split("*").join("-");
+							path = path.split("<").join("-");
+							path = path.split(">").join("-");
+							path = path.split('"').join("'");
+							path = path.split(':').join(";");
+							item.fileName = path;
+						}
+					}
+				}else{
+					for(var i=0; i<this.bundleList.length; i++){
+						var bundle = this.bundleList[i];
+						for(var j=0; j<bundle.items.length; j++){
+							var item = bundle.items[j];
+							var path = item.fileName;
+							if(path.charAt(0) == ".") path = "_" + path.substr(1);
+							path = path.split(":").join("-");
+							item.fileName = path;
+						}
+					}
+				}
+
 			}catch(e){
 				alert("Error creating bundles:\n"+e);
 			}

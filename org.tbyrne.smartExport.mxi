@@ -28,6 +28,11 @@ To use, go to File > Scripts > Smart Layer Export
 
 <h3>Change Log:</h3>
 
+<h3>14/10/2017 - v4.1</h3>
+- Fixed regression with Layer exports
+- Fixed issue with filenames including ":" character (and other illegal characters)
+- Fixed issue with exporting layers through Element panel
+
 <h3>14/10/2017 - v4.0</h3>
 - Added Element level exports
 - Merged Symbol export into SLE
