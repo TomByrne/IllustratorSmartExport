@@ -163,20 +163,25 @@
 		for(var i=0; i<items.length; ++i){
 			var item = items[i];
 			var path = parentPath + (i+1);
+			var isLayer = (item.typename=="Layer");
+
+			var ignoreVis = false;
 
 			if(elemFilter){
 				var filter = elemFilter(item, path);
 				if(!filter) continue;
-				if(filter != 'explore') childFilter = null; // clear so all descendants get included
+				if(filter != 'explore') {
+					childFilter = null; // clear so all descendants get included
+					ignoreVis = true;
+				}
 			}
 
-			var isLayer = (item.typename=="Layer");
 			var itemBounds;
 			if(isLayer){
 				if(!item.visible)continue;
 				itemBounds = this.getLayerBounds(doc, item, artboardRect, childFilter, path);
 			}else{
-				if(item.guides || item.hidden) continue;
+				if(item.guides || (!ignoreVis && item.hidden)) continue;
 				itemBounds = this.getItemBounds(item, childFilter, path);
 			}
 			if(itemBounds == null) continue;
@@ -316,6 +321,70 @@
 		           rect2[3] > rect1[1]);
 	}
 
+	var setGetVisiblity = function(visState, doc, elems, path, ignoreWarnings, isSetting){
+		if(path == null) path = "";
+		else path += ":";
+
+		for(var i=0; i<elems.length; i++){
+			var item = elems[i];
+			var children;
+			var thisPath = path + (i + 1);
+			var wasLocked = item.locked;
+			var isVis;
+			if(isSetting && wasLocked) item.locked = false;
+			if(item.typename == "Layer"){
+				children = DocUtils.getAllPageItems(doc, item, ignoreWarnings);
+				if(isSetting) item.visible = true;
+				isVis = item.visible;
+			}else{
+				children = item.pageItems;
+				if(isSetting) item.hidden = false;
+				isVis = !item.hidden;
+			}
+			if(!isSetting) visState[thisPath] = isVis;
+			if(children && children.length){
+				setGetVisiblity(visState, doc, children, thisPath, ignoreWarnings, isSetting);
+			}
+
+			if(item.typename == "Layer"){
+				if(isSetting && item.visible != visState[thisPath]) item.visible = (visState[thisPath] != false);
+			}else{
+				if(isSetting && item.hidden != (!visState[thisPath])) item.hidden = (visState[thisPath] == false);
+			}
+			if(isSetting && wasLocked) item.locked = wasLocked;
+		}
+	}
+	DocUtils.getAllElemVisibility = function(doc, ignoreWarnings) {
+		var ret = [];
+		for(var i=0; i<doc.layers.length; i++){
+			var layer = doc.layers[i];
+			var path = (i + 1) + "";
+			var children = DocUtils.getAllPageItems(doc, layer, ignoreWarnings);
+			var elemVis = {};
+			elemVis[path] = layer.visible;
+			setGetVisiblity(elemVis, doc, children, path, ignoreWarnings, false);
+			ret.push(elemVis);
+		}
+		return ret;
+	}
+	DocUtils.setAllElemVisibility = function(doc, visState, layerInd, ignoreWarnings) {
+		for(var i=0; i<doc.layers.length; i++){
+			if(layerInd != null && i != layerInd) continue;
+
+			var layer = doc.layers[i];
+			var path = (i + 1) + "";
+			var children = DocUtils.getAllPageItems(doc, layer, ignoreWarnings);
+			var elemVis = visState[i];
+			var wasLocked = layer.locked;
+			layer.locked = false;
+			layer.visible = true; // Layer must be visible to affect child visibility
+			setGetVisiblity(elemVis, doc, children, path, ignoreWarnings, true);
+			layer.visible = (elemVis[path] != false);
+			layer.locked = wasLocked;
+		}
+	}
+
+
 	DocUtils.getAllPageItems = function(doc, layer, ignoreWarnings) {
 		if(layer.layers.length==0){
 			return layer.pageItems;
@@ -413,13 +482,18 @@
 				var item = items[i];
 				var path = parentPath + (i + 1);
 
+				var ignoreVis = false;
+
 				if(elemFilter){
 					var filter = elemFilter(item, path);
 					if(!filter) continue;
-					if(filter != 'explore') childFilter = null; // clear so all descendants get included
+					if(filter != 'explore'){
+						childFilter = null; // clear so all descendants get included
+						ignoreVis = true;
+					}
 				}
 
-				if(item.guides || item.hidden){
+				if(item.guides || (!ignoreVis && item.hidden)){
 					continue;
 				}
 				//var visBounds = item.visibleBounds;

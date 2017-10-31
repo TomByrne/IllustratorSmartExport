@@ -4,7 +4,7 @@
 	LayerBundler.NO_COPY = "noCopy";
 
 
-	LayerBundler.addElements = function(docRef, bundles, exportSettings, patternName, hasBoundErrorRef){
+	LayerBundler.addElements = function(docRef, bundles, exportSettings, patternName, hasBoundErrorRef, elemVis){
 
 		LayerBundler.hasBoundErrorRef = hasBoundErrorRef;
 
@@ -15,11 +15,6 @@
 		var hasExports = false;
 
 		if(!elementPaths.length)return;
-
-		var layerVis = [];
-		for (var i = 0; i < docRef.layers.length; i++ ) {
-			layerVis.push(docRef.layers[i].visible);
-		}
 
 		for (var i = 0; i < artboardInd.length; i++ ) {
 			var artI = artboardInd[i];
@@ -55,7 +50,7 @@
 					var format = formatSettings.formatRef;
 
 
-					var bundle = this.getBundle(bundleMap, artI, layI, formatSettings.innerPadding, formatSettings.scaling, formatSettings.trimEdges, format.copyBehaviour, formatSettings.fontHandling=="outline", exportSettings.ignoreOutOfBounds_elements, formatSettings.ungroup, j==0, j==elementPaths.length-1, layerVis, formatSettings.colorSpace, searchPath);
+					var bundle = this.getBundle(bundleMap, artI, layI, formatSettings.innerPadding, formatSettings.scaling, formatSettings.trimEdges, format.copyBehaviour, formatSettings.fontHandling=="outline", exportSettings.ignoreOutOfBounds_elements, formatSettings.ungroup, j==0, j==elementPaths.length-1, elemVis, formatSettings.colorSpace, searchPath);
 					var elemName = (element.name || path);
 					var name = LayerBundler.makeElemFileName(formatSettings.patterns[patternName], docRef.fullName.name, formatSettings.formatRef.ext, artI, artboard.name, layI, layer.name, path, elemName);
 					var item = new pack.ExportItem(formatSettings, name);
@@ -75,7 +70,7 @@
 		}
 		return hasExports;
 	}
-	LayerBundler.addLayers = function(docRef, bundles, exportSettings, patternName, hasBoundErrorRef){
+	LayerBundler.addLayers = function(docRef, bundles, exportSettings, patternName, hasBoundErrorRef, elemVis){
 
 		LayerBundler.hasBoundErrorRef = hasBoundErrorRef;
 
@@ -85,11 +80,6 @@
 		var hasExports = false;
 
 		if(!layerInd.length)return;
-
-		var layerVis = [];
-		for (var i = 0; i < docRef.layers.length; i++ ) {
-			layerVis.push(docRef.layers[i].visible);
-		}
 
 		for (var i = 0; i < artboardInd.length; i++ ) {
 			var artI = artboardInd[i];
@@ -111,7 +101,7 @@
 					var format = formatSettings.formatRef;
 
 
-					var bundle = this.getBundle(bundleMap, artI, layI, formatSettings.innerPadding, formatSettings.scaling, formatSettings.trimEdges, format.copyBehaviour, formatSettings.fontHandling=="outline", exportSettings.ignoreOutOfBounds_layers, formatSettings.ungroup, j==0, j==layerInd.length-1, layerVis, formatSettings.colorSpace);
+					var bundle = this.getBundle(bundleMap, artI, layI, formatSettings.innerPadding, formatSettings.scaling, formatSettings.trimEdges, format.copyBehaviour, formatSettings.fontHandling=="outline", exportSettings.ignoreOutOfBounds_layers, formatSettings.ungroup, j==0, j==layerInd.length-1, elemVis, formatSettings.colorSpace);
 					var item = new pack.ExportItem(formatSettings, LayerBundler.makeFileName(formatSettings.patterns[patternName], docRef.fullName.name, formatSettings.formatRef.ext, artI, artboard.name, layI, layer.name));
 					item.names = ["Artboard "+(artI+1), "Layer "+(layI+1)];
 					bundle.items.push(item);
@@ -129,9 +119,9 @@
 		}
 		return hasExports;
 	}
-	LayerBundler.getBundle = function(bundleMap, artI, layI, padding, scaling, trim, forceCopy, doOutline, ignoreOutOfBounds, ungroup, isFirst, isLast, layerVis, colorSpace, elemPath){
+	LayerBundler.getBundle = function(bundleMap, artI, layI, padding, scaling, trim, forceCopy, doOutline, ignoreOutOfBounds, ungroup, isFirst, isLast, elemVis, colorSpace, elemPath){
 		// TODO: Remove 'elemPath' from this check after testing it using show/hide & reused doc methods
-		if(trim || doOutline || padding || colorSpace || elemPath) forceCopy = true;
+		if(trim || doOutline || padding || colorSpace) forceCopy = true;
 
 		var key;
 		if(!forceCopy){
@@ -147,18 +137,18 @@
 			// export types which don't require a new document to be created just show/hide layers to complete export. (No pad, no trim, raster exports)
 			bundle = new pack.ExportBundle();
 			bundle.prepareHandler = isFirst ? closure(LayerBundler, LayerBundler.prepareShowLayerFirst, [artI, layI, elemPath], true) : closure(LayerBundler, LayerBundler.prepareShowLayer, [artI, layI, elemPath], true);
-			bundle.cleanupHandler = isLast ? closure(LayerBundler, LayerBundler.cleanupShowLayerLast, [layerVis], true) : closure(LayerBundler, LayerBundler.cleanupShowLayer, [artI, layI, elemPath], true);
+			bundle.cleanupHandler = isLast ? closure(LayerBundler, LayerBundler.cleanupShowLayerLast, [elemVis, layI], true) : closure(LayerBundler, LayerBundler.cleanupShowLayer, [elemVis, artI, layI, elemPath], true);
 
 		}else if(!trim){
 			// non-trimmed export types can simply create a new document once for each artboard. (no trim, vector exports)
 			bundle = new pack.ExportBundle();
-			bundle.prepareHandler = isFirst ? closure(LayerBundler, LayerBundler.prepareCopyDoc, [artI, layI, padding, doOutline, ignoreOutOfBounds, ungroup, layerVis, colorSpace, elemPath], true) : closure(LayerBundler, LayerBundler.prepareCopyLayer, [artI, layI, padding, doOutline, ignoreOutOfBounds, ungroup, false, layerVis, null, colorSpace, elemPath], true);
+			bundle.prepareHandler = isFirst ? closure(LayerBundler, LayerBundler.prepareCopyDoc, [artI, layI, padding, doOutline, ignoreOutOfBounds, ungroup, elemVis, colorSpace, elemPath], true) : closure(LayerBundler, LayerBundler.prepareCopyLayer, [artI, layI, padding, doOutline, ignoreOutOfBounds, ungroup, false, elemVis, null, colorSpace, elemPath], true);
 			bundle.cleanupHandler = isLast ? LayerBundler.cleanupCopyDoc : LayerBundler.cleanupCopyLayer;
 
 		}else{
 			// trimmed export types must create a new document for each artboard/layer/elem pair. (No pad, trim, vector exports)
 			bundle = new pack.ExportBundle();
-			bundle.prepareHandler = closure(LayerBundler, LayerBundler.prepareCopyLayer, [artI, layI, padding, doOutline, ignoreOutOfBounds, ungroup, true, layerVis, null, colorSpace, elemPath], true);
+			bundle.prepareHandler = closure(LayerBundler, LayerBundler.prepareCopyLayer, [artI, layI, padding, doOutline, ignoreOutOfBounds, ungroup, true, elemVis, null, colorSpace, elemPath], true);
 			bundle.cleanupHandler = LayerBundler.cleanupCopyDoc;
 
 		}
@@ -166,7 +156,7 @@
 		return bundle;
 	}
 
-	LayerBundler.prepareCopyDoc = function(docRef, exportSettings, exportBundle, artI, layI, padding, doOutline, ignoreOutOfBounds, ungroup, layerVis, colorSpace, elemPath){
+	LayerBundler.prepareCopyDoc = function(docRef, exportSettings, exportBundle, artI, layI, padding, doOutline, ignoreOutOfBounds, ungroup, elemVis, colorSpace, elemPath){
 		var artboard = docRef.artboards[artI];
 		docRef.artboards.setActiveArtboardIndex(artI);
 		
@@ -177,11 +167,11 @@
 
 		//var offset = {x:0, y:0};
 		LayerBundler.layerDepths = [];
-		LayerBundler.copyDoc = pack.DocUtils.copyDocument(docRef, artboard, rect, artW, artH, padding, pack.DocUtils.isAdditionalLayer, LayerBundler.layerDepths, doOutline, ungroup, layerVis, exportSettings.ignoreWarnings, LayerBundler.hasBoundErrorRef, null, colorSpace);
+		LayerBundler.copyDoc = pack.DocUtils.copyDocument(docRef, artboard, rect, artW, artH, padding, pack.DocUtils.isAdditionalLayer, LayerBundler.layerDepths, doOutline, ungroup, elemVis, exportSettings.ignoreWarnings, LayerBundler.hasBoundErrorRef, null, colorSpace);
 		LayerBundler.hasAdditLayers = LayerBundler.copyDoc.layers.length > 0 && (LayerBundler.copyDoc.layers.length!=1 || LayerBundler.copyDoc.layers[0].pageItems.length || LayerBundler.copyDoc.layers[0].layers.length);
-		return this.prepareCopyLayer(docRef, exportSettings, exportBundle, artI, layI, padding, doOutline, ignoreOutOfBounds, ungroup, false, layerVis, rect, colorSpace, elemPath);
+		return this.prepareCopyLayer(docRef, exportSettings, exportBundle, artI, layI, padding, doOutline, ignoreOutOfBounds, ungroup, false, elemVis, rect, colorSpace, elemPath);
 	}
-	LayerBundler.prepareCopyLayer = function(docRef, exportSettings, exportBundle, artI, layI, padding, doOutline, ignoreOutOfBounds, ungroup, createDoc, layerVis, rect, colorSpace, elemPath){
+	LayerBundler.prepareCopyLayer = function(docRef, exportSettings, exportBundle, artI, layI, padding, doOutline, ignoreOutOfBounds, ungroup, createDoc, elemVis, rect, colorSpace, elemPath){
 		//docRef.artboards.setActiveArtboardIndex(artI); // throws an error if new doc has already been created (can't change artboard when doc isn't in focus)
 		var doc = LayerBundler.copyDoc || docRef;
 
@@ -231,7 +221,7 @@
 
 				layOffset = {x:layerOffsetX, y:layerOffsetY};
 				LayerBundler.layerDepths = [];
-				doc = pack.DocUtils.copyDocument(doc, artboard, rect, docW, docH, padding, pack.DocUtils.isAdditionalLayer, LayerBundler.layerDepths, doOutline, ungroup, layerVis, exportSettings.ignoreWarnings, null, layOffset, colorSpace);
+				doc = pack.DocUtils.copyDocument(doc, artboard, rect, docW, docH, padding, pack.DocUtils.isAdditionalLayer, LayerBundler.layerDepths, doOutline, ungroup, elemVis, exportSettings.ignoreWarnings, null, layOffset, colorSpace);
 				LayerBundler.copyDoc = doc;
 				
 				LayerBundler.hasAdditLayers = doc.layers.length > 0 && (doc.layers.length!=1 || doc.layers[0].pageItems.length || doc.layers[0].layers.length);
@@ -317,18 +307,14 @@
 			if(item.isGroup) LayerBundler.showElement(path, item.pageItems, matchPath);
 		}
 	}
-	LayerBundler.cleanupShowLayer = function(docRef, exportSettings, exportBundle, artI, layI){
+	LayerBundler.cleanupShowLayer = function(docRef, exportSettings, exportBundle, elemVis, artI, layI){
 		var layer = docRef.layers[layI];
+		pack.DocUtils.setAllElemVisibility(docRef, elemVis, layI);
 		layer.visible = false;
-		if(elemI != null){
-			for(var i=0; i<layer.pageItems.length; i++){
-				var element = layer.pageItems[i];
-				element.hidden = false; // Should revert to original value here
-			}
-		}
 	}
-	LayerBundler.cleanupShowLayerLast = function(docRef, exportSettings, exportBundle, layerVis){
-		pack.DocUtils.showAllLayers(docRef, layerVis);
+	LayerBundler.cleanupShowLayerLast = function(docRef, exportSettings, exportBundle, elemVis, layI){
+		//pack.DocUtils.showAllLayers(docRef, elemVis);
+		pack.DocUtils.setAllElemVisibility(docRef, elemVis);
 		exportBundle.layersWereShown = null;
 	}
 	LayerBundler.cleanupCopyLayer = function(docRef, exportSettings, exportBundle){

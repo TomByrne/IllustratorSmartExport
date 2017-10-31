@@ -250,6 +250,11 @@
 					scopedThis.toolPanel.close();
 				}
 			}
+
+
+			if(this.layerPanel || this.elementPanel){
+				this.elemVis = pack.DocUtils.getAllElemVisibility(this.docRef);
+			}
 			
 			if(this.artboardPanel) this.artboardPanel.onSelectedChanged();
 			if(this.layerPanel) this.layerPanel.onSelectedChanged();
@@ -276,11 +281,11 @@
 					this.formatPanel.setPatternActive("artboard", hasExports);
 				}
 				if(this.layerPanel){
-					var hasExports = pack.LayerBundler.addLayers(this.docRef, this.bundleList, this.exportSettings, "layer", this.hasBoundErrorRef);
+					var hasExports = pack.LayerBundler.addLayers(this.docRef, this.bundleList, this.exportSettings, "layer", this.hasBoundErrorRef, this.elemVis);
 					this.formatPanel.setPatternActive("layer", hasExports);
 				}
 				 if(this.elementPanel){
-				 	var hasExports = pack.LayerBundler.addElements(this.docRef, this.bundleList, this.exportSettings, "element", this.hasBoundErrorRef);
+				 	var hasExports = pack.LayerBundler.addElements(this.docRef, this.bundleList, this.exportSettings, "element", this.hasBoundErrorRef, this.elemVis);
 					this.formatPanel.setPatternActive("element", hasExports);
 				 }
 				if(this.symbolPanel){
