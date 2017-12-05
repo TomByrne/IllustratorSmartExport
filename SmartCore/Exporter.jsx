@@ -136,7 +136,7 @@
 						}
 						this.updateProgress(++this.num_exported, this.num_to_export);
 						this.updatedExportItem(item);
-						$.sleep(40) // Allows UI update;
+						//$.sleep(40) // Allows UI update;
 					}
 
 					if(copyDoc/* && copyDoc!="skipped" && copyDoc!="failed"*/){

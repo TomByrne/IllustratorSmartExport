@@ -22,6 +22,7 @@
 		ungroup:false,
 		fontHandling:"none",
 		colorSpace:null,
+		rasterResolution:"high",
 		trimEdges:true,
 		innerPadding:false,
 		scaling:null,
@@ -42,11 +43,12 @@
 			if(this.hasProp("embedImage"))ret.appendChild( new XML('<embedImage>'+this.embedImage+'</embedImage>') );
 			if(this.hasProp("trimEdges"))ret.appendChild( new XML('<trimEdges>'+this.trimEdges+'</trimEdges>') );
 			if(this.hasProp("innerPadding"))ret.appendChild( new XML('<innerPadding>'+this.innerPadding+'</innerPadding>') );
-			if(this.directory)ret.appendChild( new XML('<directory>'+this.directory+'</directory>') );
-			if(this.fontHandling && this.fontHandling!="none")ret.appendChild( new XML('<fontHandling>'+this.fontHandling+'</fontHandling>') );
-			if(this.colorSpace && this.colorSpace!="none")ret.appendChild( new XML('<colorSpace>'+this.colorSpace+'</colorSpace>') );
-			if(this.preset)ret.appendChild( new XML('<preset>'+this.preset+'</preset>') );
-			if(this.active != null)ret.appendChild( new XML('<active>'+this.active+'</active>') );
+			if(this.directory) ret.appendChild( new XML('<directory>'+this.directory+'</directory>') );
+			if(this.fontHandling && this.fontHandling!="none") ret.appendChild( new XML('<fontHandling>'+this.fontHandling+'</fontHandling>') );
+			if(this.colorSpace && this.colorSpace!="none") ret.appendChild( new XML('<colorSpace>'+this.colorSpace+'</colorSpace>') );
+			if(this.rasterResolution && this.rasterResolution!="none") ret.appendChild( new XML('<rasterResolution>'+this.rasterResolution+'</rasterResolution>') );
+			if(this.preset) ret.appendChild( new XML('<preset>'+this.preset+'</preset>') );
+			if(this.active != null) ret.appendChild( new XML('<active>'+this.active+'</active>') );
 
 			if(includePatterns){
 				var patterns = new XML('<patterns/>');
@@ -94,16 +96,17 @@
 		},
 
 		populateWithXML:function(xml){
-			this.format		    = xml.format.toString();
-			this.ungroup		= xml.ungroup == "true";
-			this.embedImage	    = xml.embedImage == "true";
-			this.fontHandling   = xml.fontHandling.toString() || "none";
-			this.trimEdges	    = xml.trimEdges == "true";
-			this.innerPadding   = xml.innerPadding == "true";
-			this.scaling 		= parseFloat( xml.scaling.toString().replace( /\% /, '' )) || 100;
-			this.directory 		= xml.directory.toString();
-			this.colorSpace	    = xml.colorSpace.toString();
-			this.preset	        = xml.preset.toString();
+			this.format		    	= xml.format.toString();
+			this.ungroup			= xml.ungroup == "true";
+			this.embedImage	    	= xml.embedImage == "true";
+			this.fontHandling   	= xml.fontHandling.toString() || "none";
+			this.trimEdges	    	= xml.trimEdges == "true";
+			this.innerPadding   	= xml.innerPadding == "true";
+			this.scaling 			= parseFloat( xml.scaling.toString().replace( /\% /, '' )) || 100;
+			this.directory 			= xml.directory.toString();
+			this.colorSpace	    	= xml.colorSpace.toString();
+			this.rasterResolution	= xml.rasterResolution.toString();
+			this.preset	   		    = xml.preset.toString();
 
 			if(xml.active.length()) this.active	= xml.active == "true";
 

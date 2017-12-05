@@ -24,7 +24,7 @@
 				var format = formatSettings.formatRef;
 
 
-				var bundle = this.getBundle(bundleMap, symbol, formatSettings.innerPadding, formatSettings.scaling, formatSettings.trimEdges, formatSettings.fontHandling=="outline", formatSettings.ungroup, formatSettings.colorSpace, j==symbolNames.length-1 && x==exportSettings.formats.length-1);
+				var bundle = this.getBundle(bundleMap, symbol, formatSettings.innerPadding, formatSettings.scaling, formatSettings.trimEdges, formatSettings.fontHandling=="outline", formatSettings.ungroup, formatSettings.colorSpace, formatSettings.rasterResolution, j==symbolNames.length-1 && x==exportSettings.formats.length-1);
 				var item = new pack.ExportItem(formatSettings, SymbolBundler.makeFileName(formatSettings.patterns[patternName], formatSettings.formatRef.ext, symbol.name));
 				item.names = [symbol.name];
 				bundle.items.push(item);
@@ -42,24 +42,24 @@
 
 		return hasExports;
 	}
-	SymbolBundler.getBundle = function(bundleMap, symbol, padding, scaling, trim, doOutline, ungroup, colorSpace, isLast){
+	SymbolBundler.getBundle = function(bundleMap, symbol, padding, scaling, trim, doOutline, ungroup, colorSpace, rasterResolution, isLast){
 		if(trim || doOutline || padding)forceCopy = true;
 
-		var key = (doOutline?"outline":"nooutline")+"_"+(padding?"pad":"nopad")+(ungroup?"_ungroup":"");
+		var key = (doOutline?"outline":"nooutline")+"_"+(padding?"pad":"nopad")+(ungroup?"_ungroup":"")+(colorSpace?"_"+colorSpace:"")+(rasterResolution?"_"+rasterResolution:"");
 		var bundle = bundleMap[key];
 		if(bundle){
 			return bundle;
 		}else{
 			// trimmed export types must create a new document for each symbol.
 			bundle = new pack.ExportBundle();
-			bundle.prepareHandler = closure(SymbolBundler, SymbolBundler.prepareCopyLayer, [symbol, padding, doOutline, ungroup, colorSpace], true);
+			bundle.prepareHandler = closure(SymbolBundler, SymbolBundler.prepareCopyLayer, [symbol, padding, doOutline, ungroup, colorSpace, rasterResolution], true);
 			bundle.cleanupHandler = !isLast ? SymbolBundler.cleanupCopyDoc : SymbolBundler.cleanupTempLayer;
 
 		}
 		bundleMap[key] = bundle;
 		return bundle;
 	}
-	SymbolBundler.prepareCopyLayer = function(docRef, exportSettings, exportBundle, symbol, padding, doOutline, ungroup, colorSpace){
+	SymbolBundler.prepareCopyLayer = function(docRef, exportSettings, exportBundle, symbol, padding, doOutline, ungroup, colorSpace, rasterResolution){
 
 		docRef.artboards.setActiveArtboardIndex(0);
 		var artboard = docRef.artboards[0];
@@ -86,7 +86,7 @@
 			docW = layerRect[2]-layerRect[0];
 			docH = layerRect[1]-layerRect[3];
 
-			doc = pack.DocUtils.copyDocument(docRef, artboard, rect, docW, docH, padding, pack.DocUtils.isAdditionalLayer, null, doOutline, ungroup, exportSettings.ignoreWarnings, SymbolBundler.hasBoundErrorRef, null, colorSpace);
+			doc = pack.DocUtils.copyDocument(docRef, artboard, rect, docW, docH, padding, pack.DocUtils.isAdditionalLayer, null, doOutline, ungroup, exportSettings.ignoreWarnings, SymbolBundler.hasBoundErrorRef, null, colorSpace, rasterResolution);
 			exportBundle.copyDoc = doc;
 		
 			exportBundle.hasAdditLayers = doc.layers.length > 0 && (doc.layers.length!=1 || doc.layers[0].pageItems.length || doc.layers[0].layers.length);

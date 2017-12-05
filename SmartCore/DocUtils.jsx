@@ -3,7 +3,7 @@
 
 
 		
-	DocUtils.copyDocument = function(docRef, artboard, artboardRect, w, h, doInnerPadding, layerCheck, layerDepths, outlineText, ungroup, layerVis, ignoreWarnings, hasBoundErrorRef, offset, colorSpace) {
+	DocUtils.copyDocument = function(docRef, artboard, artboardRect, w, h, doInnerPadding, layerCheck, layerDepths, outlineText, ungroup, layerVis, ignoreWarnings, hasBoundErrorRef, offset, colorSpace, rasterResolution) {
 		if(w<1)w = 1;
 		if(h<1)h = 1;
 		var preset = new DocumentPreset();
@@ -11,12 +11,18 @@
 		preset.height = h;
 		preset.units = docRef.rulerUnits;
 
+		if(rasterResolution == "screen"){
+			preset.rasterResolution = DocumentRasterResolution.ScreenResolution;
+		}else if(rasterResolution == "medium"){
+			preset.rasterResolution = DocumentRasterResolution.MediumResolution;
+		}else{
+			preset.rasterResolution = DocumentRasterResolution.HighResolution;
+		}
+
 		if(colorSpace == "cmyk"){
 			preset.colorMode = DocumentColorSpace.CMYK;
-
 		}else if(colorSpace == "rgb"){
 			preset.colorMode = DocumentColorSpace.RGB;
-
 		}else{
 			preset.colorMode = docRef.documentColorSpace;
 		}

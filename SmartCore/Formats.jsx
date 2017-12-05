@@ -461,23 +461,23 @@
 						{name:"GIF", ext:'gif', defaultDir:'gif', copyBehaviour:false, getOptions:getGifOptions, saveFile:saveGif, props:["scaling","trimEdges","innerPadding"],
 							more:[	{options:[transparency, antiAliasing, colorCount, colorDither, colorReduction, ditherPercent, infoLossPercent, interlaced, matteColor, webSnap]}]},
 
-						{name:"EPS", ext:'eps', defaultDir:'eps', copyBehaviour:true, getOptions:getEpsOptions, saveFile:saveEps, props:["embedImage","fontEmbed","fontOutline","trimEdges","ungroup"],
+						{name:"EPS", ext:'eps', defaultDir:'eps', copyBehaviour:true, getOptions:getEpsOptions, saveFile:saveEps, props:["embedImage","fontEmbed","fontOutline","rasterResolution","trimEdges","ungroup"],
 							more:[	{options:[cmykPostScript, compatibility, flattenOuput, includeDocumentThumbnails, overprint, epsVersion, epsPreview]} ]},
 
-						{name:"SVG", ext:'svg', defaultDir:'svg', copyBehaviour:true, getOptions:getSvgOptions, saveFile:saveSvg, props:["embedImage","fontOutline","trimEdges","ungroup"],
+						{name:"SVG", ext:'svg', defaultDir:'svg', copyBehaviour:true, getOptions:getSvgOptions, saveFile:saveSvg, props:["embedImage","fontOutline","rasterResolution","trimEdges","ungroup"],
 							more:[	{options:[coordinatePrecision, cssProperties, documentEncoding, DTD, fontSubsetting, fontType, includeFileInfo, includeUnusedStyles, preserveEditability, slices, sVGAutoKerning, sVGTextOnPath]} ]},
 
-						{name:"SVGZ", ext:'svgz', defaultDir:'svgz', copyBehaviour:true, getOptions:getSvgOptions, saveFile:saveSvg, props:["embedImage","fontOutline","trimEdges","ungroup"],
+						{name:"SVGZ", ext:'svgz', defaultDir:'svgz', copyBehaviour:true, getOptions:getSvgOptions, saveFile:saveSvg, props:["embedImage","fontOutline","rasterResolution","trimEdges","ungroup"],
 							more:[	{options:[coordinatePrecision, cssProperties, documentEncoding, DTD, fontSubsetting, fontType, includeFileInfo, includeUnusedStyles, preserveEditability, slices, sVGAutoKerning, sVGTextOnPath]} ],
 							extra:{ compressed:true }},
 
-						{name:"AI", ext:'ai', defaultDir:'ai', copyBehaviour:true, getOptions:getAiOptions, saveFile:saveAi, props:["embedImage","fontOutline","trimEdges","ungroup"],
+						{name:"AI", ext:'ai', defaultDir:'ai', copyBehaviour:true, getOptions:getAiOptions, saveFile:saveAi, props:["embedImage","fontOutline","rasterResolution","trimEdges","ungroup"],
 							more:[	{options:[compatibility, compressed, embedICCProfile, fontSubsetThreshold, pdfCompatible]} ]},
 
 						{name:"TIFF", ext:'tif', defaultDir:'tiff', copyBehaviour:false, getOptions:getTiffOptions, saveFile:saveTiff, props:["scaling","trimEdges","innerPadding"],
 							more:[	{options:[tiffByteOrder, tiffImageColorSpace, tiffIZWCompression, tiffResolution]} ]},
 
-						{name:"PDF", ext:'pdf', defaultDir:'pdf', copyBehaviour:true, getOptions:getPdfOptions, saveFile:savePdf, props:["trimEdges","fontOutline","ungroup"], presets:pdfPresets,
+						{name:"PDF", ext:'pdf', defaultDir:'pdf', copyBehaviour:true, getOptions:getPdfOptions, saveFile:savePdf, props:["trimEdges","fontOutline","rasterResolution","ungroup"], presets:pdfPresets,
 							more:[
 								{options:[pDFXStandard, pdfCompatibility]},
 
@@ -509,7 +509,7 @@
 		var preserveEditingCapabilities = bool("preserveEditingCapabilities", "Preserve Editing Capabilities", true);
 		var textPolicy = list("textPolicy", "Text Policy", 0, [opt(TextPreservePolicy.AUTOMATICALLYCONVERTTEXT, "Automatically Convert Text"), opt(TextPreservePolicy.OUTLINETEXT, "Outline Text"), opt(TextPreservePolicy.KEEPTEXTEDITABLE, "Keep Text Editable"), opt(TextPreservePolicy.RASTERIZETEXT, "Rasterize Text")]);
 		var fxgVersion = list("version", "Version", 1, [opt(FXGVersion.VERSION1PT0, "1.0"), opt(FXGVersion.VERSION2PT0, "2.0")]);
-		pack.formats.push(	{name:"FXG", ext:'fxg', defaultDir:'fxg', copyBehaviour:true, getOptions:getFxgOptions, saveFile:saveFxg, props:["trimEdges","fontOutline","ungroup"],
+		pack.formats.push(	{name:"FXG", ext:'fxg', defaultDir:'fxg', copyBehaviour:true, getOptions:getFxgOptions, saveFile:saveFxg, props:["trimEdges","fontOutline","rasterResolution","ungroup"],
 							 more:[	blendsPolicy, downsampleLinkedImages, filtersPolicy, gradientsPolicy, includeUnusedSymbols, preserveEditingCapabilities, textPolicy, fxgVersion ]});
 	}
 

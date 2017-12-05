@@ -29,7 +29,7 @@
 		artboardAll_layers:true,
 		artboardInd_layers:[],
 
-		symbolAll:true,
+		symbolAll:false,
 		symbolNames:[],
 
 		elementPaths:[], // e.g. ["layerInd : rootElemInd : childElemInd", "layerInd : rootElemInd : childElemInd"]
@@ -263,8 +263,9 @@
 				if(this.symbolNames.length){
 					this.symbolNames = this.symbolNames.split(",");
 					this.symbolAll = false;
+
 				}else if(xml.symbolAll.length()==0){
-					this.symbolAll = true;
+					this.symbolAll = false;
 				}
 			}
 
