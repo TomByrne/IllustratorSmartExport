@@ -24,7 +24,7 @@
 		artboardAll:false,
 		artboardInd:[],
 
-		layerAll:true,
+		layerAll:false,
 		layerInd:[],
 		artboardAll_layers:true,
 		artboardInd_layers:[],

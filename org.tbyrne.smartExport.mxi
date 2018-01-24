@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<macromedia-extension id="org.tbyrne.smartExport" name="Smart Layer Export" version="4.3.0">
+<macromedia-extension id="org.tbyrne.smartExport" name="Smart Layer Export" version="4.5.0">
   <description><![CDATA[<h3>Features:</h3>
 - Ability to scale output files for HiDPI (Retina) displays, or any other scale factor.
 - Can set up multiple export formats for a single file for easy regeneration of multiple asset sizes/types.
@@ -27,6 +27,14 @@
 To use, go to File > Scripts > Smart Layer Export
 
 <h3>Change Log:</h3>
+
+<h3>24/01/2018 - v4.5</h3>
+- Fixed bug where initial selection of artboards wasn't being noticed by package export system.
+- Fixed crashing error when accessing 'PDFPresetsList'
+- Layers unselected by default
+
+<h3>05/12/2017 - v4.4</h3>
+- 'All Layers' unselected by default
 
 <h3>31/10/2017 - v4.3</h3>
 - 'All Symbols' deselected by default

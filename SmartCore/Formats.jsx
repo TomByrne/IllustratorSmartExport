@@ -402,13 +402,18 @@
 	// 	}
 	// }
 	// var pDFPreset = list("pDFPreset", "PDF Preset", 0, pdfPresets);
-
+	var PDFPresetsList;
+	try{
+		PDFPresetsList = app.PDFPresetsList;
+	}catch(e){
+		// ignore
+	}
 	
 	var pdfPresets;
-	if(app.PDFPresetsList != null){
+	if(PDFPresetsList != null){
 		pdfPresets = [];
-	 	for(var i=0; i<app.PDFPresetsList.length; i++){
-	 		var preset = app.PDFPresetsList[i];
+	 	for(var i=0; i<PDFPresetsList.length; i++){
+	 		var preset = PDFPresetsList[i];
 	 		pdfPresets.push(opt(preset, preset));
 	 	}
 	}

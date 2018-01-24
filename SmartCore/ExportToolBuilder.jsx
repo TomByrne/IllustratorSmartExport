@@ -105,6 +105,7 @@
 					exSettings.artboardInd_layers  = scopedThis.artboardPanel_layers.selectedIndices;
 					scopedThis.updatePreviewList();
 				};
+				this.artboardPanel_layers.onSelectedChanged();
 
 				this.layerPanel = new pack.LayerPanel(tab, exSettings.layerAll, exSettings.layerInd, pack.IGNORE_LAYERS, exSettings.ignoreOutOfBounds_layers);
 				this.layerPanel.onSelectedChanged = function() {
@@ -127,6 +128,7 @@
 					exSettings.artboardInd  = scopedThis.artboardPanel.selectedIndices;
 					scopedThis.updatePreviewList();
 				};
+				this.artboardPanel.onSelectedChanged();
 			}
 
 			if(doElement){
@@ -139,6 +141,7 @@
 					exSettings.artboardInd_elements  = scopedThis.artboardPanel_elements.selectedIndices;
 					scopedThis.updatePreviewList();
 				};
+				this.artboardPanel_elements.onSelectedChanged();
 
 				this.elementPanel = new pack.ElementPanel(tab, exSettings.elementPaths, exSettings.elementOpenPaths, pack.IGNORE_LAYERS, exSettings.ignoreOutOfBounds_elements);
 				this.elementPanel.onSelectedChanged = function() {
