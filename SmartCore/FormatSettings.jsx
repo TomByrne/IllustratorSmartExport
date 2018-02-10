@@ -6,6 +6,7 @@
 		}
 		this.options = {};
 		this.patterns = {};
+		this.boundsMode = pack.BoundsMode.ARTBOARD;
 		return this;
 	}
 
@@ -23,7 +24,7 @@
 		fontHandling:"none",
 		colorSpace:null,
 		rasterResolution:"high",
-		trimEdges:true,
+		boundsMode:null,
 		innerPadding:false,
 		scaling:null,
 		directory:null,
@@ -41,7 +42,7 @@
 			if(this.hasProp("scaling") && this.scaling)ret.appendChild( new XML('<scaling>'+this.scaling+'</scaling>') );
 			if(this.hasProp("ungroup"))ret.appendChild( new XML('<ungroup>'+this.ungroup+'</ungroup>') );
 			if(this.hasProp("embedImage"))ret.appendChild( new XML('<embedImage>'+this.embedImage+'</embedImage>') );
-			if(this.hasProp("trimEdges"))ret.appendChild( new XML('<trimEdges>'+this.trimEdges+'</trimEdges>') );
+			if(this.hasProp("boundsMode"))ret.appendChild( new XML('<boundsMode>'+this.boundsMode+'</boundsMode>') );
 			if(this.hasProp("innerPadding"))ret.appendChild( new XML('<innerPadding>'+this.innerPadding+'</innerPadding>') );
 			if(this.directory) ret.appendChild( new XML('<directory>'+this.directory+'</directory>') );
 			if(this.fontHandling && this.fontHandling!="none") ret.appendChild( new XML('<fontHandling>'+this.fontHandling+'</fontHandling>') );
@@ -100,7 +101,7 @@
 			this.ungroup			= xml.ungroup == "true";
 			this.embedImage	    	= xml.embedImage == "true";
 			this.fontHandling   	= xml.fontHandling.toString() || "none";
-			this.trimEdges	    	= xml.trimEdges == "true";
+			this.boundsMode	    	= xml.boundsMode.toString() || pack.BoundsMode.ARTBOARD;
 			this.innerPadding   	= xml.innerPadding == "true";
 			this.scaling 			= parseFloat( xml.scaling.toString().replace( /\% /, '' )) || 100;
 			this.directory 			= xml.directory.toString();

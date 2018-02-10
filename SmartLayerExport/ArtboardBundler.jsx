@@ -23,7 +23,7 @@
 				if(!formatSettings.active) continue;
 				
 				var format = formatSettings.formatRef;
-				var bundle = this.getBundle(bundleMap, artI, formatSettings.innerPadding, formatSettings.scaling, formatSettings.trimEdges, format.copyBehaviour, formatSettings.fontHandling=="outline", formatSettings.ungroup, formatSettings.colorSpace, formatSettings.rasterResolution);
+				var bundle = this.getBundle(bundleMap, artI, formatSettings.innerPadding, formatSettings.scaling, formatSettings.boundsMode, format.copyBehaviour, formatSettings.fontHandling=="outline", formatSettings.ungroup, formatSettings.colorSpace, formatSettings.rasterResolution);
 
 				var item = new pack.ExportItem(formatSettings, ArtboardBundler.makeFileName(formatSettings.patterns[patternName], docRef.fullName.name, formatSettings.formatRef.ext, i, artboardName));
 				item.names = ["Artboard "+(artI+1)];
@@ -42,10 +42,11 @@
 		
 		return hasExports;
 	}
-	ArtboardBundler.getBundle = function(bundleMap, artI, padding, scaling, trim, forceCopy, doOutline, ungroup, colorSpace, rasterResolution){
+	ArtboardBundler.getBundle = function(bundleMap, artI, padding, scaling, boundsMode, forceCopy, doOutline, ungroup, colorSpace, rasterResolution){
+		var trim = boundsMode!=pack.BoundsMode.ARTBOARD;
 		if(doOutline || padding || trim || colorSpace) forceCopy = true;
 
-		var key = (padding?"pad":"nopad")+"_"+(forceCopy?"copy":"nocopy")+"_"+(doOutline?"outline":"nooutline")+"_"+(trim?"trim":"notrim") + (colorSpace==null ? "" : "_"+colorSpace) + (rasterResolution==null ? "" : "_"+rasterResolution);
+		var key = (padding?"pad":"nopad")+"_"+(forceCopy?"copy":"nocopy")+"_"+(doOutline?"outline":"nooutline")+"_"+boundsMode + "_" + (colorSpace==null ? "" : "_"+colorSpace) + (rasterResolution==null ? "" : "_"+rasterResolution);
 		var bundle = bundleMap[key];
 		if(bundle){
 			return bundle;
@@ -56,7 +57,7 @@
 
 		}else{
 			bundle = new pack.ExportBundle();
-			bundle.prepareHandler = closure(ArtboardBundler, ArtboardBundler.prepareCopy, [artI, trim, padding, doOutline, ungroup, colorSpace, rasterResolution], true);
+			bundle.prepareHandler = closure(ArtboardBundler, ArtboardBundler.prepareCopy, [artI, boundsMode, padding, doOutline, ungroup, colorSpace, rasterResolution], true);
 			bundle.cleanupHandler = ArtboardBundler.cleanupCopy;
 
 		}
@@ -67,7 +68,7 @@
 		docRef.artboards.setActiveArtboardIndex(artI);
 		return docRef;
 	}
-	ArtboardBundler.prepareCopy = function(docRef, exportSettings, exportBundle, artI, trim, padding, doOutline, ungroup, colorSpace, rasterResolution){
+	ArtboardBundler.prepareCopy = function(docRef, exportSettings, exportBundle, artI, boundsMode, padding, doOutline, ungroup, colorSpace, rasterResolution){
 		var artboard = docRef.artboards[artI];
 		docRef.artboards.setActiveArtboardIndex(artI);
 		
@@ -79,7 +80,7 @@
 		};
 
 		var offset;
-		if(trim){
+		if(boundsMode!=pack.BoundsMode.ARTBOARD){
 			var allLayerBounds;
 			for(var i=0; i<docRef.layers.length; i++){
 				var layer = docRef.layers[i];
@@ -108,17 +109,19 @@
 			if(!allLayerBounds)return "skipped";
 			
 			// crop to artboard
-			if(allLayerBounds[0]<rect[0]){
-				allLayerBounds[0] = rect[0];
-			}
-			if(allLayerBounds[1]>rect[1]){
-				allLayerBounds[1] = rect[1];
-			}
-			if(allLayerBounds[2]>rect[2]){
-				allLayerBounds[2] = rect[2];
-			}
-			if(allLayerBounds[3]<rect[3]){
-				allLayerBounds[3] = rect[3];
+			if(boundsMode==pack.BoundsMode.ARTBOARD_AND_ARTWORK){
+				if(allLayerBounds[0]<rect[0]){
+					allLayerBounds[0] = rect[0];
+				}
+				if(allLayerBounds[1]>rect[1]){
+					allLayerBounds[1] = rect[1];
+				}
+				if(allLayerBounds[2]>rect[2]){
+					allLayerBounds[2] = rect[2];
+				}
+				if(allLayerBounds[3]<rect[3]){
+					allLayerBounds[3] = rect[3];
+				}
 			}
 			rect = allLayerBounds;
 			offset = { x: rect[3] - allLayerBounds[3], y: rect[0] - allLayerBounds[0] };
@@ -133,8 +136,9 @@
 		return exportBundle.copyDoc;
 	}
 	ArtboardBundler.cleanupCopy = function(docRef, exportSettings, exportBundle){
-		if(!exportBundle.copyDoc)return;
-		exportBundle.copyDoc.close(SaveOptions.DONOTSAVECHANGES);
+		if(!exportBundle.copyDoc) return;
+		//exportBundle.copyDoc.close(SaveOptions.DONOTSAVECHANGES);
+		pack.DocCloser.closeDocument(exportBundle.copyDoc);
 		exportBundle.copyDoc = null;
 	}
 

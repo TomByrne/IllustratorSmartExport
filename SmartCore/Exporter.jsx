@@ -62,6 +62,7 @@
 		},
 
 		doRun:function(){
+			pack.DocCloser.setMainDoc(app.activeDocument);
 			var docRef = app.activeDocument;
 			var failed = [];
 			for (var x = 0; x < this.bundleList.length; x++ ) {
@@ -186,6 +187,7 @@
 					this.onExportFinished(null, true);
 				}
 			}
+			pack.DocCloser.closePending();
 			return success;
 		},
 

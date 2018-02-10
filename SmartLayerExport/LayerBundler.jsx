@@ -50,7 +50,7 @@
 					var format = formatSettings.formatRef;
 
 
-					var bundle = this.getBundle(bundleMap, artI, layI, formatSettings.innerPadding, formatSettings.scaling, formatSettings.trimEdges, format.copyBehaviour, formatSettings.fontHandling=="outline", exportSettings.ignoreOutOfBounds_elements, formatSettings.ungroup, j==0, j==elementPaths.length-1, elemVis, formatSettings.colorSpace, formatSettings.rasterResolution, searchPath);
+					var bundle = this.getBundle(bundleMap, artI, layI, formatSettings.innerPadding, formatSettings.scaling, formatSettings.boundsMode, format.copyBehaviour, formatSettings.fontHandling=="outline", exportSettings.ignoreOutOfBounds_elements, formatSettings.ungroup, j==0, j==elementPaths.length-1, elemVis, formatSettings.colorSpace, formatSettings.rasterResolution, searchPath);
 					var elemName = (element.name || path);
 					var name = LayerBundler.makeElemFileName(formatSettings.patterns[patternName], docRef.fullName.name, formatSettings.formatRef.ext, artI, artboard.name, layI, layer.name, path, elemName);
 					var item = new pack.ExportItem(formatSettings, name);
@@ -101,7 +101,7 @@
 					var format = formatSettings.formatRef;
 
 
-					var bundle = this.getBundle(bundleMap, artI, layI, formatSettings.innerPadding, formatSettings.scaling, formatSettings.trimEdges, format.copyBehaviour, formatSettings.fontHandling=="outline", exportSettings.ignoreOutOfBounds_layers, formatSettings.ungroup, j==0, j==layerInd.length-1, elemVis, formatSettings.colorSpace, formatSettings.rasterResolution);
+					var bundle = this.getBundle(bundleMap, artI, layI, formatSettings.innerPadding, formatSettings.scaling, formatSettings.boundsMode, format.copyBehaviour, formatSettings.fontHandling=="outline", exportSettings.ignoreOutOfBounds_layers, formatSettings.ungroup, j==0, j==layerInd.length-1, elemVis, formatSettings.colorSpace, formatSettings.rasterResolution);
 					var item = new pack.ExportItem(formatSettings, LayerBundler.makeFileName(formatSettings.patterns[patternName], docRef.fullName.name, formatSettings.formatRef.ext, artI, artboard.name, layI, layer.name));
 					item.names = ["Artboard "+(artI+1), "Layer "+(layI+1)];
 					bundle.items.push(item);
@@ -119,15 +119,16 @@
 		}
 		return hasExports;
 	}
-	LayerBundler.getBundle = function(bundleMap, artI, layI, padding, scaling, trim, forceCopy, doOutline, ignoreOutOfBounds, ungroup, isFirst, isLast, elemVis, colorSpace, rasterResolution, elemPath){
+	LayerBundler.getBundle = function(bundleMap, artI, layI, padding, scaling, boundsMode, forceCopy, doOutline, ignoreOutOfBounds, ungroup, isFirst, isLast, elemVis, colorSpace, rasterResolution, elemPath){
 		// TODO: Remove 'elemPath' from this check after testing it using show/hide & reused doc methods
+		var trim = boundsMode != pack.BoundsMode.ARTBOARD;
 		if(trim || doOutline || padding || colorSpace) forceCopy = true;
 
 		var key;
 		if(!forceCopy){
 			key = this.NO_COPY;
 		}else{
-			key = (trim?"trim":"notrim")+"_"+(doOutline?"outline":"nooutline")+"_"+(padding?"pad":"nopad")+(ungroup?"_ungroup":"") + (colorSpace==null ? "" : "_"+colorSpace)  + (rasterResolution==null ? "" : "_"+rasterResolution) + (elemPath==null ? "" : "_"+elemPath);
+			key = boundsMode+"_"+(doOutline?"outline":"nooutline")+"_"+(padding?"pad":"nopad")+(ungroup?"_ungroup":"") + (colorSpace==null ? "" : "_"+colorSpace)  + (rasterResolution==null ? "" : "_"+rasterResolution) + (elemPath==null ? "" : "_"+elemPath);
 		}
 		var bundle = bundleMap[key];
 		if(bundle){
@@ -142,13 +143,13 @@
 		}else if(!trim){
 			// non-trimmed export types can simply create a new document once for each artboard. (no trim, vector exports)
 			bundle = new pack.ExportBundle();
-			bundle.prepareHandler = isFirst ? closure(LayerBundler, LayerBundler.prepareCopyDoc, [artI, layI, padding, doOutline, ignoreOutOfBounds, ungroup, elemVis, colorSpace, rasterResolution, elemPath], true) : closure(LayerBundler, LayerBundler.prepareCopyLayer, [artI, layI, padding, doOutline, ignoreOutOfBounds, ungroup, false, elemVis, null, colorSpace, rasterResolution, elemPath], true);
+			bundle.prepareHandler = isFirst ? closure(LayerBundler, LayerBundler.prepareCopyDoc, [artI, layI, padding, doOutline, ignoreOutOfBounds, ungroup, elemVis, colorSpace, rasterResolution, elemPath, boundsMode], true) : closure(LayerBundler, LayerBundler.prepareCopyLayer, [artI, layI, padding, doOutline, ignoreOutOfBounds, ungroup, false, elemVis, null, colorSpace, rasterResolution, elemPath, boundsMode], true);
 			bundle.cleanupHandler = isLast ? LayerBundler.cleanupCopyDoc : LayerBundler.cleanupCopyLayer;
 
 		}else{
 			// trimmed export types must create a new document for each artboard/layer/elem pair. (No pad, trim, vector exports)
 			bundle = new pack.ExportBundle();
-			bundle.prepareHandler = closure(LayerBundler, LayerBundler.prepareCopyLayer, [artI, layI, padding, doOutline, ignoreOutOfBounds, ungroup, true, elemVis, null, colorSpace, rasterResolution, elemPath], true);
+			bundle.prepareHandler = closure(LayerBundler, LayerBundler.prepareCopyLayer, [artI, layI, padding, doOutline, ignoreOutOfBounds, ungroup, true, elemVis, null, colorSpace, rasterResolution, elemPath, boundsMode], true);
 			bundle.cleanupHandler = LayerBundler.cleanupCopyDoc;
 
 		}
@@ -156,7 +157,7 @@
 		return bundle;
 	}
 
-	LayerBundler.prepareCopyDoc = function(docRef, exportSettings, exportBundle, artI, layI, padding, doOutline, ignoreOutOfBounds, ungroup, elemVis, colorSpace, rasterResolution, elemPath){
+	LayerBundler.prepareCopyDoc = function(docRef, exportSettings, exportBundle, artI, layI, padding, doOutline, ignoreOutOfBounds, ungroup, elemVis, colorSpace, rasterResolution, elemPath, boundsMode){
 		var artboard = docRef.artboards[artI];
 		docRef.artboards.setActiveArtboardIndex(artI);
 		
@@ -169,9 +170,9 @@
 		LayerBundler.layerDepths = [];
 		LayerBundler.copyDoc = pack.DocUtils.copyDocument(docRef, artboard, rect, artW, artH, padding, pack.DocUtils.isAdditionalLayer, LayerBundler.layerDepths, doOutline, ungroup, elemVis, exportSettings.ignoreWarnings, LayerBundler.hasBoundErrorRef, null, colorSpace, rasterResolution);
 		LayerBundler.hasAdditLayers = LayerBundler.copyDoc.layers.length > 0 && (LayerBundler.copyDoc.layers.length!=1 || LayerBundler.copyDoc.layers[0].pageItems.length || LayerBundler.copyDoc.layers[0].layers.length);
-		return this.prepareCopyLayer(docRef, exportSettings, exportBundle, artI, layI, padding, doOutline, ignoreOutOfBounds, ungroup, false, elemVis, rect, colorSpace, rasterResolution, elemPath);
+		return this.prepareCopyLayer(docRef, exportSettings, exportBundle, artI, layI, padding, doOutline, ignoreOutOfBounds, ungroup, false, elemVis, rect, colorSpace, rasterResolution, elemPath, boundsMode);
 	}
-	LayerBundler.prepareCopyLayer = function(docRef, exportSettings, exportBundle, artI, layI, padding, doOutline, ignoreOutOfBounds, ungroup, createDoc, elemVis, rect, colorSpace, rasterResolution, elemPath){
+	LayerBundler.prepareCopyLayer = function(docRef, exportSettings, exportBundle, artI, layI, padding, doOutline, ignoreOutOfBounds, ungroup, createDoc, elemVis, rect, colorSpace, rasterResolution, elemPath, boundsMode){
 		//docRef.artboards.setActiveArtboardIndex(artI); // throws an error if new doc has already been created (can't change artboard when doc isn't in focus)
 		var doc = LayerBundler.copyDoc || docRef;
 
@@ -200,19 +201,25 @@
 		
 				app.coordinateSystem = CoordinateSystem.ARTBOARDCOORDINATESYSTEM;
 
+				var layerOffsetX = 0;
+				var layerOffsetY = 0;
+
 				// crop to artboard
-				if(layerRect[0]<rect[0]){
-					layerRect[0] = rect[0];
+				if(boundsMode == pack.BoundsMode.ARTBOARD_AND_ARTWORK){
+					if(layerRect[0]<rect[0]){
+						layerRect[0] = rect[0];
+					}
+					if(layerRect[1]>rect[1]){
+						layerRect[1] = rect[1];
+					}
+					if(layerRect[2]>rect[2]){
+						layerRect[2] = rect[2];
+					}
+					if(layerRect[3]<rect[3]){
+						layerRect[3] = rect[3];
+					}
 				}
-				if(layerRect[1]>rect[1]){
-					layerRect[1] = rect[1];
-				}
-				if(layerRect[2]>rect[2]){
-					layerRect[2] = rect[2];
-				}
-				if(layerRect[3]<rect[3]){
-					layerRect[3] = rect[3];
-				}
+
 				layerOffsetY = rect[3] - layerRect[3];
 				layerOffsetX = rect[0] - layerRect[0];
 
@@ -324,7 +331,8 @@
 	}
 	LayerBundler.cleanupCopyDoc = function(docRef, exportSettings, exportBundle){
 		if(!LayerBundler.copyDoc)return;
-		LayerBundler.copyDoc.close(SaveOptions.DONOTSAVECHANGES);
+		//LayerBundler.copyDoc.close(SaveOptions.DONOTSAVECHANGES);
+		pack.DocCloser.closeDocument(LayerBundler.copyDoc);
 		LayerBundler.copyDoc = null;
 	}
 

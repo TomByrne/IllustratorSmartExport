@@ -16,38 +16,52 @@
 
 			// progress bar
 			this.progBar = container.add( 'progressbar', undefined, 0, 100 );
-			this.progBar.size = [660,10];
+			this.progBar.size = [820,10];
+
+			// main row
+			var mainRow = container.add('group', undefined, ''); 
+			mainRow.size = [820, 30];
+			mainRow.orientation = 'row'
+
+
+			// options row
+			var optionRow = mainRow.add('group', undefined, ''); 
+			optionRow.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
+			optionRow.orientation = 'row'
+
+			
+			this.ignoreCheckBox = optionRow.add('checkbox', undefined, 'Ignore Warnings');
+			this.ignoreCheckBox.value = exportSettings.ignoreWarnings;
+			this.ignoreCheckBox.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.BOTTOM];
+			this.ignoreCheckBox.onClick = function() {
+				scopedThis.exportSettings.ignoreWarnings = scopedThis.ignoreCheckBox.value;
+				if(scopedThis.onIgnoreWarningsChanged)scopedThis.onIgnoreWarningsChanged();
+			};
 
 
 			// buttons row
-			row = container.add('group', undefined, ''); 
-			row.orientation = 'row'
+			var buttonRow = mainRow.add('group', undefined, ''); 
+			buttonRow.alignment = [ScriptUI.Alignment.RIGHT, ScriptUI.Alignment.TOP];
+			buttonRow.orientation = 'row'
 
-			var cancelBtn = row.add('button', undefined, 'Cancel', {name:'cancel'});
+			var cancelBtn = buttonRow.add('button', undefined, 'Cancel', {name:'cancel'});
 			cancelBtn.preferredSize = [80, 22];
 			cancelBtn.onClick = function() { 
 				if(scopedThis.onCancelClicked)scopedThis.onCancelClicked();
 			};
 
-			var saveBtn = row.add('button', undefined, 'Save and Close', {name:'save'});
+			// Save button
+			var saveBtn = buttonRow.add('button', undefined, 'Done', {name:'save'});
 			saveBtn.preferredSize = [100, 22];
 			saveBtn.onClick = function() {
 				if(scopedThis.onSaveCloseClicked)scopedThis.onSaveCloseClicked();
 			};
 
 			// OK button
-			var exportBtn = row.add('button', undefined, 'Export', {name:'ok'});
+			var exportBtn = buttonRow.add('button', undefined, 'Export', {name:'ok'});
 			exportBtn.preferredSize = [100, 22];
 			exportBtn.onClick = function() { 
 				if(scopedThis.onExportClicked)scopedThis.onExportClicked();
-			};
-			
-			this.ignoreCheckBox = row.add('checkbox', undefined, 'Ignore Warnings');
-			this.ignoreCheckBox.value = exportSettings.ignoreWarnings;
-			this.ignoreCheckBox.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.BOTTOM];
-			this.ignoreCheckBox.onClick = function() {
-				scopedThis.exportSettings.ignoreWarnings = scopedThis.ignoreCheckBox.value;
-				if(scopedThis.onIgnoreWarningsChanged)scopedThis.onIgnoreWarningsChanged();
 			};
 		},
 		updateSettings:function(){

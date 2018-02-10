@@ -355,7 +355,7 @@
 				delete node.innerPadding;
 			}
 			var formats = node.formats.format;
-			if(formats.length() && (node.artboardPattern || node.layerPattern || node.scaling)){
+			if(formats.length()){
 				for(var i=0; i<formats.length(); ++i){
 					var formatNode = formats[i];
 					if(formatNode.patterns.length()==0){
@@ -369,6 +369,13 @@
 					}
 					if(node.scaling && formatNode.scaling.length()==0){
 						formatNode.scaling = node.scaling.toString();
+					}
+					if(formatNode.trimEdges && formatNode.trimEdges.length()!=0){
+						var trim = formatNode.trimEdges.toString() == 'true';
+						if(formatNode.boundsMode.length() == 0){
+							formatNode.boundsMode = trim ? pack.BoundsMode.ARTBOARD_AND_ARTWORK : pack.BoundsMode.ARTBOARD;
+						}
+						delete formatNode.trimEdges;
 					}
 				}
 				delete node.artboardPattern;

@@ -17,7 +17,7 @@
 			this.formatPanels = [];
 			this.formats = formats;
 			this.exportSettings = exportSettings;
-			this.allowTrim = doArtboard || doLayer;
+			this.allowBounds = doArtboard || doLayer || doElement;
 
 			var masterCol = container.add('group', undefined, '')
 			masterCol.orientation = 'column';
@@ -72,50 +72,23 @@
 
 			this.activeCheckBox = activeRow.add('checkbox', undefined, 'Include this format in export');
 			this.activeCheckBox.value = false;
-			this.activeCheckBox.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
+			this.activeCheckBox.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.BOTTOM];
 			this.activeCheckBox.enabled = false;
-			this.activeCheckBox.size = [ 290,20 ];
+			this.activeCheckBox.size = [ 275,20 ];
 			this.activeCheckBox.onClick = function(){
 				if(scopedThis.ignoreChanges) return;
 				scopedThis.currentFormatSettings.active = scopedThis.activeCheckBox.value;
 				scopedThis.onFormatsChanged();
 				scopedThis.checkSettingsActive(scopedThis.currentFormatSettings);
 			}
-
-			this.scalingLabel = activeRow.add('statictext', undefined, 'Scaling:');
-			//this.scalingLabel.size = [100, 22];
-			this.scalingLabel.enabled = false;
-
-			this.scalingInput = activeRow.add('edittext', undefined, ""); 
-			this.scalingInput.size = [ 50,20 ];
-			this.scalingInput.enabled = false;
-			this.scalingInput.onChange = function(){
-				if(scopedThis.ignoreChanges) return;
-				var scaling = parseFloat( scopedThis.scalingInput.text.replace( /\% /, '' ));
-
-				if(scaling){
-					scopedThis.currentFormatSettings.scaling = scaling
-					if(scopedThis.onScalingChanged)scopedThis.onScalingChanged();
-				}
-				scopedThis.scalingInput.text = scopedThis.currentFormatSettings.scaling + "%";
-				scopedThis.checkSettingsName(scopedThis.currentFormatSettings, true, true);
+		
+			this.removeButton = activeRow.add('button', undefined, 'Remove Format');
+			this.removeButton.alignment = [ScriptUI.Alignment.RIGHT, ScriptUI.Alignment.TOP];
+			this.removeButton.enabled = false;
+			this.removeButton.onClick = function(){
+				scopedThis.removeCurrent();
+				if(scopedThis.onFormatsChanged)scopedThis.onFormatsChanged();
 			}
-			this.scalingInput.addEventListener("keydown", function(e){
-				if(!scopedThis.currentFormatSettings.scaling)return;
-
-				var pressed;
-				if(e.keyName=="Up"){
-					pressed = true;
-					scopedThis.currentFormatSettings.scaling += 10;
-				}else if(e.keyName=="Down"){
-					pressed = true;
-					scopedThis.currentFormatSettings.scaling = Math.max(10, scopedThis.currentFormatSettings.scaling - 10);
-				}
-				if(pressed){
-					scopedThis.scalingInput.text = scopedThis.currentFormatSettings.scaling + "%";
-					scopedThis.checkSettingsName(scopedThis.currentFormatSettings, true, true);
-				}
-			});
 
 			// color space row
 			var colorRow = this.formatColumn.add('group', undefined, '')
@@ -191,6 +164,35 @@
 				scopedThis.onFormatsChanged();
 			};
 
+			// bounds mode row
+			if(this.allowBounds){
+				var allowBoundsRow = this.formatColumn.add('group', undefined, '')
+				allowBoundsRow.orientation = 'row';
+				allowBoundsRow.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
+
+				this.allowBoundsLabel = allowBoundsRow.add('statictext', undefined, 'New Bounds:');
+				this.allowBoundsLabel.size = [100, 22];
+				this.allowBoundsLabel.enabled = false;
+				this.allowBoundsLabel.alignment = [ScriptUI.Alignment.RIGHT, ScriptUI.Alignment.CENTER];
+
+				this.allowBoundsOptions = [/*{name:"Same as Document", key:null},*/ {name:"Artboard", key:pack.BoundsMode.ARTBOARD}, {name:"Artwork", key:pack.BoundsMode.ARTWORK}, {name:"Artwork/Artboard Overlap (i.e. Trim Edges)", key:pack.BoundsMode.ARTBOARD_AND_ARTWORK}];
+
+				this.allowBoundsList = new pack.Dropdown(allowBoundsRow);
+				this.allowBoundsList.setEnabled(false);
+				this.allowBoundsList.setSize(290,20);
+				var allowBoundsList = [];
+				for(var i=0; i<this.allowBoundsOptions.length; i++){
+					var item = this.allowBoundsOptions[i];
+					allowBoundsList.push(item.name);
+				}
+				this.allowBoundsList.setItems(allowBoundsList);
+				this.allowBoundsList.onChange = function() {
+					if(scopedThis.ignoreChanges) return;
+					scopedThis.currentFormatSettings.boundsMode = scopedThis.allowBoundsOptions[scopedThis.allowBoundsList.selection].key;
+					if(scopedThis.onFormatsChanged) scopedThis.onFormatsChanged();
+				};
+			}
+
 
 			// preset row
 			var presetRow = this.formatColumn.add('group', undefined, '')
@@ -226,7 +228,7 @@
 
 			this.embedImageCheckBox = embedRow.add('checkbox', undefined, 'Embed Imagery');
 			this.embedImageCheckBox.value = false;
-			this.embedImageCheckBox.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
+			this.embedImageCheckBox.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.BOTTOM];
 			this.embedImageCheckBox.enabled = false;
 			//this.embedImageCheckBox.size = [ 180,20 ];
 			this.embedImageCheckBox.onClick = function(){
@@ -237,7 +239,8 @@
 
 			this.ungroupCheckBox = embedRow.add('checkbox', undefined, 'Expand Groups');
 			this.ungroupCheckBox.value = false;
-			this.ungroupCheckBox.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
+			this.ungroupCheckBox.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.BOTTOM];
+			this.ungroupCheckBox.size = [ 165,20 ];
 			this.ungroupCheckBox.enabled = false;
 			this.ungroupCheckBox.onClick = function(){
 				if(scopedThis.ignoreChanges) return;
@@ -245,17 +248,40 @@
 				scopedThis.onFormatsChanged();
 			}
 
-			if(this.allowTrim){
-				this.trimEdgesCheckBox = embedRow.add('checkbox', undefined, 'Trim Edges');
-				this.trimEdgesCheckBox.value = false;
-				this.trimEdgesCheckBox.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
-				this.trimEdgesCheckBox.enabled = false;
-				this.trimEdgesCheckBox.onClick = function(){
-					if(scopedThis.ignoreChanges) return;
-					scopedThis.currentFormatSettings.trimEdges = scopedThis.trimEdgesCheckBox.value;
-					scopedThis.onFormatsChanged();
+			this.scalingLabel = embedRow.add('statictext', undefined, 'Scaling:');
+			//this.scalingLabel.size = [100, 22];
+			this.scalingLabel.enabled = false;
+
+			this.scalingInput = embedRow.add('edittext', undefined, ""); 
+			this.scalingInput.size = [ 50,20 ];
+			this.scalingInput.enabled = false;
+			this.scalingInput.onChange = function(){
+				if(scopedThis.ignoreChanges) return;
+				var scaling = parseFloat( scopedThis.scalingInput.text.replace( /\% /, '' ));
+
+				if(scaling){
+					scopedThis.currentFormatSettings.scaling = scaling
+					if(scopedThis.onScalingChanged)scopedThis.onScalingChanged();
 				}
+				scopedThis.scalingInput.text = scopedThis.currentFormatSettings.scaling + "%";
+				scopedThis.checkSettingsName(scopedThis.currentFormatSettings, true, true);
 			}
+			this.scalingInput.addEventListener("keydown", function(e){
+				if(!scopedThis.currentFormatSettings.scaling)return;
+
+				var pressed;
+				if(e.keyName=="Up"){
+					pressed = true;
+					scopedThis.currentFormatSettings.scaling += 10;
+				}else if(e.keyName=="Down"){
+					pressed = true;
+					scopedThis.currentFormatSettings.scaling = Math.max(10, scopedThis.currentFormatSettings.scaling - 10);
+				}
+				if(pressed){
+					scopedThis.scalingInput.text = scopedThis.currentFormatSettings.scaling + "%";
+					scopedThis.checkSettingsName(scopedThis.currentFormatSettings, true, true);
+				}
+			});
 			
 			// padding row
 			this.innerPaddingCheckBox = this.formatColumn.add('checkbox', undefined, 'Inner Padding (prevents curved edge clipping)');
@@ -277,33 +303,19 @@
 			this.dirLabel.enabled = false;
 
 			this.dirInput = dirRow.add('edittext', undefined, ""); 
-			this.dirInput.size = [ 150,20 ];
+			this.dirInput.size = [ 170,20 ];
 			this.dirInput.enabled = false;
 			this.dirInput.onChange = function(){
 				if(scopedThis.ignoreChanges) return;
 				scopedThis.currentFormatSettings.directory = scopedThis.dirInput.text;
 				scopedThis.onFormatsChanged();
 			}
-			
-
-			// Button row
-			var buttonRow = this.formatColumn.add('group', undefined, '')
-			buttonRow.orientation = 'row';
-			buttonRow.alignment = [ScriptUI.Alignment.RIGHT, ScriptUI.Alignment.TOP]
 		
-			this.moreButton = buttonRow.add('button', undefined, 'More Options');
+			this.moreButton = dirRow.add('button', undefined, 'More Options');
 			this.moreButton.alignment = [ScriptUI.Alignment.RIGHT, ScriptUI.Alignment.TOP];
 			this.moreButton.enabled = false;
 			this.moreButton.onClick = function(){
 				scopedThis.showMoreOptions();
-			}
-		
-			this.removeButton = buttonRow.add('button', undefined, 'Remove Format');
-			this.removeButton.alignment = [ScriptUI.Alignment.RIGHT, ScriptUI.Alignment.TOP];
-			this.removeButton.enabled = false;
-			this.removeButton.onClick = function(){
-				scopedThis.removeCurrent();
-				if(scopedThis.onFormatsChanged)scopedThis.onFormatsChanged();
 			}
 
 
@@ -405,7 +417,11 @@
 			this.dirInput.enabled = enabled;
 			this.scalingInput.enabled = enabled;
 			this.scalingLabel.enabled = enabled;
-			if(this.allowTrim)this.trimEdgesCheckBox.enabled = enabled;
+			if(this.allowBounds){
+				//this.trimEdgesCheckBox.enabled = enabled;
+				this.allowBoundsList.setEnabled(enabled);
+				this.allowBoundsLabel.enabled = enabled;
+			}
 			this.embedImageCheckBox.enabled = enabled;
 			this.innerPaddingCheckBox.enabled = enabled;
 			this.ungroupCheckBox.enabled = enabled;
@@ -451,13 +467,26 @@
 				this.scalingInput.text = "";
 			}
 
-			if(this.allowTrim){
-				this.trimEdgesCheckBox.enabled = this.currentFormatSettings.hasProp("trimEdges");
-				if(this.trimEdgesCheckBox.enabled){
-					this.trimEdgesCheckBox.value = this.currentFormatSettings.trimEdges;
-				}else{
-					this.trimEdgesCheckBox.value = false;
+			if(this.allowBounds){
+				// this.trimEdgesCheckBox.enabled = this.currentFormatSettings.hasProp("trimEdges");
+				// if(this.trimEdgesCheckBox.enabled){
+				// 	this.trimEdgesCheckBox.value = this.currentFormatSettings.trimEdges;
+				// }else{
+				// 	this.trimEdgesCheckBox.value = false;
+				// }
+
+				var allowBoundsEnabled = this.currentFormatSettings.hasProp("boundsMode");
+				this.allowBoundsList.setEnabled(allowBoundsEnabled);
+				this.allowBoundsLabel.enabled = allowBoundsEnabled;
+
+				var selection = 0;
+				for(var i=0; i<this.allowBoundsOptions.length; i++){
+					var item = this.allowBoundsOptions[i];
+					if(item.key==this.currentFormatSettings.boundsMode){
+						selection = i;
+					}
 				}
+				this.allowBoundsList.setSelection(selection);
 			}
 
 			var rasterResEnabled = this.currentFormatSettings.hasProp("rasterResolution");

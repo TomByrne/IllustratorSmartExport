@@ -24,7 +24,7 @@
 				var format = formatSettings.formatRef;
 
 
-				var bundle = this.getBundle(bundleMap, symbol, formatSettings.innerPadding, formatSettings.scaling, formatSettings.trimEdges, formatSettings.fontHandling=="outline", formatSettings.ungroup, formatSettings.colorSpace, formatSettings.rasterResolution, j==symbolNames.length-1 && x==exportSettings.formats.length-1);
+				var bundle = this.getBundle(bundleMap, symbol, formatSettings.innerPadding, formatSettings.scaling, formatSettings.boundsMode, formatSettings.fontHandling=="outline", formatSettings.ungroup, formatSettings.colorSpace, formatSettings.rasterResolution, j==symbolNames.length-1 && x==exportSettings.formats.length-1);
 				var item = new pack.ExportItem(formatSettings, SymbolBundler.makeFileName(formatSettings.patterns[patternName], formatSettings.formatRef.ext, symbol.name));
 				item.names = [symbol.name];
 				bundle.items.push(item);
@@ -42,7 +42,8 @@
 
 		return hasExports;
 	}
-	SymbolBundler.getBundle = function(bundleMap, symbol, padding, scaling, trim, doOutline, ungroup, colorSpace, rasterResolution, isLast){
+	SymbolBundler.getBundle = function(bundleMap, symbol, padding, scaling, boundsMode, doOutline, ungroup, colorSpace, rasterResolution, isLast){
+		var trim = boundsMode != pack.BoundsMode.ARTBOARD;
 		if(trim || doOutline || padding)forceCopy = true;
 
 		var key = (doOutline?"outline":"nooutline")+"_"+(padding?"pad":"nopad")+(ungroup?"_ungroup":"")+(colorSpace?"_"+colorSpace:"")+(rasterResolution?"_"+rasterResolution:"");
@@ -101,7 +102,8 @@
 		return null;
 	}
 	SymbolBundler.cleanupCopyDoc = function(docRef, exportSettings, exportBundle){
-		exportBundle.copyDoc.close(SaveOptions.DONOTSAVECHANGES);
+		//exportBundle.copyDoc.close(SaveOptions.DONOTSAVECHANGES);
+		pack.DocCloser.closeDocument(exportBundle.copyDoc);
 		exportBundle.copyDoc = null;
 		SymbolBundler.testLayer.symbolItems.removeAll();
 	}
