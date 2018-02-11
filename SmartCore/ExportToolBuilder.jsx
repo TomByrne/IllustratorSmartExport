@@ -4,6 +4,27 @@
 		return this;
 	}
 
+	ExportToolBuilder.launchStandard =function(title, settingsLayer){
+		var doc;
+		try{
+			doc = app.activeDocument;
+		}catch(e){}
+
+		if(!doc || !app.documents.length){
+			alert("Please open a document before running this command");
+		}else{
+
+			try{
+				var toolBuilder = new pack.ExportToolBuilder(app.activeDocument, title);
+				var loadSuccess = toolBuilder.loadPrefLayer(settingsLayer, "nyt_exporter_info");
+				if (loadSuccess) toolBuilder.showDialog(true, true, true, true);
+				
+			}catch(e){
+				alert("Error opening panel:\n"+e);
+			}
+		}
+	}
+
 	pack.IGNORE_LAYERS = ["Export Settings", "Export Symbol Settings", "nyt_exporter_info"];
 
 	ExportToolBuilder.prototype={
