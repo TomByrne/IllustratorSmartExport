@@ -1,6 +1,6 @@
 (function(pack){
-	function FormatPanel(container, formats, exportSettings, doArtboard, doLayer, doElement, doSymbol){
-		this.init(container, formats, exportSettings, doArtboard, doLayer, doElement, doSymbol);
+	function FormatPanel(container, formats, exportSettings){
+		this.init(container, formats, exportSettings);
 		return this;
 	}
 
@@ -11,13 +11,12 @@
 	    formatPanels:null,
 	    ignoreChanges:false,
 
-		init:function(container, formats, exportSettings, doArtboard, doLayer, doElement, doSymbol){
+		init:function(container, formats, exportSettings){
 			var scopedThis = this;
 
 			this.formatPanels = [];
 			this.formats = formats;
 			this.exportSettings = exportSettings;
-			this.allowBounds = doArtboard || doLayer || doElement;
 
 			var masterCol = container.add('group', undefined, '')
 			masterCol.orientation = 'column';
@@ -165,33 +164,31 @@
 			};
 
 			// bounds mode row
-			if(this.allowBounds){
-				var allowBoundsRow = this.formatColumn.add('group', undefined, '')
-				allowBoundsRow.orientation = 'row';
-				allowBoundsRow.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
+			var boundsModeRow = this.formatColumn.add('group', undefined, '')
+			boundsModeRow.orientation = 'row';
+			boundsModeRow.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
 
-				this.allowBoundsLabel = allowBoundsRow.add('statictext', undefined, 'New Bounds:');
-				this.allowBoundsLabel.size = [100, 22];
-				this.allowBoundsLabel.enabled = false;
-				this.allowBoundsLabel.alignment = [ScriptUI.Alignment.RIGHT, ScriptUI.Alignment.CENTER];
+			this.boundsModeLabel = boundsModeRow.add('statictext', undefined, 'New Bounds:');
+			this.boundsModeLabel.size = [100, 22];
+			this.boundsModeLabel.enabled = false;
+			this.boundsModeLabel.alignment = [ScriptUI.Alignment.RIGHT, ScriptUI.Alignment.CENTER];
 
-				this.allowBoundsOptions = [/*{name:"Same as Document", key:null},*/ {name:"Artboard", key:pack.BoundsMode.ARTBOARD}, {name:"Artwork", key:pack.BoundsMode.ARTWORK}, {name:"Artwork/Artboard Overlap (i.e. Trim Edges)", key:pack.BoundsMode.ARTBOARD_AND_ARTWORK}];
+			this.boundsModeOptions = [/*{name:"Same as Document", key:null},*/ {name:"Artboard", key:pack.BoundsMode.ARTBOARD}, {name:"Artwork", key:pack.BoundsMode.ARTWORK}, {name:"Artwork/Artboard Overlap (i.e. Trim Edges)", key:pack.BoundsMode.ARTBOARD_AND_ARTWORK}];
 
-				this.allowBoundsList = new pack.Dropdown(allowBoundsRow);
-				this.allowBoundsList.setEnabled(false);
-				this.allowBoundsList.setSize(290,20);
-				var allowBoundsList = [];
-				for(var i=0; i<this.allowBoundsOptions.length; i++){
-					var item = this.allowBoundsOptions[i];
-					allowBoundsList.push(item.name);
-				}
-				this.allowBoundsList.setItems(allowBoundsList);
-				this.allowBoundsList.onChange = function() {
-					if(scopedThis.ignoreChanges) return;
-					scopedThis.currentFormatSettings.boundsMode = scopedThis.allowBoundsOptions[scopedThis.allowBoundsList.selection].key;
-					if(scopedThis.onFormatsChanged) scopedThis.onFormatsChanged();
-				};
+			this.boundsModeList = new pack.Dropdown(boundsModeRow);
+			this.boundsModeList.setEnabled(false);
+			this.boundsModeList.setSize(290,20);
+			var boundsModeList = [];
+			for(var i=0; i<this.boundsModeOptions.length; i++){
+				var item = this.boundsModeOptions[i];
+				boundsModeList.push(item.name);
 			}
+			this.boundsModeList.setItems(boundsModeList);
+			this.boundsModeList.onChange = function() {
+				if(scopedThis.ignoreChanges) return;
+				scopedThis.currentFormatSettings.boundsMode = scopedThis.boundsModeOptions[scopedThis.boundsModeList.selection].key;
+				if(scopedThis.onFormatsChanged) scopedThis.onFormatsChanged();
+			};
 
 
 			// preset row
@@ -326,49 +323,45 @@
 
 			this.patternInputs = {};
 
-			if(doArtboard){
-				//artboard pattern
-				this.artboardPattern = new pack.FilePatternControl(this.patternsColumn, 'Artboards:', null, pack.tokens.ARTBOARD_TOKENS);
-				this.artboardPattern.onChange = function(){
-					if(scopedThis.ignoreChanges)return;
-					scopedThis.currentFormatSettings.patterns["artboard"] = scopedThis.artboardPattern.getValue();
-					scopedThis.onFormatsChanged();
-				}
-				this.patternInputs["artboard"] = this.artboardPattern;
-			}
 
-			if(doLayer){
-				//layer pattern
-				this.layerPattern = new pack.FilePatternControl(this.patternsColumn, 'Layers:', null, pack.tokens.LAYER_TOKENS);
-				this.layerPattern.onChange = function(){
-					if(scopedThis.ignoreChanges)return;
-					scopedThis.currentFormatSettings.patterns["layer"] = scopedThis.layerPattern.getValue();
-					scopedThis.onFormatsChanged();
-				}
-				this.patternInputs["layer"] = this.layerPattern;
+			//artboard pattern
+			this.artboardPattern = new pack.FilePatternControl(this.patternsColumn, 'Artboards:', null, pack.tokens.ARTBOARD_TOKENS);
+			this.artboardPattern.onChange = function(){
+				if(scopedThis.ignoreChanges)return;
+				scopedThis.currentFormatSettings.patterns["artboard"] = scopedThis.artboardPattern.getValue();
+				scopedThis.onFormatsChanged();
 			}
+			this.patternInputs["artboard"] = this.artboardPattern;
+		
 
-			if(doElement){
-				//element pattern
-				this.elementPattern = new pack.FilePatternControl(this.patternsColumn, 'Elements:', null, pack.tokens.ELEMENT_TOKENS);
-				this.elementPattern.onChange = function(){
-					if(scopedThis.ignoreChanges)return;
-					scopedThis.currentFormatSettings.patterns["element"] = scopedThis.elementPattern.getValue();
-					scopedThis.onFormatsChanged();
-				}
-				this.patternInputs["element"] = this.elementPattern;
+			//layer pattern
+			this.layerPattern = new pack.FilePatternControl(this.patternsColumn, 'Layers:', null, pack.tokens.LAYER_TOKENS);
+			this.layerPattern.onChange = function(){
+				if(scopedThis.ignoreChanges)return;
+				scopedThis.currentFormatSettings.patterns["layer"] = scopedThis.layerPattern.getValue();
+				scopedThis.onFormatsChanged();
 			}
+			this.patternInputs["layer"] = this.layerPattern;
+		
 
-			if(doSymbol){
-				//symbol pattern
-				this.symbolPattern = new pack.FilePatternControl(this.patternsColumn, 'Symbols:', null, pack.tokens.SYMBOL_TOKENS);
-				this.symbolPattern.onChange = function(){
-					if(scopedThis.ignoreChanges)return;
-					scopedThis.currentFormatSettings.patterns["symbol"] = scopedThis.symbolPattern.getValue();
-					scopedThis.onFormatsChanged();
-				}
-				this.patternInputs["symbol"] = this.symbolPattern;
+			//element pattern
+			this.elementPattern = new pack.FilePatternControl(this.patternsColumn, 'Elements:', null, pack.tokens.ELEMENT_TOKENS);
+			this.elementPattern.onChange = function(){
+				if(scopedThis.ignoreChanges)return;
+				scopedThis.currentFormatSettings.patterns["element"] = scopedThis.elementPattern.getValue();
+				scopedThis.onFormatsChanged();
 			}
+			this.patternInputs["element"] = this.elementPattern;
+		
+
+			//symbol pattern
+			this.symbolPattern = new pack.FilePatternControl(this.patternsColumn, 'Symbols:', null, pack.tokens.SYMBOL_TOKENS);
+			this.symbolPattern.onChange = function(){
+				if(scopedThis.ignoreChanges)return;
+				scopedThis.currentFormatSettings.patterns["symbol"] = scopedThis.symbolPattern.getValue();
+				scopedThis.onFormatsChanged();
+			}
+			this.patternInputs["symbol"] = this.symbolPattern;
 
 			this.updateFormats();
 		},
@@ -417,11 +410,8 @@
 			this.dirInput.enabled = enabled;
 			this.scalingInput.enabled = enabled;
 			this.scalingLabel.enabled = enabled;
-			if(this.allowBounds){
-				//this.trimEdgesCheckBox.enabled = enabled;
-				this.allowBoundsList.setEnabled(enabled);
-				this.allowBoundsLabel.enabled = enabled;
-			}
+			this.boundsModeList.setEnabled(enabled);
+			this.boundsModeLabel.enabled = enabled;
 			this.embedImageCheckBox.enabled = enabled;
 			this.innerPaddingCheckBox.enabled = enabled;
 			this.ungroupCheckBox.enabled = enabled;
@@ -467,27 +457,18 @@
 				this.scalingInput.text = "";
 			}
 
-			if(this.allowBounds){
-				// this.trimEdgesCheckBox.enabled = this.currentFormatSettings.hasProp("trimEdges");
-				// if(this.trimEdgesCheckBox.enabled){
-				// 	this.trimEdgesCheckBox.value = this.currentFormatSettings.trimEdges;
-				// }else{
-				// 	this.trimEdgesCheckBox.value = false;
-				// }
+			var boundsModeEnabled = this.currentFormatSettings.hasProp("boundsMode");
+			this.boundsModeList.setEnabled(boundsModeEnabled);
+			this.boundsModeLabel.enabled = boundsModeEnabled;
 
-				var allowBoundsEnabled = this.currentFormatSettings.hasProp("boundsMode");
-				this.allowBoundsList.setEnabled(allowBoundsEnabled);
-				this.allowBoundsLabel.enabled = allowBoundsEnabled;
-
-				var selection = 0;
-				for(var i=0; i<this.allowBoundsOptions.length; i++){
-					var item = this.allowBoundsOptions[i];
-					if(item.key==this.currentFormatSettings.boundsMode){
-						selection = i;
-					}
+			var selection = 0;
+			for(var i=0; i<this.boundsModeOptions.length; i++){
+				var item = this.boundsModeOptions[i];
+				if(item.key==this.currentFormatSettings.boundsMode){
+					selection = i;
 				}
-				this.allowBoundsList.setSelection(selection);
 			}
+			this.boundsModeList.setSelection(selection);
 
 			var rasterResEnabled = this.currentFormatSettings.hasProp("rasterResolution");
 			this.rasterResList.setEnabled(rasterResEnabled);

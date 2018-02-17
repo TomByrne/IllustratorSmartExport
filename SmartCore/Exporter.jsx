@@ -121,11 +121,20 @@
 								}else{
 									dir = this.directory;
 								}
-								var dirObj = Folder(dir);
-								if(!dirObj.exists){
-									dirObj.create();
-								}
 								var fileName = dir + "/" + item.fileName;
+
+								var parts = fileName.split("/");
+								var path = parts[0] + "/";
+								for(var k=1; k<parts.length-1; k++){
+									path += parts[k] + "/";
+									if(!isWin || k>1){
+										var dirObj = Folder(path);
+										if(!dirObj.exists){
+											dirObj.create();
+										}
+									}
+								}
+
 								formatSettings.formatRef.saveFile(copyDoc, fileName, item.formatSettings.saveOptions );
 								item.state = "success";
 

@@ -1,10 +1,12 @@
 (function(pack){
-	function ExportToolBuilder(docRef, title){
-		this.init(docRef, title);
+	function ExportToolBuilder(docRef, title, autoExport){
+		this.init(docRef, title, autoExport);
 		return this;
 	}
 
-	ExportToolBuilder.launchStandard =function(settingsLayer){
+	ExportToolBuilder.launchStandardOrPreset =function(settingsLayer, presetPath){
+		if(presetPath == "") presetPath = null;
+
 		var doc;
 		try{
 			doc = app.activeDocument;
@@ -17,10 +19,27 @@
 		}else{
 
 			try{
-				var title = smartExport.appTitle + " v" + smartExport.appVersion;
-				var toolBuilder = new pack.ExportToolBuilder(app.activeDocument, title);
-				var loadSuccess = toolBuilder.loadPrefLayer(settingsLayer, "nyt_exporter_info");
-				if (loadSuccess) toolBuilder.showDialog(true, true, true, true);
+				var showParts;
+				var title;
+				var autoExport = false;
+				if(presetPath){
+					showParts = { preview:true, progress:true };
+					title = presetPath.substring(presetPath.lastIndexOf("/"), presetPath.lastIndexOf("."));
+					autoExport = true;
+				}else{
+					showParts = { presets:true, artboards:true, layers:true, elements:true, symbols:true, formats:true, preview:true, progress:true, exportButtons:true };
+					title = smartExport.appTitle + " v" + smartExport.appVersion;
+				}
+				var toolBuilder = new pack.ExportToolBuilder(app.activeDocument, title, autoExport);
+
+				var loadSuccess;
+
+				if(presetPath){
+					loadSuccess = toolBuilder.loadPreset(presetPath, app.activeDocument);
+				}else{
+					loadSuccess = toolBuilder.loadPrefLayer(settingsLayer, "nyt_exporter_info");
+				}
+				if (loadSuccess) toolBuilder.showDialog(showParts);
 				
 			}catch(e){
 				alert("Error opening panel:\n"+e);
@@ -36,9 +55,10 @@
 		toolPanel:			    null,
 		docRef:			        null,
 
-		init: function(docRef, title) {
+		init: function(docRef, title, autoExport) {
 			this.docRef = docRef;
 			this.title = title;
+			this.autoExport = autoExport;
 		},
 
 		loadPrefLayer: function(prefsLayerName, migratePrefsLayerName) {
@@ -90,9 +110,59 @@
 			return false;
 		},
 
+		loadPreset: function(presetPath, doc) {
+			presetPath = (smartExport.builtInPresets + "/" + presetPath);
+			var file = new File(presetPath);
+			if(!file.exists){
+				alert("Couldn't find preset:\n" + presetPath);
+				return false;
+			}
+
+			file.open("r");
+			var str = file.read();
+			file.close();
+			try{
+				var xml = new XML(str);
+			}catch(e){
+				alert("Couldn't parse preset:\n" + presetPath);
+				return false;
+			}
+			this.exportSettings = pack.ExportSettings.fromXML(xml);
+
+			if(doc){
+				if(this.exportSettings.artboardAll){
+					var array = [];
+					for(var i=0; i<doc.artboards.length; i++) array.push(i);
+					this.exportSettings.artboardInd = array;
+				}
+				if(this.exportSettings.layerAll){
+					var array = [];
+					for(var i=0; i<doc.layers.length; i++) array.push(i);
+					this.exportSettings.layerInd = array;
+				}
+				if(this.exportSettings.artboardAll_layers){
+					var array = [];
+					for(var i=0; i<doc.artboards.length; i++) array.push(i);
+					this.exportSettings.artboardInd_layers = array;
+				}
+				if(this.exportSettings.artboardAll_elements){
+					var array = [];
+					for(var i=0; i<doc.artboards.length; i++) array.push(i);
+					this.exportSettings.artboardInd_elements = array;
+				}
+				if(this.exportSettings.symbolAll){
+					var array = [];
+					for(var i=0; i<doc.symbolItems.length; i++) array.push(i);
+					this.exportSettings.symbolAll = array;
+				}
+			}
+
+			return true;
+		},
+
 		
 		// dialog display
-		showDialog: function(doArtboard, doLayer, doElement, doSymbol) {
+		showDialog: function(showParts) {
 			var scopedThis = this;
 			var exSettings = this.exportSettings;
 			
@@ -100,27 +170,36 @@
 			this.toolPanel = new Window('dialog', this.title);
 			this.toolPanel.orientation = "column";
 
-			var presetDir = decodeURI(Folder.userData + '/' + pack.appId + "/presets");
-			this.presetPanel = new pack.PresetPanel(this.toolPanel, this.exportSettings, presetDir, [{label:"USER PRESETS", dir:presetDir}, {label:"STANDARD PRESETS", dir:smartExport.builtInPresets}]);
-			this.presetPanel.onSettingsChanged = function(){
-				scopedThis.settingsPanel.updateSettings();
-				scopedThis.formatPanel.updateSettings();
-				scopedThis.exportPanel.updateSettings();
-				scopedThis.updatePreviewList();
-			}
-
-
-			// Main tab panel
-			this.tabPanel = new pack.MainTabbedPanel( this.toolPanel, 160, 480 );
-			this.tabPanel.onChange = function(byUser){
-				if(byUser){
-					exSettings.selectedTab = scopedThis.tabPanel.selection;
+			if(showParts.presets){
+				var presetDir = decodeURI(Folder.userData + '/' + pack.appId + "/presets");
+				this.presetPanel = new pack.PresetPanel(this.toolPanel, this.exportSettings, presetDir, [{label:"USER PRESETS", dir:presetDir}, {label:"STANDARD PRESETS", dir:smartExport.builtInPresets}]);
+				this.presetPanel.onSettingsChanged = function(){
+					scopedThis.settingsPanel.updateSettings();
+					scopedThis.formatPanel.updateSettings();
+					scopedThis.exportPanel.updateSettings();
+					scopedThis.updatePreviewList();
 				}
 			}
 
+			var tabCount = 0;
+			if(showParts.layers) tabCount++;
+			if(showParts.artboards) tabCount++;
+			if(showParts.elements) tabCount++;
+			if(showParts.symbols) tabCount++;
+			if(showParts.formats) tabCount++;
 
-			if(doLayer){
-				var tab = this.tabPanel.add("Layers");
+			// Main tab panel
+			if(tabCount > 1){
+				this.tabPanel = new pack.MainTabbedPanel( this.toolPanel, 160, 480 );
+				this.tabPanel.onChange = function(byUser){
+					if(byUser){
+						exSettings.selectedTab = scopedThis.tabPanel.selection;
+					}
+				}
+			}
+
+			if(showParts.layers){
+				var tab = this.tabPanel ? this.tabPanel.add("Layers") : this.toolPanel.add("panel");
 				tab.orientation = "row";
 
 				this.artboardPanel_layers = new pack.ArtboardPanel(tab, exSettings.artboardAll_layers, exSettings.artboardInd_layers, true);
@@ -142,8 +221,8 @@
 				};
 			}
 
-			if(doArtboard){
-				var tab = this.tabPanel.add("Artboards");
+			if(showParts.artboards){
+				var tab = this.tabPanel ? this.tabPanel.add("Artboards") : this.toolPanel.add("panel");
 				tab.orientation = "row";
 
 				this.artboardPanel = new pack.ArtboardPanel(tab, exSettings.artboardAll, exSettings.artboardInd);
@@ -155,8 +234,8 @@
 				this.artboardPanel.onSelectedChanged();
 			}
 
-			if(doElement){
-				var tab = this.tabPanel.add("Elements");
+			if(showParts.elements){
+				var tab = this.tabPanel ? this.tabPanel.add("Elements") : this.toolPanel.add("panel");
 				tab.orientation = "row";
 
 				this.artboardPanel_elements = new pack.ArtboardPanel(tab, exSettings.artboardAll_elements, exSettings.artboardInd_elements, true);
@@ -180,11 +259,12 @@
 					exSettings.ignoreOutOfBounds_elements  = scopedThis.elementPanel.ignoreOutOfBounds;
 				};
 
-				this.tabPanel.setTransHandlers(this.tabPanel.panels.length - 1, closure(this.elementPanel, this.elementPanel.show));
+				if(this.tabPanel) this.tabPanel.setTransHandlers(this.tabPanel.panels.length - 1, closure(this.elementPanel, this.elementPanel.show));
+				else this.elementPanel.show();
 			}
 
-			if(doSymbol){
-				var tab = this.tabPanel.add("Symbols");
+			if(showParts.symbols){
+				var tab = this.tabPanel ? this.tabPanel.add("Symbols") : this.toolPanel.add("panel");
 				tab.orientation = "row";
 
 				this.symbolPanel = new pack.SymbolPanel(tab, exSettings.symbolAll, exSettings.symbolNames);
@@ -195,81 +275,60 @@
 				};
 			}
 
-			// Settings panels
-			// var settingsCol = majRow.add("group");
-			// settingsCol.orientation = 'column'
-			// settingsCol.alignment = [ScriptUI.Alignment.LEFT, ScriptUI.Alignment.TOP];
+			if(showParts.formats){
+				var tab = this.tabPanel ? this.tabPanel.add("Export Settings", pack.Button.STYLE_MAIN_TAB_OUTPUT) : this.toolPanel.add("panel");
+				var settingsCol = tab;
+				
+				var column;
+				var row;
 
-
-			var tab = this.tabPanel.add("Export Settings", pack.Button.STYLE_MAIN_TAB_OUTPUT);
-			var settingsCol = tab;
-			
-			var column;
-			var row;
-
-			this.settingsPanel = new pack.SettingsPanel(settingsCol, this.exportSettings);
-			this.settingsPanel.onPatternChanged = function(){
-				scopedThis.updatePreviewList();
-			}
-
-			this.formatPanel = new pack.FormatPanel(settingsCol, pack.formats, this.exportSettings, doArtboard, doLayer, doElement, doSymbol);
-			this.formatPanel.onFormatsChanged = function(){
-				scopedThis.updatePreviewList();
-			}
-
-
-			this.exportPanel = new pack.ExportPanel(this.toolPanel, this.exportSettings);
-			this.exportPanel.onCancelClicked = function() {
-				if(scopedThis.exporter.running){
-					scopedThis.exporter.cancel();
-				}else{
-					scopedThis.toolPanel.close();
+				this.settingsPanel = new pack.SettingsPanel(settingsCol, this.exportSettings);
+				this.settingsPanel.onPatternChanged = function(){
+					scopedThis.updatePreviewList();
 				}
-			};
-			this.exportPanel.onSaveCloseClicked = function() {
-				scopedThis.saveOptions();
-				scopedThis.toolPanel.close()
-			};
-			this.exportPanel.onExportClicked = function() {
-				try{
-					scopedThis.hasBoundErrorRef.broken = 0;
-					scopedThis.saveOptions(); // save options before export in case of errors
 
-					var dir = scopedThis.exportSettings.directory || "";
-					if($.os.toLowerCase().indexOf("mac")!=-1){
-						if(dir.charAt(0)!="/"){
-							dir = scopedThis.docRef.path + "/" + dir;
-						}
+				this.formatPanel = new pack.FormatPanel(settingsCol, pack.formats, this.exportSettings);
+				this.formatPanel.onFormatsChanged = function(){
+					scopedThis.updatePreviewList();
+				}
+			}
+
+
+			if(showParts.preview){
+				var tab = this.tabPanel ? this.tabPanel.add("Output Files", pack.Button.STYLE_MAIN_TAB_OUTPUT) : this.toolPanel.add("panel");
+				this.previewPanel = new pack.PreviewFilesPanel(tab);
+
+				if(this.tabPanel){
+					this.outputTabIndex = this.tabPanel.panels.length - 1;
+					this.tabPanel.setTransHandlers(this.outputTabIndex, closure(this.previewPanel, this.previewPanel.show), closure(this.previewPanel, this.previewPanel.hide));
+				}else this.previewPanel.show();
+			}
+
+			if(showParts.progress){
+				// progress bar
+				this.progBar = this.toolPanel.add( 'progressbar', undefined, 0, 100 );
+				this.progBar.alignment = [ScriptUI.Alignment.RIGHT, ScriptUI.Alignment.TOP];
+				this.progBar.size = [665,10];
+			}
+
+			if(showParts.exportButtons){
+				this.exportPanel = new pack.ExportPanel(this.toolPanel, this.exportSettings);
+				this.exportPanel.onCancelClicked = function() {
+					if(scopedThis.exporter.running){
+						scopedThis.exporter.cancel();
 					}else{
-						if(dir.indexOf(":")==-1){
-							dir = scopedThis.docRef.path + "\\" + dir;
-						}
+						scopedThis.toolPanel.close();
 					}
-					var ran = scopedThis.exporter.checkValid(scopedThis.bundleList, this.exportSettings, dir);
-					if(ran){
-						scopedThis.tabPanel.setSelection(scopedThis.outputTabIndex);
-						scopedThis.exporter.doRun();
-						if(scopedThis.hasBoundErrorRef.broken){
-							var layerName = ( scopedThis.hasBoundErrorRef.broken==1 ? "A layer" : scopedThis.hasBoundErrorRef.broken+" layers");
-							alert(layerName+" couldn't be positioned correctly due to an Illustrator bug, if there are alignment problems in the exported files please export again with warnings turned on.\n\nYou'll have to click through warnings but the exports should be aligned properly.");
-						}
-					}
-				}catch(e){
-					alert("Error running export: "+e);
-				}
-			};
-
-			
-
-			var tab = this.tabPanel.add("Output Files", pack.Button.STYLE_MAIN_TAB_OUTPUT);
-			this.previewPanel = new pack.PreviewFilesPanel(tab);
-			this.outputTabIndex = this.tabPanel.panels.length - 1;
-
-			this.tabPanel.setTransHandlers(this.outputTabIndex, closure(this.previewPanel, this.previewPanel.show), closure(this.previewPanel, this.previewPanel.hide));
-
+				};
+				this.exportPanel.onSaveCloseClicked = function() {
+					scopedThis.saveOptions();
+					scopedThis.toolPanel.close()
+				};
+				this.exportPanel.onExportClicked = closure(this, this.beginExport);
+			}
 
 			this.exporter = new pack.Exporter(this.exportSettings,
-				function(prog, total){scopedThis.exportPanel.setProgress(prog, total)},
+				function(prog, total){scopedThis.setProgress(prog, total)},
 				function(item){scopedThis.previewPanel.updatedExportItem(item); scopedThis.toolPanel.update();});
 
 			this.exporter.onExportFinished = function(success, fail){
@@ -279,23 +338,62 @@
 			}
 
 
-			if(this.layerPanel || this.elementPanel){
-				this.elemVis = pack.DocUtils.getAllElemVisibility(this.docRef);
-			}
+			this.elemVis = pack.DocUtils.getAllElemVisibility(this.docRef);
 			
 			if(this.artboardPanel) this.artboardPanel.onSelectedChanged();
 			if(this.layerPanel) this.layerPanel.onSelectedChanged();
 			if(this.elementPanel) this.elementPanel.onSelectedChanged();
 			if(this.symbolPanel) this.symbolPanel.onSelectedChanged();
 
-			this.tabPanel.setSelection(exSettings.selectedTab);
+			if(this.tabPanel) this.tabPanel.setSelection(exSettings.selectedTab);
 
 			this.finishedBuilding = true;
 			this.updatePreviewList();
 
+			if(this.autoExport){
+				this.toolPanel.onActivate = function(e){
+					scopedThis.toolPanel.onActivate = null;
+					scopedThis.beginExport(false);
+				}
+			}
+
 			this.toolPanel.show();
 		},
 
+		beginExport:function(save) {
+			if(save == null) save = true;
+			try{
+				this.hasBoundErrorRef.broken = 0;
+				if(save) this.saveOptions(); // save options before export in case of errors
+
+				var dir = this.exportSettings.directory || "";
+				if($.os.toLowerCase().indexOf("mac")!=-1){
+					if(dir.charAt(0)!="/"){
+						dir = this.docRef.path + "/" + dir;
+					}
+				}else{
+					if(dir.indexOf(":")==-1){
+						dir = this.docRef.path + "\\" + dir;
+					}
+				}
+				var ran = this.exporter.checkValid(this.bundleList, this.exportSettings, dir);
+				if(ran){
+					if(this.tabPanel) this.tabPanel.setSelection(this.outputTabIndex);
+					this.exporter.doRun();
+					if(this.hasBoundErrorRef.broken){
+						var layerName = ( this.hasBoundErrorRef.broken==1 ? "A layer" : this.hasBoundErrorRef.broken+" layers");
+						alert(layerName+" couldn't be positioned correctly due to an Illustrator bug, if there are alignment problems in the exported files please export again with warnings turned on.\n\nYou'll have to click through warnings but the exports should be aligned properly.");
+					}
+				}
+			}catch(e){
+				alert("Error running export: "+e);
+			}
+		},
+
+		setProgress:function(prog, total){
+			if(!this.progBar) return;
+			this.progBar.value = prog / total * 100;
+		},
 
 		updatePreviewList:function(){
 			if(!this.finishedBuilding) return;
@@ -303,22 +401,18 @@
 				this.bundleList = [];
 				this.hasBoundErrorRef = {};
 
-				if(this.artboardPanel){
-					var hasExports = pack.ArtboardBundler.add(this.docRef, this.bundleList, this.exportSettings, "artboard", this.hasBoundErrorRef);
-					this.formatPanel.setPatternActive("artboard", hasExports);
-				}
-				if(this.layerPanel){
-					var hasExports = pack.LayerBundler.addLayers(this.docRef, this.bundleList, this.exportSettings, "layer", this.hasBoundErrorRef, this.elemVis);
-					this.formatPanel.setPatternActive("layer", hasExports);
-				}
-				 if(this.elementPanel){
-				 	var hasExports = pack.LayerBundler.addElements(this.docRef, this.bundleList, this.exportSettings, "element", this.hasBoundErrorRef, this.elemVis);
-					this.formatPanel.setPatternActive("element", hasExports);
-				 }
-				if(this.symbolPanel){
-					var hasExports = pack.SymbolBundler.add(this.docRef, this.bundleList, this.exportSettings, "symbol");
-					this.formatPanel.setPatternActive("symbol", hasExports);
-				}
+				var hasExports = pack.ArtboardBundler.add(this.docRef, this.bundleList, this.exportSettings, "artboard", this.hasBoundErrorRef);
+				if(this.formatPanel) this.formatPanel.setPatternActive("artboard", hasExports);
+
+				var hasExports = pack.LayerBundler.addLayers(this.docRef, this.bundleList, this.exportSettings, "layer", this.hasBoundErrorRef, this.elemVis);
+				if(this.formatPanel) this.formatPanel.setPatternActive("layer", hasExports);
+
+			 	var hasExports = pack.LayerBundler.addElements(this.docRef, this.bundleList, this.exportSettings, "element", this.hasBoundErrorRef, this.elemVis);
+				if(this.formatPanel) this.formatPanel.setPatternActive("element", hasExports);
+
+				var hasExports = pack.SymbolBundler.add(this.docRef, this.bundleList, this.exportSettings, "symbol");
+				if(this.formatPanel) this.formatPanel.setPatternActive("symbol", hasExports);
+
 				var windowsFS = (Folder.fs=="Windows");
 				if(windowsFS){
 					for(var i=0; i<this.bundleList.length; i++){

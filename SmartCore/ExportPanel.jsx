@@ -14,13 +14,10 @@
 			var scopedThis = this;
 			this.exportSettings = exportSettings;
 
-			// progress bar
-			this.progBar = container.add( 'progressbar', undefined, 0, 100 );
-			this.progBar.size = [820,10];
-
 			// main row
 			var mainRow = container.add('group', undefined, ''); 
-			mainRow.size = [820, 30];
+			mainRow.size = [650, 30];
+			mainRow.alignment = [ScriptUI.Alignment.RIGHT, ScriptUI.Alignment.TOP];
 			mainRow.orientation = 'row'
 
 
@@ -66,9 +63,6 @@
 		},
 		updateSettings:function(){
 			this.ignoreCheckBox.value = this.exportSettings.ignoreWarnings;
-		},
-		setProgress:function(prog, total){
-			this.progBar.value = prog / total * 100;
 		}
 	};
 	pack.ExportPanel = ExportPanel;
