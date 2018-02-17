@@ -4,17 +4,20 @@
 		return this;
 	}
 
-	ExportToolBuilder.launchStandard =function(title, settingsLayer){
+	ExportToolBuilder.launchStandard =function(settingsLayer){
 		var doc;
 		try{
 			doc = app.activeDocument;
 		}catch(e){}
+
+		pack.IGNORE_LAYERS.push(settingsLayer);
 
 		if(!doc || !app.documents.length){
 			alert("Please open a document before running this command");
 		}else{
 
 			try{
+				var title = smartExport.appTitle + " v" + smartExport.appVersion;
 				var toolBuilder = new pack.ExportToolBuilder(app.activeDocument, title);
 				var loadSuccess = toolBuilder.loadPrefLayer(settingsLayer, "nyt_exporter_info");
 				if (loadSuccess) toolBuilder.showDialog(true, true, true, true);
@@ -98,7 +101,7 @@
 			this.toolPanel.orientation = "column";
 
 			var presetDir = decodeURI(Folder.userData + '/' + pack.appId + "/presets");
-			this.presetPanel = new pack.PresetPanel(this.toolPanel, this.exportSettings, presetDir);
+			this.presetPanel = new pack.PresetPanel(this.toolPanel, this.exportSettings, presetDir, [{label:"USER PRESETS", dir:presetDir}, {label:"STANDARD PRESETS", dir:smartExport.builtInPresets}]);
 			this.presetPanel.onSettingsChanged = function(){
 				scopedThis.settingsPanel.updateSettings();
 				scopedThis.formatPanel.updateSettings();

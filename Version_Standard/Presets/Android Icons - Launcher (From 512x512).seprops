@@ -1,0 +1,112 @@
+<prefs>
+  <selectedTab>4</selectedTab>
+  <directory/>
+
+  <artboardAll>true</artboardAll>
+  
+  <formats>
+
+    <format>
+      <format>PNG 24</format>
+      <scaling>100</scaling>
+      <boundsMode>artboard</boundsMode>
+      <innerPadding>false</innerPadding>
+      <directory>AndroidIcons</directory>
+      <rasterResolution>high</rasterResolution>
+      <active>true</active>
+      <patterns>
+        <layer>&lt;ArtboardName&gt;_&lt;LayerName&gt;/launcher_store_512.&lt;Ext&gt;</layer>
+        <artboard>&lt;ArtboardName&gt;/launcher_store_512.&lt;Ext&gt;</artboard>
+        <symbol>&lt;SymbolName&gt;/launcher_store_512.&lt;Ext&gt;</symbol>
+        <element>&lt;ArtboardName&gt;_ElementName&gt;/launcher_store_512.&lt;Ext&gt;</element>
+      </patterns>
+      <options/>
+    </format>
+
+    <format>
+      <format>PNG 24</format>
+      <scaling>37.5</scaling>
+      <boundsMode>artboard</boundsMode>
+      <innerPadding>false</innerPadding>
+      <directory>AndroidIcons</directory>
+      <rasterResolution>high</rasterResolution>
+      <active>true</active>
+      <patterns>
+        <layer>&lt;ArtboardName&gt;_&lt;LayerName&gt;/launcher_xxxhdpi_192.&lt;Ext&gt;</layer>
+        <artboard>&lt;ArtboardName&gt;/launcher_xxxhdpi_192.&lt;Ext&gt;</artboard>
+        <symbol>&lt;SymbolName&gt;/launcher_xxxhdpi_192.&lt;Ext&gt;</symbol>
+        <element>&lt;ArtboardName&gt;_&lt;ElementName&gt;/launcher_xxxhdpi_192.&lt;Ext&gt;</element>
+      </patterns>
+      <options/>
+    </format>
+
+    <format>
+      <format>PNG 24</format>
+      <scaling>28.125</scaling>
+      <boundsMode>artboard</boundsMode>
+      <innerPadding>false</innerPadding>
+      <directory>AndroidIcons</directory>
+      <rasterResolution>high</rasterResolution>
+      <active>true</active>
+      <patterns>
+        <layer>&lt;ArtboardName&gt;_&lt;LayerName&gt;/launcher_xxhdpi_144.&lt;Ext&gt;</layer>
+        <artboard>&lt;ArtboardName&gt;/launcher_xxhdpi_144.&lt;Ext&gt;</artboard>
+        <symbol>&lt;SymbolName&gt;/launcher_xxhdpi_144.&lt;Ext&gt;</symbol>
+        <element>&lt;ArtboardName&gt;_ElementName&gt;/launcher_xxhdpi_144.&lt;Ext&gt;</element>
+      </patterns>
+      <options/>
+    </format>
+
+    <format>
+      <format>PNG 24</format>
+      <scaling>18.75</scaling>
+      <boundsMode>artboard</boundsMode>
+      <innerPadding>false</innerPadding>
+      <directory>AndroidIcons</directory>
+      <rasterResolution>high</rasterResolution>
+      <active>true</active>
+      <patterns>
+        <layer>&lt;ArtboardName&gt;_&lt;LayerName&gt;/launcher_xhdpi_96.&lt;Ext&gt;</layer>
+        <artboard>&lt;ArtboardName&gt;/launcher_xhdpi_96.&lt;Ext&gt;</artboard>
+        <symbol>&lt;SymbolName&gt;/launcher_xhdpi_96.&lt;Ext&gt;</symbol>
+        <element>&lt;ArtboardName&gt;_&lt;ElementName&gt;/launcher_xhdpi_96.&lt;Ext&gt;</element>
+      </patterns>
+      <options/>
+    </format>
+
+    <format>
+      <format>PNG 24</format>
+      <scaling>14.0625</scaling>
+      <boundsMode>artboard</boundsMode>
+      <innerPadding>false</innerPadding>
+      <directory>AndroidIcons</directory>
+      <rasterResolution>high</rasterResolution>
+      <active>true</active>
+      <patterns>
+        <layer>&lt;ArtboardName&gt;_&lt;LayerName&gt;/launcher_hdpi_72.&lt;Ext&gt;</layer>
+        <artboard>&lt;ArtboardName&gt;/launcher_hdpi_72.&lt;Ext&gt;</artboard>
+        <symbol>&lt;SymbolName&gt;/launcher_hdpi_72.&lt;Ext&gt;</symbol>
+        <element>&lt;ArtboardName&gt;_&lt;ElementName&gt;/launcher_hdpi_72.&lt;Ext&gt;</element>
+      </patterns>
+      <options/>
+    </format>
+
+    <format>
+      <format>PNG 24</format>
+      <scaling>9.375</scaling>
+      <boundsMode>artboard</boundsMode>
+      <innerPadding>false</innerPadding>
+      <directory>AndroidIcons</directory>
+      <rasterResolution>high</rasterResolution>
+      <active>true</active>
+      <patterns>
+        <layer>&lt;ArtboardName&gt;_&lt;LayerName&gt;/launcher_mdpi_48.&lt;Ext&gt;</layer>
+        <artboard>&lt;ArtboardName&gt;/launcher_mdpi_48.&lt;Ext&gt;</artboard>
+        <symbol>&lt;SymbolName&gt;/launcher_mdpi_48.&lt;Ext&gt;</symbol>
+        <element>&lt;ArtboardName&gt;_&lt;ElementName&gt;/launcher_mdpi_48.&lt;Ext&gt;</element>
+      </patterns>
+      <options/>
+    </format>
+
+  </formats>
+</prefs>

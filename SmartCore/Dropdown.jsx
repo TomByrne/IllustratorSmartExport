@@ -62,7 +62,10 @@
 					for(var i=0; i<items.length; i++){
 						var data = items[i];
 						var item = this.dropdown.add("item");
-						item.text = data;
+
+						if(!data.separator) item.text = data.label || data;
+						data.separator = data.separator;
+						item.enabled = data.separator ? false : data.active !== false;
 					}
 				}
 				this.setSelection(this.selection);
@@ -131,6 +134,7 @@
 				this.listbox.active = true;
 
 				this.listbox.onChange = function(){
+					if(this.ignoreChanges) return;
 					scopedThis.setSelection(scopedThis.listbox.selection.index);
 				}
 
@@ -154,11 +158,16 @@
 					for(var i=0; i<items.length; i++){
 						var data = items[i];
 						var item = this.listbox.add("item");
-						item.text = data;
 
-						this.button.text = data;
-						if(maxWidth < this.button.preferredSize[0]){
-							maxWidth = this.button.preferredSize[0];
+						if(!data.separator) item.text = data.label || data;
+						data.separator = data.separator;
+						item.enabled = data.separator ? false : data.active !== false;
+
+						if(!data.separator){
+							this.button.text = item.text;
+							if(maxWidth < this.button.preferredSize[0]){
+								maxWidth = this.button.preferredSize[0];
+							}
 						}
 						stackHeight += 22;
 					}
@@ -189,6 +198,7 @@
 				this.listWindow.frameLocation = [x, y];
 			},
 			setSelection:function(selectedInd){
+
 				this.close();
 				var max = (this.items==null ? -1 : this.items.length-1);
 				if(selectedInd > max){
@@ -202,9 +212,12 @@
 				if(selectedInd == null || selectedInd == -1){
 					this.button.text = "";
 				}else{
-					this.button.text = this.items[selectedInd];
+					var item = this.items[selectedInd];
+					this.button.text = item.label || item;
 				}
-				this.listbox.selection = selectedInd;
+				this.ignoreChanges = true;
+				this.listbox.selection = this.items ? this.items[selectedInd] : null;
+				this.ignoreChanges = false;
 
 				try{
 					if(this.onChange != null) this.onChange();

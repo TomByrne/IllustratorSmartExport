@@ -1,6 +1,6 @@
 (function(pack){
-	function PresetPanel(container, exportSettings, presetDir){
-		this.init(container, exportSettings, presetDir);
+	function PresetPanel(container, exportSettings, userPresetDir, presetLocations){
+		this.init(container, exportSettings, userPresetDir, presetLocations);
 		return this;
 	}
 
@@ -9,20 +9,22 @@
 
 		onSettingsChanged:null,
 
-		init:function(container, exportSettings, presetDir){
+		init:function(container, exportSettings, userPresetDir, presetLocations){
 			var scopedThis = this;
 			this.exportSettings = exportSettings;
 			this.fileFilter = new pack.FileFilter([{name:"Smart Export Settings", ext:"seprops"}], true).getFilter();
 
-			var dir = Folder(presetDir);
+
+			var dir = Folder(userPresetDir);
 			if(dir instanceof File){
 				dir.remove();
-				dir = new Folder(presetDir);
+				dir = new Folder(userPresetDir);
 			}
 			if(!dir.exists){
 				dir.create();
 			}
-			this.presetDir = dir;
+			this.userPresetDir = dir;
+			this.presetLocations = presetLocations;
 
 			// buttons row
 			row = container.add('group', undefined, ''); 
@@ -31,10 +33,11 @@
 
 			//this.presetList = row.add('dropdownlist', undefined);
 			this.presetList = new pack.Dropdown(row);
-			this.presetList.setSize(312, 22);
+			this.presetList.setSize(400, 22);
 			this.presetList.onChange = function() {
 				if(scopedThis.presetList.selection==0)return;
-				scopedThis.loadPreset(scopedThis.files[scopedThis.presetList.selection-1]);
+				var item = scopedThis.items[scopedThis.presetList.selection];
+				if(item && item.path) scopedThis.loadPreset(item.path);
 				scopedThis.presetList.setSelection(0);
 			};
 
@@ -80,9 +83,9 @@
 				var files = File.openDialog ("Import Settings", this.fileFilter, true);
 				for(var i=0; i<files.length; i++){
 					var file = files[i];
-					var othFile = File(this.presetDir + "/" + file.name);
+					var othFile = File(this.userPresetDir + "/" + file.name);
 					if(!othFile.exists || confirm("Settings "+decodeURIComponent(file.name)+" already exists.\nOverwrite?")){
-						file.copy(this.presetDir + "/" + file.name);
+						file.copy(this.userPresetDir + "/" + file.name);
 					}
 				}
 				this.buildPresetList();
@@ -92,7 +95,7 @@
 			}
 		},
 		doExport:function(){
-			var dlg = new pack.ExportDialog(this.presetDir, this.SETTINGS_EXTENSION);
+			var dlg = new pack.ExportDialog(this.userPresetDir, this.SETTINGS_EXTENSION);
 			var settings = dlg.settings;
 			if(settings == null)return;
 
@@ -114,21 +117,39 @@
 			}
 		},
 		buildPresetList:function(){
-			var items = ["--- Load Settings ---"];
-			//this.presetList.removeAll();
-			//this.presetList.add("item", "--- Load Settings ---");
-			var allFiles = this.presetDir.getFiles();
-			this.files = [];
-			for(var i=0; i<allFiles.length; ++i){
-				var file = allFiles[i];
-				var extIndex = file.name.indexOf(this.SETTINGS_EXTENSION);
-				if(extIndex==-1)continue;
-				var fileName = file.name.substr(0, extIndex);
-				fileName = decodeURIComponent(fileName);
-				//this.presetList.add("item", fileName);
-				items.push(fileName);
-				this.files.push(file);
+			var items = [{label:"--- Load Settings ---", active:false}];
+
+			var count = 0;
+			for(var i=0; i<this.presetLocations.length; i++){
+				var presetLocation = this.presetLocations[i];
+
+				var dir = Folder(presetLocation.dir);
+				if(dir instanceof File || !dir.exists){
+					continue;
+				}
+				var allFiles = dir.getFiles();
+				if(allFiles.length != 0){
+
+					items.push( { label:presetLocation.label, separator:true } );
+
+					items.push({ label:presetLocation.label, active:false });
+
+					for(var i=0; i<allFiles.length; ++i){
+						var file = allFiles[i];
+						var extIndex = file.name.indexOf(this.SETTINGS_EXTENSION);
+						if(extIndex==-1)continue;
+						var fileName = file.name.substr(0, extIndex);
+						fileName = decodeURIComponent(fileName);
+
+						items.push({ label:fileName, path:file });
+					}
+
+					count++;
+				}
 			}
+
+			this.items = items;
+			this.presetList.verbose = true;
 			this.presetList.setItems(items);
 			this.presetList.setSelection(0);
 		},
@@ -136,7 +157,7 @@
 			var nameDlg = new pack.SaveSettingsDialog();
 			var name = nameDlg.text;
 			if(name){
-				var path = this.presetDir.fullName + "/" + name + this.SETTINGS_EXTENSION;
+				var path = this.userPresetDir.fullName + "/" + name + this.SETTINGS_EXTENSION;
 				this.saveCurrentTo(new File(path), nameDlg.patterns, nameDlg.generalSettings, nameDlg.formatSettings, true);
 			}
 		},

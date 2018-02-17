@@ -36,6 +36,9 @@ del "%TempDir%\temp1.txt"
 del "%TempDir%\temp2.txt"
 
 xcopy "SmartCore" "%TempDir%/%AppName%" /S /Y /i
+
+xcopy "%1\Presets" "%TempDir%/%AppName%/Presets" /S /Y /i
+
 if exist "./bin/%AppName% v%version%.zxp" (
 	echo.
 	echo.
