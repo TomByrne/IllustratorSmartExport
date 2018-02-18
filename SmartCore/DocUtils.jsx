@@ -187,7 +187,7 @@
 				if(!item.visible)continue;
 				itemBounds = this.getLayerBounds(doc, item, artboardRect, childFilter, path);
 			}else{
-				if(item.guides || (!ignoreVis && item.hidden)) continue;
+				if(!ignoreVis && item.hidden) continue;
 				itemBounds = this.getItemBounds(item, childFilter, path);
 			}
 			if(itemBounds == null) continue;

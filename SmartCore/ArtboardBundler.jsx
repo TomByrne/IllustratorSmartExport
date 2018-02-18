@@ -130,10 +130,18 @@
 		var artW = rect[2]-rect[0];
 		var artH = rect[1]-rect[3];
 
+		var elemFilter = (boundsMode == pack.BoundsMode.ARTWORK ? closure(ArtboardBundler, ArtboardBundler.filterByVisible, [], true) : null );
 		
 		exportBundle.copyDoc = pack.DocUtils.copyDocument(docRef, artboard, rect, artW, artH, padding, layerCheck, null, doOutline, ungroup, null, exportSettings.ignoreWarnings, ArtboardBundler.hasBoundErrorRef, offset, colorSpace, rasterResolution);
 		
 		return exportBundle.copyDoc;
+	}
+	ArtboardBundler.filterByVisible = function(element, path){
+		if(element.hidden){
+			return false;
+		}else{
+			return 'explore';
+		}
 	}
 	ArtboardBundler.cleanupCopy = function(docRef, exportSettings, exportBundle){
 		if(!exportBundle.copyDoc) return;

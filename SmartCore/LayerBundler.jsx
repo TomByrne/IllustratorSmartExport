@@ -188,11 +188,12 @@
 		if(LayerBundler.copyDoc)app.activeDocument = doc;
 
 		var elemFilter = (elemPath == null ? null : closure(LayerBundler, LayerBundler.filterElements, [elemPath], true));
+		if(elemFilter == null && boundsMode == pack.BoundsMode.ARTWORK) elemFilter = closure(LayerBundler, LayerBundler.filterByVisible, [], true);
 
 		// only process layer if it has bounds (i.e. not guide layer) and falls within current artboard bounds
-		var layerRect = pack.DocUtils.getLayerBounds(docRef, layer, rect, elemFilter);
+		var layerRect = pack.DocUtils.getLayerBounds(docRef, layer, null, elemFilter);
 		if (layerRect) {
-			var isVis = !ignoreOutOfBounds || pack.DocUtils.intersects(rect, layerRect);
+			var isVis = boundsMode == pack.BoundsMode.ARTWORK || (!ignoreOutOfBounds || pack.DocUtils.intersects(rect, layerRect));
 			if((createDoc || !LayerBundler.hasAdditLayers) && !isVis){
 				// skip layers where nothing is visible
 				return "skipped";
@@ -257,6 +258,13 @@
 			return 'explore';
 		}
 		return false;
+	}
+	LayerBundler.filterByVisible = function(element, path){
+		if(element.hidden){
+			return false;
+		}else{
+			return 'explore';
+		}
 	}
 	LayerBundler.prepareShowLayerFirst = function(docRef, exportSettings, exportBundle, artI, layI, elemPath){
 		pack.DocUtils.hideAllLayers(docRef);
