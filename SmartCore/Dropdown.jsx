@@ -134,7 +134,7 @@
 				this.listbox.active = true;
 
 				this.listbox.onChange = function(){
-					if(this.ignoreChanges) return;
+					if(scopedThis.ignoreChanges) return;
 					scopedThis.setSelection(scopedThis.listbox.selection.index);
 				}
 
@@ -198,7 +198,6 @@
 				this.listWindow.frameLocation = [x, y];
 			},
 			setSelection:function(selectedInd){
-
 				this.close();
 				var max = (this.items==null ? -1 : this.items.length-1);
 				if(selectedInd > max){

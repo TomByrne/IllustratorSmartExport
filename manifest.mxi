@@ -197,6 +197,7 @@ This Agreement shall be governed by the laws of the State of New South Wales, an
   </products>
   <files>
 
+    <!-- Open Panel Entry Point -->
     <file source="{AppTitle}.jsx" destination="$presets/en_US/Scripts/" shared="true"/>
     <file source="{AppTitle}.jsx" destination="$presets/en_GB/Scripts/" shared="true"/>
     <file source="{AppTitle}.jsx" destination="$presets/fr_FR/Scripts/" shared="true"/>
@@ -223,6 +224,34 @@ This Agreement shall be governed by the laws of the State of New South Wales, an
     <file source="{AppTitle}.jsx" destination="$presets/pl_PL/Skrypty/" shared="true"/>
 
 
+    <!-- Quick Export Entry Points -->
+    <file source="{PresetsFolderName}" destination="$presets/en_US/Scripts/" shared="true"/>
+    <file source="{PresetsFolderName}" destination="$presets/en_GB/Scripts/" shared="true"/>
+    <file source="{PresetsFolderName}" destination="$presets/fr_FR/Scripts/" shared="true"/>
+    <file source="{PresetsFolderName}" destination="$presets/fr_CA/Scripts/" shared="true"/>
+    <file source="{PresetsFolderName}" destination="$presets/fr_MA/Scripts/" shared="true"/>
+    <file source="{PresetsFolderName}" destination="$presets/da_DK/Scripts/" shared="true"/>
+    <file source="{PresetsFolderName}" destination="$presets/nl_NL/Scripts/" shared="true"/>
+    <file source="{PresetsFolderName}" destination="$presets/pt_BR/Scripts/" shared="true"/>
+
+    <file source="{PresetsFolderName}" destination="$presets/ja_JP/スクリプト/" shared="true"/> 
+    <file source="{PresetsFolderName}" destination="$presets/de_DE/Skripten/" shared="true"/> 
+    <file source="{PresetsFolderName}" destination="$presets/es_ES/Secuencias de comandos/" shared="true"/>  
+    <file source="{PresetsFolderName}" destination="$presets/es_MX/Secuencias de comandos/" shared="true"/>
+    <file source="{PresetsFolderName}" destination="$presets/it_IT/Script/" shared="true"/>  
+    <file source="{PresetsFolderName}" destination="$presets/cs_CZ/Skripty/" shared="true"/>  
+    <file source="{PresetsFolderName}" destination="$presets/ru_RU/Сценарии/" shared="true"/>
+    <file source="{PresetsFolderName}" destination="$presets/uk_UA/Сценарії/" shared="true"/> 
+    <file source="{PresetsFolderName}" destination="$presets/zh_CN/脚本/" shared="true"/>   
+    <file source="{PresetsFolderName}" destination="$presets/zh_TW/指令檔/" shared="true"/>  
+    <file source="{PresetsFolderName}" destination="$presets/ko_KR/스크립트/" shared="true"/> 
+    <file source="{PresetsFolderName}" destination="$presets/sv_SE/Skript/" shared="true"/>   
+    <file source="{PresetsFolderName}" destination="$presets/tr_TR/Komut Dosyaları/" shared="true"/>  
+    <file source="{PresetsFolderName}" destination="$presets/hu_HU/Parancsfájlok/" shared="true"/>
+    <file source="{PresetsFolderName}" destination="$presets/pl_PL/Skrypty/" shared="true"/>
+
+
+    <!-- Main Code -->
     <file source="{AppName}" destination="$presets/en_US" shared="true"/>
     <file source="{AppName}" destination="$presets/en_GB" shared="true"/>
     <file source="{AppName}" destination="$presets/fr_FR" shared="true"/>
