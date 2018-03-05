@@ -45,14 +45,15 @@
 
 				for (var x = 0; x < exportSettings.formats.length; x++ ) {
 					var formatSettings = exportSettings.formats[x];
-					if(!formatSettings.active) continue;
+					var filePattern = formatSettings.patterns[patternName];
+					if(!formatSettings.active || filePattern == "" || filePattern == null) continue;
 
 					var format = formatSettings.formatRef;
 
 
 					var bundle = this.getBundle(bundleMap, artI, layI, formatSettings.innerPadding, formatSettings.scaling, formatSettings.boundsMode, format.copyBehaviour, formatSettings.fontHandling=="outline", exportSettings.ignoreOutOfBounds_elements, formatSettings.ungroup, j==0, j==elementPaths.length-1, elemVis, formatSettings.colorSpace, formatSettings.rasterResolution, searchPath);
 					var elemName = (element.name || path);
-					var name = LayerBundler.makeElemFileName(formatSettings.patterns[patternName], docRef.fullName.name, formatSettings.formatRef.ext, artI, artboard.name, layI, layer.name, path, elemName);
+					var name = LayerBundler.makeElemFileName(filePattern, docRef.fullName.name, formatSettings.formatRef.ext, artI, artboard.name, layI, layer.name, path, elemName);
 					var item = new pack.ExportItem(formatSettings, name);
 					item.names = ["Artboard "+(artI+1), "Element "+path];
 					bundle.items.push(item);
@@ -96,13 +97,14 @@
 
 				for (var x = 0; x < exportSettings.formats.length; x++ ) {
 					var formatSettings = exportSettings.formats[x];
-					if(!formatSettings.active) continue;
+					var filePattern = formatSettings.patterns[patternName];
+					if(!formatSettings.active || filePattern == '' || filePattern == null) continue;
 					
 					var format = formatSettings.formatRef;
 
 
 					var bundle = this.getBundle(bundleMap, artI, layI, formatSettings.innerPadding, formatSettings.scaling, formatSettings.boundsMode, format.copyBehaviour, formatSettings.fontHandling=="outline", exportSettings.ignoreOutOfBounds_layers, formatSettings.ungroup, j==0, j==layerInd.length-1, elemVis, formatSettings.colorSpace, formatSettings.rasterResolution);
-					var item = new pack.ExportItem(formatSettings, LayerBundler.makeFileName(formatSettings.patterns[patternName], docRef.fullName.name, formatSettings.formatRef.ext, artI, artboard.name, layI, layer.name));
+					var item = new pack.ExportItem(formatSettings, LayerBundler.makeFileName(filePattern, docRef.fullName.name, formatSettings.formatRef.ext, artI, artboard.name, layI, layer.name));
 					item.names = ["Artboard "+(artI+1), "Layer "+(layI+1)];
 					bundle.items.push(item);
 
@@ -188,7 +190,7 @@
 		if(LayerBundler.copyDoc)app.activeDocument = doc;
 
 		var elemFilter = (elemPath == null ? null : closure(LayerBundler, LayerBundler.filterElements, [elemPath], true));
-		if(elemFilter == null && boundsMode == pack.BoundsMode.ARTWORK) elemFilter = closure(LayerBundler, LayerBundler.filterByVisible, [], true);
+		if(elemFilter == null && boundsMode == pack.BoundsMode.ARTWORK) elemFilter = closure(LayerBundler, ungroup ? LayerBundler.filterByVisibleUngroup : LayerBundler.filterByVisible, [], true);
 
 		// only process layer if it has bounds (i.e. not guide layer) and falls within current artboard bounds
 		var layerRect = pack.DocUtils.getLayerBounds(docRef, layer, null, elemFilter);
@@ -259,11 +261,18 @@
 		}
 		return false;
 	}
-	LayerBundler.filterByVisible = function(element, path){
+	LayerBundler.filterByVisibleUngroup = function(element, path){
 		if(element.hidden){
 			return false;
 		}else{
 			return 'explore';
+		}
+	}
+	LayerBundler.filterByVisible = function(element, path){
+		if(element.hidden){
+			return false;
+		}else{
+			return true;
 		}
 	}
 	LayerBundler.prepareShowLayerFirst = function(docRef, exportSettings, exportBundle, artI, layI, elemPath){

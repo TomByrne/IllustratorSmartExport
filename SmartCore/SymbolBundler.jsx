@@ -19,13 +19,14 @@
 
 			for (var x = 0; x < exportSettings.formats.length; x++ ) {
 				var formatSettings = exportSettings.formats[x];
-				if(!formatSettings.active) continue;
+				var filePattern = formatSettings.patterns[patternName];
+				if(!formatSettings.active || filePattern == '' || filePattern == null) continue;
 				
 				var format = formatSettings.formatRef;
 
 
 				var bundle = this.getBundle(bundleMap, symbol, formatSettings.innerPadding, formatSettings.scaling, formatSettings.boundsMode, formatSettings.fontHandling=="outline", formatSettings.ungroup, formatSettings.colorSpace, formatSettings.rasterResolution, j==symbolNames.length-1 && x==exportSettings.formats.length-1);
-				var item = new pack.ExportItem(formatSettings, SymbolBundler.makeFileName(formatSettings.patterns[patternName], formatSettings.formatRef.ext, symbol.name));
+				var item = new pack.ExportItem(formatSettings, SymbolBundler.makeFileName(filePattern, formatSettings.formatRef.ext, symbol.name));
 				item.names = [symbol.name];
 				bundle.items.push(item);
 

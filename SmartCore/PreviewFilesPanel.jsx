@@ -39,8 +39,8 @@
 
 					var names = exportItem.names;
 
-					if(lastNames[0]!=names[0])item.subItems[0].text = names[0] || "";
-					if(lastNames[1]!=names[1])item.subItems[1].text = names[1] || "";
+					if(lastNames[0]!=names[0]) item.subItems[0].text = names[0] || "";
+					if(lastNames[1]!=names[1]) item.subItems[1].text = names[1] || "";
 
 					lastNames = names;
 					this.flattenedList.push(exportItem);
@@ -79,7 +79,7 @@
 					break;
 			}
 			item.image = File(pack.directory+"/icons/"+icon+".png");
-			item.subItems[2].text = itemData.fileName;
+			item.subItems[2].text = decodeURIComponent(itemData.fileName);
 		},
 		show:function(){
 			this.shown = true;

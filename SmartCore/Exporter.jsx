@@ -196,6 +196,17 @@
 					this.onExportFinished(null, true);
 				}
 			}
+			// This alert prevents crashing
+			if(success){
+				alert(this.num_exported + " exports were successful");
+
+			}else if(this.num_exported){
+				alert(this.num_exported + " exports were successful.\n" + failed.length + " exports failed.");
+
+			}else{
+				alert("All " + failed.length + "exports failed.");
+			}
+			
 			pack.DocCloser.closePending();
 			return success;
 		},

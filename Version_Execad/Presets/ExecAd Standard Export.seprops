@@ -1,7 +1,8 @@
 <prefs>
   <directory/>
   
-  <layerAll>true</layerAll>
+  <artboardAll>true</artboardAll>
+  <layerInd>0</layerInd>
   <artboardAll_layers>true</artboardAll_layers>
 
   <ignoreWarnings>true</ignoreWarnings>
@@ -19,7 +20,7 @@
       <active>true</active>
       <patterns>
         <layer>&lt;DocName&gt;_&lt;LayerName&gt;.&lt;Ext&gt;</layer>
-        <artboard>&lt;ArtboardName&gt;.&lt;Ext&gt;</artboard>
+        <artboard>&lt;DocName&gt;_proof.&lt;Ext&gt;</artboard>
         <symbol>&lt;SymbolName&gt;.&lt;Ext&gt;</symbol>
         <element>&lt;ArtboardName&gt;_&lt;ElementName&gt;.&lt;Ext&gt;</element>
       </patterns>

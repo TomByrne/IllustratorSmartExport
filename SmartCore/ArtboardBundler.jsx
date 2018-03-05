@@ -20,12 +20,13 @@
 
 			for (var x = 0; x < exportSettings.formats.length; x++ ) {
 				var formatSettings = exportSettings.formats[x];
-				if(!formatSettings.active) continue;
+				var filePattern = formatSettings.patterns[patternName];
+				if(!formatSettings.active || filePattern == '' || filePattern == null) continue;
 				
 				var format = formatSettings.formatRef;
 				var bundle = this.getBundle(bundleMap, artI, formatSettings.innerPadding, formatSettings.scaling, formatSettings.boundsMode, format.copyBehaviour, formatSettings.fontHandling=="outline", formatSettings.ungroup, formatSettings.colorSpace, formatSettings.rasterResolution);
 
-				var item = new pack.ExportItem(formatSettings, ArtboardBundler.makeFileName(formatSettings.patterns[patternName], docRef.fullName.name, formatSettings.formatRef.ext, i, artboardName));
+				var item = new pack.ExportItem(formatSettings, ArtboardBundler.makeFileName(filePattern, docRef.fullName.name, formatSettings.formatRef.ext, i, artboardName));
 				item.names = ["Artboard "+(artI+1)];
 				bundle.items.push(item);
 
@@ -130,17 +131,24 @@
 		var artW = rect[2]-rect[0];
 		var artH = rect[1]-rect[3];
 
-		var elemFilter = (boundsMode == pack.BoundsMode.ARTWORK ? closure(ArtboardBundler, ArtboardBundler.filterByVisible, [], true) : null );
+		var elemFilter = (boundsMode == pack.BoundsMode.ARTWORK ? closure(ArtboardBundler, ungroup ? ArtboardBundler.filterByVisibleUngroup : ArtboardBundler.filterByVisible, [], true) : null );
 		
 		exportBundle.copyDoc = pack.DocUtils.copyDocument(docRef, artboard, rect, artW, artH, padding, layerCheck, null, doOutline, ungroup, null, exportSettings.ignoreWarnings, ArtboardBundler.hasBoundErrorRef, offset, colorSpace, rasterResolution);
 		
 		return exportBundle.copyDoc;
 	}
-	ArtboardBundler.filterByVisible = function(element, path){
+	ArtboardBundler.filterByVisibleUngroup = function(element, path){
 		if(element.hidden){
 			return false;
 		}else{
 			return 'explore';
+		}
+	}
+	ArtboardBundler.filterByVisible = function(element, path){
+		if(element.hidden){
+			return false;
+		}else{
+			return true;
 		}
 	}
 	ArtboardBundler.cleanupCopy = function(docRef, exportSettings, exportBundle){

@@ -193,7 +193,7 @@ This Agreement shall be governed by the laws of the State of New South Wales, an
 ]]></license-agreement>
   <author name="Thomas Byrne"/>
   <products>
-    <product familyname="Illustrator" primary="true" version="16.0" maxversion="22"/>
+    <product familyname="Illustrator" primary="true" version="16.0"/>
   </products>
   <files>
 
