@@ -28,6 +28,17 @@ To use, go to File > Scripts > {AppTitle}
 
 <h3>Change Log:</h3>
 
+<h3>03/04/2018 - v5.2</h3>
+- Centered viewport so that reopened exports are visible
+
+<h3>05/03/2018 - v5.1</h3>
+- Grouping is retained in exports
+- Preview file names in list show unencoded characters for better indication of files being generated.
+- There is now an alert at the end of export to reduce crashes.
+
+<h3>18/02/2018 - v5.0</h3>
+- Reworked builds to include quick-export modes
+
 <h3>24/01/2018 - v4.5</h3>
 - Fixed bug where initial selection of artboards wasn't being noticed by package export system.
 - Fixed crashing error when accessing 'PDFPresetsList'

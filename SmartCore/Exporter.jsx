@@ -135,6 +135,17 @@
 									}
 								}
 
+								// Center the view
+								var bounds;
+								if(copyDoc.artboards.length == 1){
+									bounds = copyDoc.artboards[0].artboardRect;
+								}else{
+									bounds = copyDoc.geometricBounds;
+								}
+								var centerX = (bounds[0] + bounds[2]) / 2;
+								var centerY = (bounds[1] + bounds[3]) / 2;
+								copyDoc.activeView.centerPoint = [centerX, centerY];
+
 								formatSettings.formatRef.saveFile(copyDoc, fileName, item.formatSettings.saveOptions );
 								item.state = "success";
 
