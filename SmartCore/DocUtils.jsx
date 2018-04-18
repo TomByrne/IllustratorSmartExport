@@ -28,6 +28,7 @@
 		}
 
 		var copyDoc = app.documents.addDocument(preset.colorMode, preset);
+		copyDoc.artboards.setActiveArtboardIndex(0);
 		var copyArtboard = copyDoc.artboards[0];
 		copyArtboard.shift = null; // Illustrator seems to reuse instances behind the scenes
 		app.coordinateSystem = CoordinateSystem.ARTBOARDCOORDINATESYSTEM;
@@ -134,6 +135,8 @@
 			toDoc.isNew = false;
 		}
 
+		//alert("new bounds: "+DocUtils.getLayerBounds(toDoc, toLayer));
+
 		return toLayer;
 	}
 	DocUtils.doUngroupLayer = function(layer) {
@@ -187,6 +190,7 @@
 				if(!item.visible)continue;
 				itemBounds = this.getLayerBounds(doc, item, artboardRect, childFilter, path);
 			}else{
+				//if(item.guides || (!ignoreVis && item.hidden)) continue;
 				if(!ignoreVis && item.hidden) continue;
 				itemBounds = this.getItemBounds(item, childFilter, path);
 			}
@@ -251,6 +255,7 @@
 				var filter = elemFilter(item, path);
 				if(!filter) continue;
 
+				//alert("filter: "+filter+" "+item.typename);
 				if(item.typename == "GroupItem" && filter == 'explore'){
 					DocUtils.copyItems(doc, item.pageItems, toLayer, ignoreWarnings, artboardRect, path, elemFilter);
 				}else{

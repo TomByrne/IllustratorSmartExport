@@ -47,7 +47,7 @@
 		}
 	}
 
-	pack.IGNORE_LAYERS = ["Export Settings", "Export Symbol Settings", "nyt_exporter_info"];
+	pack.IGNORE_LAYERS = ["Export Settings", "Export Symbol Settings", "nyt_exporter_info", "ExecAd Export Settings"];
 
 	ExportToolBuilder.prototype={
 		prefsLayerName:         null,
