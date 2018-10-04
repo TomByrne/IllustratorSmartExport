@@ -21,7 +21,7 @@
 			try{
 				var showParts;
 				var title;
-				var autoExport = false;
+				var autoExport = smartExport.autoExport;
 				if(presetPath){
 					showParts = { preview:true, progress:true };
 					title = presetPath.substring(presetPath.lastIndexOf("/"), presetPath.lastIndexOf("."));

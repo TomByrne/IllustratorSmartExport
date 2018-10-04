@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ExtensionList>
+    <Extension Id="org.tbyrne.smartExport.panel">
+        <HostList>
+            <Host Name="ILST" Port="8012"/>
+        </HostList>
+    </Extension>
+    <Extension Id="org.tbyrne.smartExport.previous">
+        <HostList>
+            <Host Name="ILST" Port="8013"/>
+        </HostList>
+    </Extension>
+</ExtensionList>

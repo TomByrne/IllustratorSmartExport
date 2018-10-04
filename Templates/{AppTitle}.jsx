@@ -7,13 +7,30 @@ try{
 	smartExport.appId = "{AppID}";
 	smartExport.appTitle = "{AppTitle}";
 	smartExport.appName = "{AppName}";
-	smartExport.appVerison = "{version}";
+	smartExport.appVersion = "{version}";
 
-	if($.os.toLowerCase().indexOf("macintosh")!=-1){
-		smartExport.directory =  decodeURI(app.path + '/Presets.localized/' + app.locale + "/" + smartExport.appName);
-	}else{
-		smartExport.directory =  decodeURI(app.path + '/Presets/' + app.locale + "/" + smartExport.appName);
+	
+
+	// Get details sent in by HTML wrapper
+	try{
+		smartExport.autoExport = smartExportAutoExport;
+	}catch(e){}
+
+	try{
+		smartExport.directory =  smartExportPath + "/" + smartExport.appName;
+	}catch(e){}
+
+
+
+	if(smartExport.directory == null){
+		if($.os.toLowerCase().indexOf("macintosh")!=-1){
+			smartExport.directory =  decodeURI(app.path + '/Presets.localized/' + app.locale + "/" + smartExport.appName);
+			
+		}else{
+			smartExport.directory =  decodeURI(app.path + '/Presets/' + app.locale + "/" + smartExport.appName);
+		}
 	}
+	
 	smartExport.builtInPresets = smartExport.directory + "/Presets";
 
 	var scriptFolder = new Folder(smartExport.directory);

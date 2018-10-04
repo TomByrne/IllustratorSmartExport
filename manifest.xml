@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ExtensionManifest Version="4.0" ExtensionBundleId="{AppID}" ExtensionBundleVersion="{version}"
+		ExtensionBundleName="{AppTitle}" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+	<Author>
+		<![CDATA[tbyrne.org]]>
+	</Author>
+
+	<ExtensionList>
+		<Extension Id="{AppID}.panel" Version="{version}" />
+		<Extension Id="{AppID}.previous" Version="{version}" />
+	</ExtensionList>
+
+
+	<ExecutionEnvironment>
+		<HostList>
+            <Host Name="ILST" Version="[15.0,99.9]"/>
+		</HostList>
+		<LocaleList>
+			<Locale Code="All" />
+		</LocaleList>
+		<RequiredRuntimeList>
+			<RequiredRuntime Name="CSXS" Version="4.0" />
+		</RequiredRuntimeList>
+	</ExecutionEnvironment>
+
+
+	<DispatchInfoList>
+        <Extension Id="{AppID}.panel">
+            <DispatchInfo>
+                <Resources>
+                    <MainPath>./panel.html</MainPath>
+                </Resources>
+                <Lifecycle>
+                    <AutoVisible>false</AutoVisible>
+                </Lifecycle>
+
+                <UI>
+					<Type>ModalDialog</Type>
+                    <Menu>{AppTitle}</Menu>
+                    <Geometry>
+                        <Size>
+                            <Height>200</Height>
+                            <Width>200</Width>
+                        </Size>
+                    </Geometry>
+                </UI>
+
+            </DispatchInfo>
+        </Extension>
+
+        <Extension Id="{AppID}.previous">
+            <DispatchInfo>
+                <Resources>
+                    <MainPath>./previous.html</MainPath>
+                </Resources>
+                <Lifecycle>
+                    <AutoVisible>false</AutoVisible>
+                </Lifecycle>
+
+                <UI>
+					<Type>ModalDialog</Type>
+                    <Menu>{AppTitle}: Run Again</Menu>
+                    <Geometry>
+                        <Size>
+                            <Height>200</Height>
+                            <Width>200</Width>
+                        </Size>
+                    </Geometry>
+                </UI>
+
+            </DispatchInfo>
+        </Extension>
+
+	</DispatchInfoList>
+
+</ExtensionManifest>

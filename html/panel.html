@@ -1,0 +1,27 @@
+<!doctype html>
+
+<html>
+
+	<head>
+		<script src="./lib/CSInterface-4.0.0.js"></script>
+
+		<script>
+			var cep = new CSInterface();
+
+			var path = cep.getSystemPath(SystemPath.EXTENSION);
+
+			var run = function(){
+				cep.evalScript('var smartExportPath = "' + path + '"; $.evalFile ("' + path + '/Entry.jsx")', function(res){
+					cep.closeExtension();
+				});
+			}
+
+			run();
+
+
+		</script>
+	</head>
+
+	<body></body>
+
+</html>
