@@ -28,6 +28,9 @@ To use, go to File > Scripts > {AppTitle}
 
 <h3>Change Log:</h3>
 
+<h3>14/04/2019 - v5.4</h3>
+- Fixed issue with failure reporting
+
 <h3>03/04/2018 - v5.2</h3>
 - Centered viewport so that reopened exports are visible
 
