@@ -54,7 +54,7 @@
 				if(confirm("Output directory doesn't exist.\nCreate it now?")){
 					Folder(directory).create();
 				}else{
-					this.doFinish(false);
+					this.doFinish(false, []);
 					return false;
 				}
 			}
@@ -68,11 +68,11 @@
 			for (var x = 0; x < this.bundleList.length; x++ ) {
 				var bundle = this.bundleList[x];
 				var items = bundle.items;
-				if(this.cancelled)return this.doFinish(false);
+				if(this.cancelled)return this.doFinish(false, failed);
 
 				var pendingItems = false;
 				for(var i=0; i<items.length; i++){
-					if(this.cancelled)return this.doFinish(false);
+					if(this.cancelled)return this.doFinish(false, failed);
 
 					var item = items[i];
 					if(item.state == "invalid" || item.state=="success"){
@@ -84,12 +84,12 @@
 				if(!pendingItems)continue;
 
 				try{
-					var i=0; // in case error is thrown
+					var i = 0; // in case error is thrown
 					var copyDoc = bundle.prepareHandler(docRef, this.exportSettings, bundle);
 					var isWin = ($.os.indexOf("Win")!=-1);
 
 					for(var i=0; i<items.length; i++){
-						if(this.cancelled)return this.doFinish(false);
+						if(this.cancelled) return this.doFinish(false, failed);
 
 						var item = items[i];
 						if(item.state == "invalid" || item.state=="success"){
@@ -122,6 +122,10 @@
 									dir = this.directory;
 								}
 								var fileName = dir + "/" + item.fileName;
+								
+								if(Folder.fs=="Windows"){
+									fileName = fileName.split('\\').join('/');
+								}
 
 								var parts = fileName.split("/");
 								var path = parts[0] + "/";
@@ -133,6 +137,10 @@
 											dirObj.create();
 										}
 									}
+								}
+								
+								if(Folder.fs=="Windows"){
+									fileName = fileName.split('/').join('\\');
 								}
 
 								// Center the view
@@ -147,7 +155,12 @@
 								copyDoc.activeView.centerPoint = [centerX, centerY];
 
 								formatSettings.formatRef.saveFile(copyDoc, fileName, item.formatSettings.saveOptions );
-								item.state = "success";
+								if(File(fileName).exists){
+									item.state = "success";
+								}else{
+									failed.push(item);
+									item.state = "failed";
+								}
 
 							}catch(e){
 								alert("Save Failed: "+e);
@@ -191,14 +204,14 @@
 				if(confirm(msg)){
 					return this.doRun();
 				}else{
-					return this.doFinish(false);
+					return this.doFinish(false, failed);
 				}
 			}else{
-				return this.doFinish(true);
+				return this.doFinish(true, failed);
 			}
 		},
 
-		doFinish: function(success){
+		doFinish: function(success, failed){
 			this.running = false;
 			if(this.onExportFinished){
 				if(success){
@@ -207,12 +220,13 @@
 					this.onExportFinished(null, true);
 				}
 			}
+			var successCount = this.num_exported - failed.length;
 			// This alert prevents crashing
 			if(success){
-				alert(this.num_exported + " exports were successful");
+				alert(successCount + " exports were successful");
 
-			}else if(this.num_exported){
-				alert(this.num_exported + " exports were successful.\n" + failed.length + " exports failed.");
+			}else if(successCount){
+				alert(successCount + " exports were successful.\n" + failed.length + " exports failed.");
 
 			}else{
 				alert("All " + failed.length + "exports failed.");
