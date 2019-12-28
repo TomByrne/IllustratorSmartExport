@@ -45,7 +45,7 @@ Export settings can also be saved as presets, which can be imported/exported for
 
 ## Usage
 
-**For CS version: ** Goto File > Scripts > Smart Layer Export
+**For CS version:** Goto File > Scripts > Smart Layer Export
 
 **For CC version:** Goto Window > Extensions > Smart Export
 
