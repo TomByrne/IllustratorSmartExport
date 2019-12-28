@@ -8,6 +8,8 @@ Once you have set up export settings for a document, these settings can be saved
 
 Export settings can also be saved as presets, which can be imported/exported for sharing.
 
+***This plugin is no longer actively being maintained, please see below for contributing to the project.***
+
 ### Features:
 
 - Ability to scale output files for HiDPI (Retina) displays, or any other scale factor.
@@ -17,7 +19,7 @@ Export settings can also be saved as presets, which can be imported/exported for
 - File name pattern allows for full flexibility of output file names.
 - Can optionally export full Artboard images as well as individual layer images.
 - Can Load/Save/Import/Export settings.
-- Has a feature to 'rerun last export' (CC only)
+- Has a feature to 'Run Again' (CC only)
 
 ### Current Formats:
 
@@ -33,14 +35,36 @@ Export settings can also be saved as presets, which can be imported/exported for
 - AI
 - FXG (CS6 Only)
 
+## Installation
+
+- Select latest release from [releases page](https://github.com/TomByrne/IllustratorSmartExport/releases)
+- Install with one of the following tools:
+  - [ZXPInstaller](http://zxpinstaller.com/) (recommended)
+  - Extension Manager (installed with Adobe applications)
+  - [ExManCmd](https://www.adobeexchange.com/resources/28)
+
+## Usage
+
+**For CS version: ** Goto File > Scripts > Smart Layer Export
+
+**For CC version:** Goto Window > Extensions > Smart Export
+
 ## Build process
 
 At the moment, the build process is run locally, and it only works on Windows.
 
 This is done by double-clicking `build/BuildAll.bat`.
 
-There is the intention to migrate this to bitbucket pipelines at some point (but no resources).
+There is the intention to migrate this to Travis CI at some point (but no resources).
 
 The build process currently spits out different versions of the plugin installer based on the `Version_*` folders, to support multiple vendors with different settings (e.g. plugin name, plugin ID, features available). Also this will likely be removed if the build process is reworked.
 
 The build process also generates two installers per `Version_*` folder, one for Illustrator CC, and one for Illustrator CS. The CC version gets installed in a slightly different way, which allows for multiple entry points.
+
+## Contributing
+
+To contribute to the plugin, please create an issue in the Github issue tracker above, so that it's clear what needs to be resolved/improved.
+
+After making your changes in your own fork of the repo, create a Pull Request back into this repo named after the issue it intends to solve.
+
+If the changes are accepted a new build/release will be created on the Releases page.
