@@ -1,6 +1,7 @@
 /ignore
 /build/signingtoolkit
 /build/cert.ppk
+/build/cert.p12
 /bin
 /build/password.txt
 /build/tools
